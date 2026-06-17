@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — PROVIDER «Submit Offer» A/B/C MODERATOR LAUNCHER (provider dashboard)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Kit:  design/research/provider-offer-session-kit.md  (counterbalanced order + protocol)
+  Runs: prototypes/provider-offer-a-pro.html · provider-offer-b-express.html · provider-offer-c-guided.html
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  A SIMPLE moderator home for the founder to run the provider Submit-Offer A/B/C session with
+  3–5 providers, one variant at a time, provider-facing, from the new-request card to "offer sent".
+  This is the FIRST of three provider sets (Submit Offer → Request Visit → Job Management).
+
+  Each "Run from start" link opens a variant in CLEAN MODE (?clean): no artifact banner,
+  no dev screen-switcher — the provider sees ONLY the product. When the provider finishes
+  (offer sent / "my offer"), «رجوع للقائمة ↩» brings the moderator back here.
+
+  Cross-link to the OWNER session launcher (demo-dashboard.html) so one shared link covers both.
+
+  ── HARD CONSTRAINT: works by double-clicking on disk (file://) ──────────────
+  Navigation is plain <a href> link navigation file→file (NO iframes / NO fetch / NO JS module
+  imports — those are CORS-blocked on file://). The only JS here is a tiny "done" toggle.
+  Tailwind + IBM Plex Sans Arabic load via CDN, so this needs internet.
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — لوحة جلسة المحترفين (تقديم العرض A/B/C)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body {
+      margin:0; background:#f6f5f3;
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    *{letter-spacing:0 !important;}
+    bdi{direction:ltr;unicode-bidi:isolate;}
+
+    .t-display{font-size:30px;line-height:1.4;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:1.7;font-weight:500;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+
+    .wrap{max-width:560px;margin-inline:auto;padding:0 18px;}
+
+    .card{
+      border:1px solid #e6e2db;border-radius:18px;background:#fff;padding:18px;
+      box-shadow:0 1px 2px rgba(0,0,0,.03);
+    }
+    .badge{
+      display:inline-grid;place-items:center;width:46px;height:46px;border-radius:14px;
+      color:#fff;font-weight:700;font-size:22px;flex-shrink:0;
+    }
+    .run{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;font-size:16px;line-height:1.3;font-weight:600;color:#fff;
+      border-radius:14px;padding:14px 16px;min-height:50px;text-decoration:none;
+      transition:transform .12s ease,box-shadow .15s ease,filter .15s ease;
+    }
+    .run:active{transform:translateY(1px);}
+    .run:hover{filter:brightness(1.05);box-shadow:0 8px 20px -10px rgba(0,0,0,.35);}
+    .preview{
+      display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+      font-size:13px;font-weight:600;text-decoration:none;color:#5b554d;
+      border-bottom:1px dashed #c9c3b8;padding-bottom:1px;
+    }
+    .preview:hover{color:#1c1a17;}
+
+    /* per-variant colors (match the variants) */
+    .a .badge{background:#0f7c6c;} .a .run{background:#0f7c6c;} .a .accent{color:#0a5a4e;}
+    .b .badge{background:#e8590c;} .b .run{background:#e8590c;} .b .accent{color:#b8430a;}
+    .c .badge{background:#4338ca;} .c .run{background:#4338ca;} .c .accent{color:#312a9c;}
+
+    .donebtn{
+      display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
+      border:1px solid #e6e2db;background:#fff;color:#8a857c;border-radius:999px;
+      padding:6px 11px;cursor:pointer;transition:background .12s ease,color .12s ease,border-color .12s ease;
+    }
+    .donebtn .dot{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;border:1.5px solid #c9c3b8;}
+    .donebtn .dot svg{display:none;}
+    .donebtn.is-done{background:#eef0fb;color:#312a9c;border-color:#c9c3ef;}
+    .donebtn.is-done .dot{background:#4338ca;border-color:#4338ca;color:#fff;}
+    .donebtn.is-done .dot svg{display:block;}
+
+    .ordertable{width:100%;border-collapse:collapse;}
+    .ordertable th,.ordertable td{padding:9px 10px;text-align:start;font-size:15px;}
+    .ordertable thead th{font-weight:700;color:#5b554d;font-size:13px;border-bottom:1px solid #e6e2db;}
+    .ordertable tbody tr+tr td{border-top:1px solid #f0ede7;}
+    .ordertable .who{font-weight:700;}
+    .pill{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;color:#fff;font-weight:700;font-size:13px;}
+    .pill.a{background:#0f7c6c;} .pill.b{background:#e8590c;} .pill.c{background:#4338ca;}
+
+    .crosslink{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;font-size:15px;font-weight:600;color:#1c1a17;text-decoration:none;
+      border:1px solid #e6e2db;border-radius:14px;padding:13px 16px;background:#fff;
+      transition:background .12s ease;
+    }
+    .crosslink:hover{background:#faf9f7;}
+  </style>
+</head>
+
+<body class="text-[#1c1a17]">
+
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header class="bg-white border-b border-[#e6e2db]">
+    <div class="wrap py-4 flex items-center gap-2.5">
+      <span class="grid place-items-center size-9 rounded-lg bg-[#4338ca] text-white t-h3" style="font-weight:700;">د</span>
+      <span class="t-h3">دبّرها</span>
+      <span class="t-caption text-[#8a857c] ms-1">· لوحة جلسة المحترفين</span>
+    </div>
+  </header>
+
+  <main class="wrap py-7">
+
+    <!-- intro -->
+    <h1 class="t-display mb-2">جلسة تقديم العرض (A/B/C)</h1>
+    <p class="t-body text-[#5b554d] mb-3">
+      هاي لوحة لإدارة جلسة التجربة مع المحترفين. اختار طريقة، اضغط «شغّل من البداية»، وسلّم التلفون للمحترف يجرّب يقدّم عرضو لحالو.
+      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. شغّل الطرق حسب ترتيب المحترف (تحت ↓).
+    </p>
+    <p class="t-caption text-[#8a857c] mb-6">
+      السؤال: أي طريقة لتقديم العرض بيفضّلها المحترفون فعليًا — وليش؟ (الخط محسوم، مش تحت التجربة.) هاي أول مجموعة من ثلاث: تقديم العرض ← طلب زيارة ← إدارة الشغل.
+    </p>
+
+    <!-- cross-link to the OWNER session launcher -->
+    <a class="crosslink mb-7" href="demo-dashboard.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h13M8 7l3-3M8 7l3 3M16 17H3M16 17l-3-3M16 17l-3 3"/></svg>
+      جلسة أصحاب العقارات ↔ جلسة المحترفين
+    </a>
+
+    <!-- ════════════════ VARIANT CARDS ════════════════ -->
+    <section class="space-y-4">
+
+      <!-- A — Pro proposal builder -->
+      <div class="card a">
+        <div class="flex items-start gap-3.5 mb-3">
+          <span class="badge">A</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="t-h3">احترافي <span class="t-caption text-[#8a857c]">· Pro builder</span></h2>
+              <button class="donebtn" data-j="A" onclick="toggleDone(this)" aria-pressed="false">
+                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span class="lbl">تمّت</span>
+              </button>
+            </div>
+            <p class="t-small text-[#5b554d] mt-1">عرض كامل: سعر + مدّة + صلاحية + وصف بقوالب + مواد + تفاصيل إضافية.</p>
+          </div>
+        </div>
+        <a class="run" href="provider-offer-a-pro.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-offer-a-pro.html">معاينة (مع المبدّل) · Preview with switcher</a>
+      </div>
+
+      <!-- B — Express quote -->
+      <div class="card b">
+        <div class="flex items-start gap-3.5 mb-3">
+          <span class="badge">B</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="t-h3">سريع <span class="t-caption text-[#8a857c]">· Express</span></h2>
+              <button class="donebtn" data-j="B" onclick="toggleDone(this)" aria-pressed="false">
+                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span class="lbl">تمّت</span>
+              </button>
+            </div>
+            <p class="t-small text-[#5b554d] mt-1">أسرع طريق: سعر كبير + مدّة بضغطة + إملاء صوتي + بتبعت بضغطتين.</p>
+          </div>
+        </div>
+        <a class="run" href="provider-offer-b-express.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-offer-b-express.html">معاينة (مع المبدّل) · Preview with switcher</a>
+      </div>
+
+      <!-- C — Guided / smart -->
+      <div class="card c">
+        <div class="flex items-start gap-3.5 mb-3">
+          <span class="badge">C</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="t-h3">ذكي مُوجَّه <span class="t-caption text-[#8a857c]">· Guided/smart</span></h2>
+              <button class="donebtn" data-j="C" onclick="toggleDone(this)" aria-pressed="false">
+                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span class="lbl">تمّت</span>
+              </button>
+            </div>
+            <p class="t-small text-[#5b554d] mt-1">اقتراح ذكي بتأكّدو، وبعدها خطوة خطوة بقيَم جاهزة معبّاية.</p>
+          </div>
+        </div>
+        <a class="run" href="provider-offer-c-guided.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-offer-c-guided.html">معاينة (مع المبدّل) · Preview with switcher</a>
+      </div>
+
+    </section>
+
+    <!-- ════════════════ COUNTERBALANCED ORDER (3–5 providers · extended Latin square) ════════════════ -->
+    <section class="card mt-7">
+      <h2 class="t-h3 mb-1">ترتيب التشغيل لكل محترف</h2>
+      <p class="t-caption text-[#8a857c] mb-3">ترتيب متبادَل (مربّع لاتيني، ممدَّد لـ<bdi>3</bdi>–<bdi>5</bdi> محترفين) — كل طريقة بتظهر أول وسط وآخر بالتساوي.</p>
+      <table class="ordertable">
+        <thead>
+          <tr><th>المحترف</th><th>الأولى</th><th>الثانية</th><th>الثالثة</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="who">P1</td><td><span class="pill a">A</span></td><td><span class="pill b">B</span></td><td><span class="pill c">C</span></td></tr>
+          <tr><td class="who">P2</td><td><span class="pill b">B</span></td><td><span class="pill c">C</span></td><td><span class="pill a">A</span></td></tr>
+          <tr><td class="who">P3</td><td><span class="pill c">C</span></td><td><span class="pill a">A</span></td><td><span class="pill b">B</span></td></tr>
+          <tr><td class="who">P4</td><td><span class="pill a">A</span></td><td><span class="pill c">C</span></td><td><span class="pill b">B</span></td></tr>
+          <tr><td class="who">P5</td><td><span class="pill b">B</span></td><td><span class="pill a">A</span></td><td><span class="pill c">C</span></td></tr>
+        </tbody>
+      </table>
+      <p class="t-caption text-[#8a857c] mt-3">لا تسمّي الطرق للمحترف ولا ترتّبها — بس افتح الملف المظبوط وسلّمو التلفون. (P4/P5 بيكمّلوا التوازن إذا كان عندك <bdi>4</bdi> أو <bdi>5</bdi> محترفين.)</p>
+    </section>
+
+    <!-- footer note -->
+    <footer class="mt-7 mb-10">
+      <p class="t-caption text-[#8a857c]">
+        ملاحظة: بدّها إنترنت (الخطوط + Tailwind عبر CDN). هودي نماذج تصميم — مش التطبيق الحقيقي.
+      </p>
+      <p class="t-caption text-[#8a857c] mt-1" dir="ltr" style="text-align:start;">
+        DESIGN ARTIFACT — provider Submit-Offer A/B/C launcher (set 1 of 3) · needs internet (fonts + Tailwind CDN) · not the live app.
+      </p>
+    </footer>
+
+  </main>
+
+  <script>
+    function toggleDone(btn){
+      var on = btn.classList.toggle("is-done");
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.querySelector(".lbl").textContent = on ? "تمّت ✓" : "تمّت";
+    }
+  </script>
+
+  <!--
+  ════════════════════════ ACCEPTANCE CRITERIA (this launcher) ════════════════════════
+   1. Opens by double-clicking from disk (file://): all links are plain <a href> file→file.
+      No iframes, no fetch, no JS module imports. Needs internet only for fonts + Tailwind CDN.
+   2. Three clearly distinct variant cards — A احترافي/Pro builder (green), B سريع/Express (orange),
+      C ذكي مُوجَّه/Guided-smart (indigo) — each with a one-line description and a big «شغّل من البداية ▶
+      Run from start» link to provider-offer-x.html?clean (clean mode).
+   3. A secondary, smaller «معاينة (مع المبدّل) · Preview with switcher» link per variant → the
+      variant WITHOUT ?clean (dev mode, screen-switcher visible) for the moderator to rehearse.
+   4. A counterbalanced-order reference EXTENDED to 3–5 providers (P1: A,B,C · P2: B,C,A · P3: C,A,B ·
+      P4: A,C,B · P5: B,A,C) so the moderator runs the right order per provider.
+   5. Optional per-variant «تمّت/done» toggle (pure client-side, no storage) to track progress.
+   6. CROSS-LINK to the OWNER session launcher (demo-dashboard.html) — «جلسة أصحاب العقارات ↔ جلسة
+      المحترفين» — so one shared link covers both sessions. (The owner launcher links back here.)
+   7. Footer note: needs internet (fonts/CDN); these are design prototypes, not the live app; marked
+      as set 1 of 3 of the provider program.
+   8. RTL/lang=ar, IBM Plex Sans Arabic, «دبّرها» brand, real Arabic copy (no Lorem Ipsum),
+      works centered on a laptop and full-width on a phone.
+
+   FLOW CONTRACT: from here, «شغّل من البداية» → variant clean → run entry→offer-sent via the variant's
+   own in-page CTAs → «رجوع للقائمة ↩» (shown on the variant's sent + my-offer screens in clean mode) → back here.
+  -->
+</body>
+</html>

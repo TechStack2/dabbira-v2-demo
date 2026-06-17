@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — PROVIDER «Submit Offer» VARIANT B · «Express quote» (WARM ORANGE)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Set:    Provider Submit-Offer A/B/C (FIRST of three provider sets: Submit Offer → Request Visit → Job Management)
+  Kit:    design/research/provider-offer-session-kit.md
+  Copy:   design/content/copy-deck.md §5 (offer composer) — every AR string is a copy-deck key, no Lorem Ipsum
+  Type:   design/system/tokens.json   (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:    design/system/rtl-arabic.md (logical properties; bidi/number isolation; directional-icon flips)
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  ONE of THREE provider DIRECT-QUOTE prototypes. The three differ ONLY on the OFFER STEP.
+  The lead-in (a «طلب جديد» card) and the request "quote brief" are IDENTICAL across A/B/C,
+  and the "my offer" view + Edit pattern are parallel. FONT is LOCKED to IBM Plex Sans Arabic.
+
+  VARIANT B = EXPRESS QUOTE · WARM ORANGE (#e8590c).
+    Fastest path, front-and-centre: a BIG price field + quick timeline chips (اليوم / بكرا / خلال 3 أيام)
+    + a one-line note, and a PROMINENT «🎤 أملِ عرضك صوتيًا» (voice-dictate the whole offer, [BE]-tagged)
+    → «ابعت العرض» in 1–2 taps. «أضف تفاصيل» is optional. Bet: speed = more offers.
+
+  Shared flow: provider entry (brief) → request "quote brief" → [B express offer] → offer sent
+               → "my offer" view (+ «عدّل العرض» → back to the B offer step).
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — عرض المحترف B (سريع) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#1c1a17", soft:"#5b554d", faint:"#8a857c", line:"#e6e2db",
+            bg:"#f6f5f3", card:"#ffffff",
+            /* WARM ORANGE — Variant B's identity */
+            brand:"#e8590c", brandink:"#b8430a", wash:"#fdeee4",
+            amber:"#b08400", amberbg:"#fff8e8", amberln:"#efe2bd",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f6f5f3);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #ece8e1, 0 24px 60px -28px rgba(0,0,0,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    .chev{transition:transform .18s ease;}
+    [dir="rtl"] .chev{transform:scaleX(-1);}
+    .adv.is-open .chev{transform:rotate(90deg);}
+    [dir="rtl"] .adv.is-open .chev{transform:scaleX(-1) rotate(90deg);}
+    .adv-body{display:none;}
+    .adv.is-open .adv-body{display:block;}
+
+    /* ── components ── */
+    .opt{
+      font-size:16px;line-height:1.3;font-weight:600;border:1px solid #e6e2db;border-radius:999px;
+      background:#fff;color:#1c1a17;padding:11px 17px;cursor:pointer;min-height:46px;
+      transition:background .15s ease,border-color .15s ease,color .15s ease;
+    }
+    .opt:active{transform:translateY(1px);}
+    .opt.is-sel{background:#e8590c;border-color:#e8590c;color:#fff;}
+    .cta-primary{
+      font-size:17px;line-height:1.3;font-weight:700;background:#e8590c;color:#fff;border:none;
+      border-radius:14px;padding:16px 16px;cursor:pointer;min-height:52px;width:100%;
+      transition:transform .12s ease,box-shadow .15s ease,background .15s ease;
+    }
+    .cta-primary:disabled{background:#f0c2a3;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(232,89,12,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{
+      font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#b8430a;border:1px solid #f3cdb3;
+      border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;
+    }
+    .field{
+      font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #e6e2db;border-radius:12px;
+      background:#fff;padding:12px 14px;outline:none;
+    }
+    .field:focus{border-color:#e8590c;box-shadow:0 0 0 3px rgba(232,89,12,.18);}
+    /* BIG price — the hero of Express */
+    .pricefield{
+      font-size:48px;line-height:1.1;font-weight:700;width:100%;border:2px solid #f3cdb3;border-radius:18px;
+      background:#fff;padding:18px 18px 18px 64px;outline:none;direction:ltr;text-align:start;color:#1c1a17;
+    }
+    .pricefield:focus{border-color:#e8590c;box-shadow:0 0 0 4px rgba(232,89,12,.16);}
+    /* prominent voice button */
+    .voice{
+      width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+      font-size:17px;line-height:1.3;font-weight:700;color:#b8430a;
+      border:2px dashed #e8590c;border-radius:16px;background:#fdeee4;padding:16px;cursor:pointer;min-height:60px;
+      transition:background .15s ease,transform .12s ease;
+    }
+    .voice:active{transform:translateY(1px);}
+    .voice .mic{display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:#e8590c;color:#fff;flex-shrink:0;}
+    .voice.is-rec{background:#fff;border-style:solid;}
+    .voice.is-rec .mic{animation:pulse 1.1s ease infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,89,12,.45)}50%{box-shadow:0 0 0 8px rgba(232,89,12,0)}}
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#1c1a17;opacity:1;}
+    @media (prefers-reduced-motion:reduce){
+      .cta-primary.is-ready{animation:none;} .opt,.cta-primary,.voice{transition:none;} .voice.is-rec .mic{animation:none;}
+    }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · PROVIDER OFFER B (Express · orange) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <span class="t-caption text-soft">محترف · سباكة</span>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (lead-in · IDENTICAL across A/B/C) ════════════════════════════ -->
+    <section id="screen-entry" class="screen px-4 pb-28 pt-5">
+      <h1 class="t-h1 mb-1">طلب جديد إلك</h1>
+      <p class="t-body text-soft mb-5">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك.</p>
+
+      <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('brief')" style="cursor:pointer;">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-brand"></span> جديد · بمجالك بمنطقتك
+          </span>
+          <span class="t-caption text-faint">من <bdi>5</bdi> دقايق</span>
+        </div>
+        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+        </div>
+        <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
+          افتح الطلب وقدّم عرضك
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </button>
+
+      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على خطوة تقديم العرض.</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — REQUEST «QUOTE BRIEF» (IDENTICAL across A/B/C) ════════════════════════════ -->
+    <section id="screen-brief" class="screen px-4 pb-32 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> مفتوح للعروض
+        </span>
+        <span class="t-caption text-faint">طلب صاحب العقار</span>
+      </div>
+
+      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <dl class="space-y-2.5">
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
+            <dd class="t-small text-ink">تحت المغسلة</dd>
+          </div>
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
+            <dd class="t-small text-ink">نقطة نقطة</dd>
+          </div>
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
+            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-strong mb-1">جاهز تسعّر؟</p>
+        <p class="t-small text-soft">المشكلة واضحة — قدّم عرض مباشر بسعر وتفاصيل، وصاحب العقار بيقارن ويردّ.</p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — VARIANT B OFFER · EXPRESS QUOTE ════════════════════════════ -->
+    <section id="screen-offer" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="t-caption text-faint">عم تسعّر:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">تسريب مياه تحت مغسلة الحمام</span>
+      </div>
+
+      <h1 class="t-h1 mb-1">سعّر بسرعة</h1>
+      <p class="t-body text-soft mb-5">سعر ومدّة وبتبعت — أو أملِ عرضك صوتيًا ونحنا منعبّيه.</p>
+
+      <!-- HERO: big price -->
+      <div class="mb-3">
+        <span class="t-small text-ink">سعرك <span class="text-brand">*</span></span>
+        <div class="relative mt-2">
+          <span class="absolute inset-y-0 start-5 grid place-items-center text-soft pointer-events-none" style="font-size:34px;font-weight:700;">$</span>
+          <input id="b-price" inputmode="numeric" class="pricefield" placeholder="150" oninput="armSend()" />
+        </div>
+      </div>
+
+      <!-- quick timeline chips -->
+      <div class="mb-5">
+        <span class="t-small text-ink">إيمتى بتعملو؟</span>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button class="opt is-sel" onclick="pickOne(this)">اليوم</button>
+          <button class="opt" onclick="pickOne(this)">بكرا</button>
+          <button class="opt" onclick="pickOne(this)">خلال <bdi>3</bdi> أيام</button>
+        </div>
+      </div>
+
+      <!-- PROMINENT voice dictation (the whole offer) -->
+      <button id="b-voice" class="voice mb-2" onclick="toggleVoice()">
+        <span class="mic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+        <span id="b-voice-label">أملِ عرضك صوتيًا</span>
+      </button>
+      <p class="t-caption text-soft mb-1">احكِ عربي، فرنسي، أو إنكليزي — ونحنا منعبّي العرض عنك.</p>
+      <p class="t-caption text-amber mb-5" dir="ltr" style="text-align:start;">[BE] — تسجيل/تفريغ العرض الصوتي</p>
+
+      <!-- one-line note -->
+      <label class="block mb-5">
+        <span class="t-small text-ink">ملاحظة سريعة</span>
+        <input id="b-note" dir="auto" class="field mt-2" placeholder="سطر واحد… (متلاً: المواد مشمولة، بقدر إجي اليوم)" />
+      </label>
+
+      <!-- OPTIONAL: «أضف تفاصيل» (collapsible) -->
+      <div class="adv rounded-xl2 border border-line bg-card overflow-hidden mb-2">
+        <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="this.closest('.adv').classList.toggle('is-open')">
+          <span class="t-h3">أضف تفاصيل <span class="t-caption text-faint">· اختياري</span></span>
+          <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <div class="adv-body px-4 pb-4 pt-1 space-y-4">
+          <label class="block">
+            <span class="t-small text-ink">شو مشمول</span>
+            <textarea dir="auto" rows="2" class="field mt-1.5 resize-none" placeholder="اليد العاملة، المواد، تنظيف بعد الشغل…"></textarea>
+          </label>
+          <label class="block">
+            <span class="t-small text-ink">العرض صالح لـ</span>
+            <div class="mt-1.5 flex flex-wrap gap-2">
+              <button class="opt" onclick="pickOne(this)"><bdi>3</bdi> أيام</button>
+              <button class="opt is-sel" onclick="pickOne(this)"><bdi>7</bdi> أيام</button>
+              <button class="opt" onclick="pickOne(this)"><bdi>14</bdi> يوم</button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <p id="b-msg" class="t-caption text-brandink mt-3 flex items-center gap-1.5" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        حُط السعر لتبعت — أو أملِ عرضك صوتيًا.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — OFFER SENT ════════════════════════════ -->
+    <section id="screen-sent" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h1 class="t-h1 mb-1">انبعت عرضك!</h1>
+        <p class="t-h3 text-soft">بسرعة — صاحب العقار رح يشوفه.</p>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">عرضك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار</span>
+        </div>
+        <p class="t-display text-ink mb-1"><bdi>$150</bdi></p>
+        <p class="t-small text-soft">اليوم · صالح <bdi>7</bdi> أيام</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('myoffer')">شوف عرضك</button>
+        <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+      </div>
+
+      <a id="back-to-dash-sent" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 4 — «MY OFFER» VIEW (deeper state · + Edit) ════════════════════════════ -->
+    <section id="screen-myoffer" class="screen px-4 pb-28 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار
+        </span>
+        <span class="t-caption text-faint">عرضك</span>
+      </div>
+
+      <h1 class="t-h1 mb-2">عرضك عَ: تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <div class="flex items-end justify-between mb-3">
+          <div>
+            <p class="t-caption text-faint mb-0.5">السعر</p>
+            <p class="t-display text-ink leading-none"><bdi>$150</bdi></p>
+          </div>
+          <div class="text-end">
+            <p class="t-caption text-faint mb-0.5">المدّة</p>
+            <p class="t-strong">اليوم</p>
+          </div>
+        </div>
+        <hr class="border-line mb-3" />
+        <p class="t-h3 mb-2">شو مشمول</p>
+        <p class="t-small text-ink">تصليح التسريب · المواد مشمولة بالسعر · بقدر إجي اليوم.</p>
+        <hr class="border-line my-3" />
+        <div class="flex items-center justify-between t-small">
+          <span class="text-faint">صالح لـ</span>
+          <span class="text-ink"><bdi>7</bdi> أيام</span>
+        </div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <p class="t-small text-soft">بانتظار رد صاحب العقار. فيك تعدّل عرضك طول ما هو مفتوح.</p>
+        </div>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('offer')">عدّل العرض</button>
+        <button class="cta-ghost" onclick="goto('brief')">شوف الطلب من جديد</button>
+      </div>
+
+      <a id="back-to-dash-myoffer" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
+    <div id="footer" class="sticky bottom-0 z-20 bg-card/95 backdrop-blur border-t border-line px-4 pt-3" style="padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+      <button id="cta" class="cta-primary" onclick="onCta()">التالي</button>
+    </div>
+
+    <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1.5 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">B·express:</span>
+      <button class="picker is-sel" data-s="entry"   onclick="goto('entry')">0·entry</button>
+      <button class="picker"        data-s="brief"   onclick="goto('brief')">1·brief</button>
+      <button class="picker"        data-s="offer"   onclick="goto('offer')">2·offer</button>
+      <button class="picker"        data-s="sent"    onclick="goto('sent')">3·sent</button>
+      <button class="picker"        data-s="myoffer" onclick="goto('myoffer')">4·my offer</button>
+    </nav>
+  </div>
+
+  <script>
+    const screens = { entry:"screen-entry", brief:"screen-brief", offer:"screen-offer", sent:"screen-sent", myoffer:"screen-myoffer" };
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      document.getElementById("pub-header").style.display = (name==="sent") ? "none" : "flex";
+      document.getElementById("footer").style.display = (name==="sent"||name==="myoffer") ? "none" : "block";
+      configureFooter(name);
+      window.scrollTo(0,0);
+    }
+    function configureFooter(name){
+      const cta=document.getElementById("cta");
+      cta.classList.remove("is-ready"); cta.disabled=false;
+      if(name==="entry"){ cta.textContent="افتح الطلب"; }
+      else if(name==="brief"){ cta.textContent="قدّم عرضك"; }
+      else if(name==="offer"){ cta.textContent="ابعت العرض"; armSend(); }
+    }
+    function onCta(){
+      const active=document.querySelector(".screen.is-active").id;
+      if(active==="screen-entry"){ goto("brief"); return; }
+      if(active==="screen-brief"){ goto("offer"); return; }
+      if(active==="screen-offer"){
+        if(document.getElementById("cta").disabled){
+          const m=document.getElementById("b-msg"); m.style.display="flex"; m.scrollIntoView({behavior:"smooth",block:"center"}); return;
+        }
+        goto("sent"); return;
+      }
+    }
+
+    // ── express behavior ─────────────────────────────────────────────────
+    function pickOne(btn){
+      btn.parentElement.querySelectorAll(".opt").forEach(o=>o.classList.remove("is-sel"));
+      btn.classList.add("is-sel");
+    }
+    // voice dictation — UI shell only ([BE]); recording state + a simulated transcript fill
+    let recording=false;
+    function toggleVoice(){
+      const btn=document.getElementById("b-voice"), label=document.getElementById("b-voice-label");
+      recording=!recording;
+      btn.classList.toggle("is-rec",recording);
+      if(recording){ label.textContent="عم يسجّل… دوس لتوقف"; }
+      else{
+        label.textContent="أملِ عرضك صوتيًا";
+        // simulate the [BE] transcription filling the offer (price + note) so the moderator can show the payoff
+        const price=document.getElementById("b-price"); if(!price.value) price.value="150";
+        const note=document.getElementById("b-note"); if(!note.value) note.value="تصليح التسريب، المواد مشمولة، بقدر إجي اليوم.";
+        armSend();
+      }
+    }
+    // gate: price filled (the single must-have for Express)
+    function armSend(){
+      const active=document.querySelector(".screen.is-active");
+      if(!active || active.id!=="screen-offer") return;
+      const price=(document.getElementById("b-price").value||"").trim();
+      const ok=price.length>0;
+      const cta=document.getElementById("cta");
+      cta.disabled=!ok;
+      if(ok){ document.getElementById("b-msg").style.display="none"; void cta.offsetWidth; cta.classList.add("is-ready"); }
+    }
+
+    goto("entry");
+
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      var b1=document.getElementById("back-to-dash-sent"); if(b1) b1.style.display="block";
+      var b2=document.getElementById("back-to-dash-myoffer"); if(b2) b2.style.display="block";
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ VARIANT B — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Shared flow present in order: provider entry → request «quote brief» → B express offer → offer sent → «my offer» view. All five switchable via the picker; the sticky CTA walks entry→brief→offer→sent.
+   2. LEAD-IN + REQUEST IDENTICAL to A & C: entry card + the «quote brief» (title «تسريب مياه تحت مغسلة الحمام» · سباكة · بيروت — الأشرفية · عادي · answers وين التسريب=تحت المغسلة / المياه=نقطة نقطة + الوصف) are byte-parallel across A/B/C — only screen-offer differs.
+   3. B = EXPRESS QUOTE — fastest path front-and-centre: a BIG price field (hero, 48px $-prefixed) + quick timeline chips (اليوم / بكرا / خلال 3 أيام) + a one-line note, and a PROMINENT «أملِ عرضك صوتيًا» voice button ([BE]-tagged) that voice-dictates the whole offer → «ابعت العرض» in 1–2 taps. «أضف تفاصيل» is an OPTIONAL collapsible.
+   4. COLOR = WARM ORANGE (#e8590c) throughout — the only accent for CTAs, selected chips, the price border/prefix, the voice button.
+   5. SEND GATE (light — speed is the point): «ابعت العرض» needs only a price; otherwise an inline «حُط السعر لتبعت — أو أملِ عرضك صوتيًا» explains why. The voice button (when recording stops) simulates the [BE] transcript filling price + note so the moderator can show the payoff.
+   6. «MY OFFER» VIEW (deeper state): the submitted offer (price <bdi>$150</bdi>, timeline, شو مشمول, validity) with status «بانتظار رد صاحب العقار» + a PROMINENT «عدّل العرض» → returns to screen-offer (the B express step). Parallel to A & C and to the owner request-page + edit.
+   7. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17). A/B/C differ ONLY on the offer flow/layout/color.
+   8. CLEAN MODE (`?clean`): hides the banner + switcher and reveals «رجوع للقائمة ↩» → provider-dashboard.html on BOTH the offer-sent screen and the «my offer» view; runs entry→sent via in-page CTAs.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; reading flow runs right→left; the big price prefix $ + numeric field are LTR-isolated but sit on inline-START; the entry/brief chevron + the «أضف تفاصيل» chevron are directional and FLIP in RTL; the mic glyph + completion check are non-directional and do NOT flip. Logical properties only (ps/pe, inset-inline, text-align:start) — no physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — real copy-deck §5 strings only (no Lorem Ipsum): «سعّر بسرعة», «أملِ عرضك صوتيًا», «احكِ عربي، فرنسي، أو إنكليزي — ونحنا منعبّي العرض عنك», «ابعت العرض», «انبعت عرضك!», «بانتظار رد صاحب العقار», «عدّل العرض». Holds at 390px; the «خلال 3 أيام» chip + the big $150 do not clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0; h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont (400/500/600/700); Western numerals; price/validity <bdi>-isolated.
+  -->
+</body>
+</html>
