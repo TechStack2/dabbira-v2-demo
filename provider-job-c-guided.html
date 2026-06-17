@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — PROVIDER «Job Management» VARIANT C · «Guided / prompted» (INDIGO)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Set:    Provider Job-Management A/B/C — SET 3 of 3 (FINAL) (Submit Offer → Request Visit → Job Management)
+  Kit:    design/research/provider-job-session-kit.md
+  Copy:   design/content/copy-deck.md §7 (job states + actions) + §8 (rating) — no Lorem Ipsum
+  Type:   design/system/tokens.json   (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:    design/system/rtl-arabic.md (logical properties; bidi/number isolation; directional-icon flips)
+  Real:   design/audit/dynamic-loop-verification.md (REAL job lifecycle: awaiting_start → in_progress →
+          awaiting_approval → (revision_requested) → completed; the $150 job from that live run).
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  ONE of THREE provider ACTIVE-JOB prototypes. Same lead-in + same SHARED LIFECYCLE (in MEANING) as A & B —
+  only the MANAGEMENT MODEL differs. FONT LOCKED to IBM Plex Sans Arabic, constant across A/B/C.
+
+  VARIANT C = GUIDED / PROMPTED · INDIGO (deep #4338ca).
+    ONE primary prompt at a time, the app leads: «جاهز تبلّش؟» → start → «صوّر قبل ما تبلّش» → in-progress →
+    «صوّر بعد الخلص» → «جاهز تسلّم؟» → submit. SMART NUDGES ensure proper closeout (before/after photos,
+    a closing summary). A slim progress hint shows where they are. Bet: prompts ensure they update + close out.
+
+  ── NO DEAD-ENDS (set-2 lesson) ──────────────────────────────────────────────
+  Every prompt has a working primary control to advance (nudges can be skipped, but never block). The
+  customer's actions (approve, rate) appear as amber-dashed MODERATOR-SIM controls (no customer client).
+  Runs start → completed via the guided prompts + sims. Light revision loop via a moderator-sim that
+  returns to the in-progress prompt once.
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — إدارة الشغل C (موجَّه) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#1c1a17", soft:"#5b554d", faint:"#8a857c", line:"#e6e2db",
+            bg:"#f6f5f3", card:"#ffffff",
+            /* INDIGO — Variant C's identity */
+            brand:"#4338ca", brandink:"#312a9c", wash:"#eceafb",
+            amber:"#b08400", amberbg:"#fff8e8", amberln:"#efe2bd",
+            gold:"#c79200",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f6f5f3);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #ece8e1, 0 24px 60px -28px rgba(0,0,0,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    .chev{transition:transform .18s ease;}
+    [dir="rtl"] .chev{transform:scaleX(-1);}
+
+    .cta-primary{
+      font-size:16px;line-height:1.3;font-weight:600;background:#4338ca;color:#fff;border:none;
+      border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;
+      transition:transform .12s ease,box-shadow .15s ease,background .15s ease;
+    }
+    .cta-primary:disabled{background:#bcb8ea;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(67,56,202,.5);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{
+      font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#312a9c;border:1px solid #cfc9f4;
+      border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;
+    }
+    .field{
+      font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #e6e2db;border-radius:12px;
+      background:#fff;padding:12px 14px;outline:none;
+    }
+    .field:focus{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.16);}
+    /* big guided prompt card */
+    .prompt-card{
+      border:1px solid #cfc9f4;background:#fff;border-radius:18px;padding:20px;
+      box-shadow:0 8px 26px -16px rgba(67,56,202,.35);
+    }
+    /* before/after capture nudge tile */
+    .nudge{
+      display:flex;align-items:center;gap:12px;border:1px dashed #cfc9f4;border-radius:14px;background:#f7f6fe;padding:12px;cursor:pointer;
+    }
+    .nudge.is-done{border-style:solid;border-color:#4338ca;background:#eceafb;}
+    .moderator-sim{ border:1px dashed #b08400;background:#fff8e8;border-radius:14px;padding:12px 14px; }
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#1c1a17;opacity:1;}
+    .stars{display:inline-flex;gap:3px;direction:ltr;}
+    /* progress dots */
+    .pdot{width:8px;height:8px;border-radius:999px;background:#d8d3ca;}
+    .pdot.is-on{background:#4338ca;}
+    .pdot.is-done{background:#8b83e0;}
+    @media (prefers-reduced-motion:reduce){ .cta-primary.is-ready{animation:none;} .cta-primary{transition:none;} }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · PROVIDER JOB C (Guided · indigo) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <span class="t-caption text-soft">محترف · سباكة</span>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (accepted job · IDENTICAL meaning across A/B/C) ════════════════════════════ -->
+    <section id="screen-entry" class="screen px-4 pb-28 pt-5">
+      <h1 class="t-h1 mb-1">شغل جديد إلك</h1>
+      <p class="t-body text-soft mb-5">صاحب العقار قبِل عرضك — صار عندك شغل. افتحو وابدأ.</p>
+
+      <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('job')" style="cursor:pointer;">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-brand"></span> مقبول · صار شغل
+          </span>
+          <span class="t-caption text-faint">من <bdi>2</bdi> دقيقة</span>
+        </div>
+        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">السعر <bdi>$150</bdi></span>
+        </div>
+        <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
+          افتح الشغل
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </button>
+
+      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على إدارة الشغل من البداية للنهاية.</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — GUIDED PROMPT (one prompt at a time) ════════════════════════════ -->
+    <section id="screen-job" class="screen px-4 pb-40 pt-4">
+      <!-- compact job header -->
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span id="c-chip" class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> <span id="c-chip-label">بانتظار البدء</span>
+        </span>
+        <span class="t-caption text-faint">شغلك · <bdi>$150</bdi> كاش</span>
+      </div>
+      <h1 class="t-h2 mb-3" style="line-height:1.4;">تسريب مياه تحت مغسلة الحمام</h1>
+
+      <!-- slim progress hint -->
+      <div class="flex items-center gap-2 mb-4">
+        <div id="c-progress" class="flex items-center gap-1.5"></div>
+        <span id="c-progress-label" class="t-caption text-faint"></span>
+      </div>
+
+      <!-- the one guided prompt -->
+      <div id="c-prompt" class="prompt-card mb-4"></div>
+
+      <!-- moderator-sim slot (owner approve/revise) -->
+      <div id="c-sim" class="mb-3" style="display:none;"></div>
+
+      <button class="cta-ghost mt-2" onclick="goto('entry')">رجوع للأشغال</button>
+      <a id="back-to-dash-job" href="provider-job-dashboard.html" class="cta-ghost mt-3 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — COMPLETED (job done + the rating the owner left) ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h1 class="t-h1 mb-1">خلّصت — واستلمت أجرتك!</h1>
+        <p class="t-h3 text-soft">صاحب العقار وافق على الشغل.</p>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">أجرتك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> خلصان</span>
+        </div>
+        <p class="t-display text-ink mb-1"><bdi>$150</bdi></p>
+        <p class="t-small text-soft">كاش · يد بيد — خارج التطبيق</p>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">تقييم صاحب العقار</span>
+          <span class="stars" aria-label="5 من 5 نجوم">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </span>
+        </div>
+        <p class="t-strong mb-1"><bdi>5</bdi> من <bdi>5</bdi></p>
+        <p class="t-small text-ink">«شغل نظيف وسريع، صلّح التسريب بنص ساعة وفهّمني شو كانت المشكلة. منصح فيه.»</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('job')">شوف الشغل</button>
+        <button class="cta-ghost" onclick="goto('entry')">رجوع للأشغال</button>
+      </div>
+
+      <a id="back-to-dash-done" href="provider-job-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:11px;">
+      <span class="opacity-60">C·guided:</span>
+      <button class="picker is-sel" data-s="entry"        onclick="goto('entry')">0·entry</button>
+      <button class="picker"        data-s="awaiting"     onclick="setState('awaiting')">1·awaiting-start</button>
+      <button class="picker"        data-s="inprogress"   onclick="setState('inprogress')">2·in-progress</button>
+      <button class="picker"        data-s="approval"     onclick="setState('approval')">3·awaiting-approval</button>
+      <button class="picker"        data-s="done"         onclick="goto('done')">4·completed</button>
+    </nav>
+  </div>
+
+  <script>
+    // ── job lifecycle state (the management variable for set 3) ──────────────
+    const LABELS = { awaiting:"بانتظار البدء", inprogress:"عَ الشغل", approval:"بانتظار الموافقة", completed:"خلصان" };
+    const STEP_NO = { awaiting:1, inprogress:2, approval:3, completed:4 };
+    let jobState = "awaiting";
+    let beforeDone = false, afterDone = false;
+
+    // ── screen switching ─────────────────────────────────────────────────
+    const screens = { entry:"screen-entry", job:"screen-job", done:"screen-done" };
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      const pk = name==="done" ? "done" : (name==="job" ? jobState : "entry");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===pk));
+      document.getElementById("pub-header").style.display = (name==="done") ? "none" : "flex";
+      if(name==="job") renderJob();
+      if(window.__clean){
+        document.getElementById("back-to-dash-job").style.display  = (name==="job"  && jobState==="completed") ? "block" : "none";
+        document.getElementById("back-to-dash-done").style.display = (name==="done") ? "block" : "none";
+      }
+      window.scrollTo(0,0);
+    }
+    function setState(s){ jobState = s; goto("job"); }
+
+    // ── render the guided prompt for the current state ──────────────────────
+    function renderJob(){
+      // chip
+      document.getElementById("c-chip-label").textContent = LABELS[jobState];
+      const chip = document.getElementById("c-chip");
+      chip.className = (jobState==="inprogress"||jobState==="approval")
+        ? "inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"
+        : "inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption";
+
+      // progress dots (3 working steps: start → work → submit; completed fills all)
+      const stepNo = STEP_NO[jobState];
+      const dots = [1,2,3].map(i=>{
+        const cls = i < stepNo ? "pdot is-done" : (i === stepNo ? "pdot is-on" : "pdot");
+        return '<span class="'+cls+'"></span>';
+      }).join("");
+      document.getElementById("c-progress").innerHTML = dots;
+      const plabels = { awaiting:"خطوة 1 من 3 — البداية", inprogress:"خطوة 2 من 3 — الشغل", approval:"خطوة 3 من 3 — التسليم", completed:"خلص ✓" };
+      document.getElementById("c-progress-label").textContent = plabels[jobState];
+
+      const prompt = document.getElementById("c-prompt");
+      const sim = document.getElementById("c-sim");
+      sim.style.display = "none"; sim.innerHTML = "";
+
+      if(jobState === "awaiting"){
+        prompt.innerHTML =
+          '<span class="inline-grid place-items-center size-12 rounded-full bg-wash text-brand mb-3">'
+          +   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 14 9-14 9V3z"/></svg></span>'
+          + '<h2 class="t-h2 mb-1">جاهز تبلّش؟</h2>'
+          + '<p class="t-body text-soft mb-4">لمّا تبلّش، منعلّم صاحب العقار إنك بلّشت الشغل. خلّينا نمشي خطوة خطوة لتسلّم صح.</p>'
+          + '<button class="cta-primary" onclick="startWork()">ابدأ الشغل</button>';
+      }
+      else if(jobState === "inprogress"){
+        prompt.innerHTML =
+          '<span class="inline-grid place-items-center size-12 rounded-full bg-wash text-brand mb-3">'
+          +   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span>'
+          + '<h2 class="t-h2 mb-1">عَ الشغل</h2>'
+          + '<p class="t-body text-soft mb-4">نصيحة: صور «قبل» و«بعد» بتطمّن صاحب العقار وبتسهّل الموافقة. <span class="t-caption text-amber" dir="ltr" style="text-align:start;">[BE] رفع صور</span></p>'
+          // before/after smart nudges
+          + '<div class="space-y-2.5 mb-4">'
+          +   '<button class="nudge'+(beforeDone?' is-done':'')+'" style="inline-size:100%;" onclick="captureBefore()">'
+          +     '<span class="grid place-items-center size-10 rounded-full" style="background:'+(beforeDone?'#4338ca':'#eceafb')+';color:'+(beforeDone?'#fff':'#312a9c')+';">'
+          +       (beforeDone?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>')
+          +     '</span>'
+          +     '<div class="text-start min-w-0"><p class="t-strong">'+(beforeDone?'صورة «قبل» انحفظت ✓':'صوّر قبل ما تبلّش')+'</p><p class="t-caption text-soft">'+(beforeDone?'تمام — كمّل شغلك':'اختياري بس بينصح فيه')+'</p></div>'
+          +   '</button>'
+          +   '<button class="nudge'+(afterDone?' is-done':'')+'" style="inline-size:100%;" onclick="captureAfter()">'
+          +     '<span class="grid place-items-center size-10 rounded-full" style="background:'+(afterDone?'#4338ca':'#eceafb')+';color:'+(afterDone?'#fff':'#312a9c')+';">'
+          +       (afterDone?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>')
+          +     '</span>'
+          +     '<div class="text-start min-w-0"><p class="t-strong">'+(afterDone?'صورة «بعد» انحفظت ✓':'صوّر بعد ما تخلّص')+'</p><p class="t-caption text-soft">'+(afterDone?'حلو — جاهز تسلّم':'بيساعد عالموافقة')+'</p></div>'
+          +   '</button>'
+          + '</div>'
+          + '<button class="cta-primary'+((beforeDone||afterDone)?' is-ready':'')+'" onclick="submitForApproval()">جاهز تسلّم؟ سلّم الشغل</button>'
+          + (!(beforeDone||afterDone) ? '<p class="t-caption text-soft mt-2 text-center">فيك تسلّم بلا صور — بس الصور بتسهّل الموافقة.</p>' : '');
+        // revision sim available while working
+        sim.style.display = "block";
+        sim.innerHTML =
+          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — owner</p>'
+          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button></div>';
+      }
+      else if(jobState === "approval"){
+        prompt.innerHTML =
+          '<span class="inline-grid place-items-center size-12 rounded-full bg-wash text-brand mb-3">'
+          +   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>'
+          + '<h2 class="t-h2 mb-1">سلّمت الشغل ✓</h2>'
+          + '<p class="t-body text-soft mb-4">منبّهنا صاحب العقار يراجع ويوافق. لمّا يوافق، بتقبض أجرتك <bdi>$150</bdi> كاش.</p>'
+          + '<div class="flex items-center gap-2 rounded-xl2 bg-wash p-3"><span class="grid place-items-center size-8 rounded-full bg-white text-brandink shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span><p class="t-small text-brandink">بانتظار موافقة صاحب العقار…</p></div>';
+        // owner approve / revise sims
+        sim.style.display = "block";
+        sim.innerHTML =
+          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>'
+          + '<button class="cta-ghost mb-2" style="border-color:#efe2bd;color:#8a6d00;" onclick="ownerApprove()">صاحب العقار وافق ✓</button>'
+          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button></div>';
+      }
+    }
+
+    // ── transitions (the advance controls) ─────────────────────────────────
+    function startWork(){ jobState="inprogress"; renderJob(); }
+    function captureBefore(){ beforeDone=true; renderJob(); }
+    function captureAfter(){ afterDone=true; renderJob(); }
+    function submitForApproval(){ jobState="approval"; renderJob(); }
+    function ownerApprove(){ jobState="completed"; goto("done"); }
+    function requestRevision(){ jobState="inprogress"; renderJob(); }
+
+    // init
+    goto("entry");
+
+    // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      window.__clean = true;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ VARIANT C — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Lead-in present: provider entry «شغل جديد إلك · مقبول · صار شغل» card (same job: تسريب… · سباكة · بيروت — الأشرفية · السعر <bdi>$150</bdi>) → opens the guided job. Identical in MEANING to A & B (only the management UI differs).
+   2. SHARED LIFECYCLE present in order: awaiting-start → in-progress → submit-for-approval → (owner approves via moderator-sim) → completed («خلّصت — استلمت أجرتك $150» + the 5★ rating the owner left). All four active states reachable via the moderator picker (setState) + the done screen.
+   3. C = GUIDED / PROMPTED: ONE primary prompt at a time, the app leads — «جاهز تبلّش؟» (start) → «عَ الشغل» with SMART before/after CAPTURE NUDGES («صوّر قبل ما تبلّش» / «صوّر بعد ما تخلّص») → «جاهز تسلّم؟ سلّم الشغل». A slim 3-dot progress hint («خطوة 1/2/3 من 3») shows where they are. Nudges flip to a done state on tap; the submit CTA brightens once a photo is added.
+   4. COLOR = INDIGO (deep #4338ca) throughout — CTAs, the prompt card border + glow, the progress dots, the nudge accents, the chips. The owner's 5★ rating uses gold stars (don't flip).
+   5. NO DEAD-ENDS: every prompt has a working primary control to advance — «ابدأ الشغل» (awaiting→in-progress), «جاهز تسلّم؟ سلّم الشغل» (in-progress→awaiting-approval, never blocked — photos are optional nudges), the moderator-sim «صاحب العقار وافق ✓» (awaiting-approval→completed). A light REVISION loop: the moderator-sim «صاحب العقار طلب تعديل ↩» returns to the in-progress prompt.
+   6. MODERATOR-SIMS: an amber-dashed slot carries «صاحب العقار وافق ✓» (advances to completed) and «صاحب العقار طلب تعديل ↩» (loops back to in-progress) at awaiting-approval, and the revision sim while in-progress — standing in for the owner (no customer client).
+   7. COMPLETED end: «خلّصت — واستلمت أجرتك!» + the payout (<bdi>$150</bdi> cash, off-platform) + the rating the owner left (5★ + comment). Off-platform cash + rating-after-completion per the live model.
+   8. SMART NUDGES ensure closeout WITHOUT blocking: before/after capture are optional ([BE] shell) and clearly marked «اختياري بس بينصح فيه»; the explicit «فيك تسلّم بلا صور» line guarantees no dead-end if the provider skips them.
+   9. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17). A/B/C differ ONLY on the management model (flow/layout/color).
+  10. CLEAN MODE (`?clean`): hides the banner + switcher and reveals «رجوع للقائمة ↩» → provider-job-dashboard.html on the completed job + the done screen; runs entry→completed via the guided prompts + the moderator-sims.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; reading flow right-anchored; the progress dots + prompt card + nudges read right→left; the nudge icon sits on the inline-START (flex gap, text-align:start on the labels); the entry chevron is directional and FLIPS in RTL; camera/play/clock/check/star glyphs are non-directional and do NOT flip; prices/times <bdi>-isolated. Logical properties only (ps/pe, inline-size, text-align:start, grid) — no physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — real copy-deck §7/§8 strings only (no Lorem Ipsum): «شغل جديد إلك», «جاهز تبلّش؟», «ابدأ الشغل», «عَ الشغل», «صوّر قبل ما تبلّش», «صوّر بعد ما تخلّص», «جاهز تسلّم؟ سلّم الشغل», «سلّمت الشغل ✓», «صاحب العقار وافق ✓», «صاحب العقار طلب تعديل ↩», «خلّصت — واستلمت أجرتك!», «تقييم صاحب العقار», «كاش · يد بيد». Holds at 390px; the prompt copy + nudge labels + progress label do not clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0; h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont (400/500/600/700); Western numerals; price/step/rating <bdi>-isolated.
+  -->
+</body>
+</html>

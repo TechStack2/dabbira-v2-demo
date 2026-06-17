@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — PROVIDER «Job Management» VARIANT A · «Status timeline» (GREEN)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Set:    Provider Job-Management A/B/C — SET 3 of 3 (FINAL) (Submit Offer → Request Visit → Job Management)
+  Kit:    design/research/provider-job-session-kit.md  (the moderated A/B/C protocol this feeds)
+  Copy:   design/content/copy-deck.md §7 (job states + actions) + §8 (rating) — no Lorem Ipsum
+  Type:   design/system/tokens.json   (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:    design/system/rtl-arabic.md (logical properties; bidi/number isolation; directional-icon flips)
+  Real:   design/audit/dynamic-loop-verification.md (the REAL job lifecycle: awaiting_start → in_progress →
+          awaiting_approval → (revision_requested) → completed; proof-of-work, job activity, off-platform
+          cash + 5★ rating after completion. The accepted job here = the $150 job from that live run.)
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  ONE of THREE provider ACTIVE-JOB prototypes. The three differ ONLY on the WAY THE JOB IS MANAGED.
+  The lead-in (a brief «شغل جديد إلك · مقبول» entry that opens the accepted job) and the SHARED LIFECYCLE
+  (awaiting-start → in-progress → submit-for-approval → [owner approves via moderator-sim] → completed +
+  the rating the owner left → done) are IDENTICAL in meaning across A/B/C — only the management UI differs.
+  So the A/B test isolates HOW A PROVIDER RUNS AN ACTIVE JOB.
+  FONT is LOCKED to IBM Plex Sans Arabic (validated 2026-06-17) and held CONSTANT across A/B/C.
+
+  VARIANT A = STATUS TIMELINE · GREEN (cool teal #0f7c6c).
+    A job-detail with a clear STATUS STEPPER (بانتظار البدء → عَ الشغل → بانتظار الموافقة → خلصان) +
+    STRUCTURED per-state action buttons («ابدأ الشغل» → «أضف تحديث/صورة» → «سلّم الشغل للموافقة») +
+    an ACTIVITY LOG + proof-of-work uploads ([BE]). Bet: structure keeps both sides aligned.
+
+  ── NO DEAD-ENDS (set-2 lesson) ──────────────────────────────────────────────
+  Every state has a working in-page control to advance. Where the next step is the CUSTOMER's action
+  (approve the work, leave a rating), an amber-dashed MODERATOR-SIM button stands in (no customer client).
+  Runs start → completed end-to-end via in-page controls + sims. A light REVISION loop is shown via a
+  secondary moderator-sim «صاحب العقار طلب تعديل» that returns to in-progress once.
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — إدارة الشغل A (الجدول الزمني) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#1c1a17", soft:"#5b554d", faint:"#8a857c", line:"#e6e2db",
+            bg:"#f6f5f3", card:"#ffffff",
+            /* GREEN — Variant A's identity */
+            brand:"#0f7c6c", brandink:"#0a5a4e", wash:"#e9f4f1",
+            amber:"#b08400", amberbg:"#fff8e8", amberln:"#efe2bd",
+            gold:"#c79200",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f6f5f3);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #ece8e1, 0 24px 60px -28px rgba(0,0,0,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    /* directional chevron flips in RTL */
+    .chev{transition:transform .18s ease;}
+    [dir="rtl"] .chev{transform:scaleX(-1);}
+
+    /* ── components (self-contained) ── */
+    .cta-primary{
+      font-size:16px;line-height:1.3;font-weight:600;background:#0f7c6c;color:#fff;border:none;
+      border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;
+      transition:transform .12s ease,box-shadow .15s ease,background .15s ease;
+    }
+    .cta-primary:disabled{background:#b9cdc8;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(15,124,108,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{
+      font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#0a5a4e;border:1px solid #cfe6e0;
+      border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;
+    }
+    .field{
+      font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #e6e2db;border-radius:12px;
+      background:#fff;padding:12px 14px;outline:none;
+    }
+    .field:focus{border-color:#0f7c6c;box-shadow:0 0 0 3px rgba(15,124,108,.18);}
+    /* vertical status stepper */
+    .vstep{display:flex;gap:12px;align-items:flex-start;}
+    .vstep .vdot{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;flex-shrink:0;font-size:13px;font-weight:700;direction:ltr;}
+    .vstep .vrail{position:relative;}
+    .vstep .vrail::after{content:"";position:absolute;inset-inline-start:13px;inset-block-start:28px;width:2px;height:calc(100% - 6px);background:#e6e2db;}
+    .vstep:last-child .vrail::after{display:none;}
+    .moderator-sim{
+      border:1px dashed #b08400;background:#fff8e8;border-radius:14px;padding:12px 14px;
+    }
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#1c1a17;opacity:1;}
+    /* photo proof tile (shell) */
+    .prooftile{
+      display:grid;place-items:center;aspect-ratio:1;border:1px dashed #cfe6e0;border-radius:14px;background:#f3faf8;color:#0a5a4e;cursor:pointer;
+    }
+    .stars{display:inline-flex;gap:3px;direction:ltr;}
+    @media (prefers-reduced-motion:reduce){
+      .cta-primary.is-ready{animation:none;} .cta-primary{transition:none;}
+    }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · PROVIDER JOB A (Timeline · green) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <span class="t-caption text-soft">محترف · سباكة</span>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (accepted job · IDENTICAL meaning across A/B/C) ════════════════════════════ -->
+    <section id="screen-entry" class="screen px-4 pb-28 pt-5">
+      <h1 class="t-h1 mb-1">شغل جديد إلك</h1>
+      <p class="t-body text-soft mb-5">صاحب العقار قبِل عرضك — صار عندك شغل. افتحو وابدأ.</p>
+
+      <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('job')" style="cursor:pointer;">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-brand"></span> مقبول · صار شغل
+          </span>
+          <span class="t-caption text-faint">من <bdi>2</bdi> دقيقة</span>
+        </div>
+        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">السعر <bdi>$150</bdi></span>
+        </div>
+        <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
+          افتح الشغل
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </button>
+
+      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على إدارة الشغل من البداية للنهاية.</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — JOB DETAIL (the management surface · ALL active states render here) ════════════════════════════ -->
+    <section id="screen-job" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span id="a-chip" class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> <span id="a-chip-label">بانتظار البدء</span>
+        </span>
+        <span class="t-caption text-faint">شغلك</span>
+      </div>
+
+      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">السعر <bdi>$150</bdi></span>
+      </div>
+
+      <!-- the agreed deal -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="t-caption text-faint mb-0.5">السعر المتّفق</p>
+            <p class="t-h2 text-ink leading-none"><bdi>$150</bdi></p>
+          </div>
+          <div class="text-end">
+            <p class="t-caption text-faint mb-0.5">الدفع</p>
+            <p class="t-strong">كاش · يد بيد</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS STEPPER (vertical, structured) -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-caption text-faint mb-3">مراحل الشغل</p>
+        <div id="a-stepper" class="space-y-0"></div>
+      </div>
+
+      <!-- PER-STATE ACTION PANEL (the structured action for the current state) -->
+      <div id="a-action" class="rounded-xl2 border border-brand/30 bg-card p-4 mb-4"></div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-2">
+        <p class="t-h3 mb-3">سجلّ النشاط</p>
+        <div id="a-activity" class="space-y-3"></div>
+      </div>
+
+      <!-- secondary: revision moderator-sim (shown only in-progress / awaiting-approval), and back to entry -->
+      <div id="a-revision-sim" class="moderator-sim mt-4 mb-3" style="display:none;">
+        <p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>
+        <button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button>
+      </div>
+
+      <button class="cta-ghost mt-2" onclick="goto('entry')">رجوع للأشغال</button>
+      <a id="back-to-dash-job" href="provider-job-dashboard.html" class="cta-ghost mt-3 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — COMPLETED (job done + the rating the owner left) ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h1 class="t-h1 mb-1">خلّصت — واستلمت أجرتك!</h1>
+        <p class="t-h3 text-soft">صاحب العقار وافق على الشغل.</p>
+      </div>
+
+      <!-- the payout (off-platform cash) -->
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">أجرتك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> خلصان</span>
+        </div>
+        <p class="t-display text-ink mb-1"><bdi>$150</bdi></p>
+        <p class="t-small text-soft">كاش · يد بيد — خارج التطبيق</p>
+      </div>
+
+      <!-- the rating the owner left -->
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">تقييم صاحب العقار</span>
+          <span class="stars" aria-label="5 من 5 نجوم">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </span>
+        </div>
+        <p class="t-strong mb-1"><bdi>5</bdi> من <bdi>5</bdi></p>
+        <p class="t-small text-ink">«شغل نظيف وسريع، صلّح التسريب بنص ساعة وفهّمني شو كانت المشكلة. منصح فيه.»</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('job')">شوف الشغل</button>
+        <button class="cta-ghost" onclick="goto('entry')">رجوع للأشغال</button>
+      </div>
+
+      <a id="back-to-dash-done" href="provider-job-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
+    <div id="footer" class="sticky bottom-0 z-20 bg-card/95 backdrop-blur border-t border-line px-4 pt-3" style="padding-bottom:calc(12px + env(safe-area-inset-bottom));display:none;">
+      <button id="cta" class="cta-primary" onclick="onCta()">التالي</button>
+    </div>
+
+    <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:11px;">
+      <span class="opacity-60">A·timeline:</span>
+      <button class="picker is-sel" data-s="entry"        onclick="goto('entry')">0·entry</button>
+      <button class="picker"        data-s="awaiting"     onclick="setState('awaiting')">1·awaiting-start</button>
+      <button class="picker"        data-s="inprogress"   onclick="setState('inprogress')">2·in-progress</button>
+      <button class="picker"        data-s="approval"     onclick="setState('approval')">3·awaiting-approval</button>
+      <button class="picker"        data-s="done"         onclick="goto('done')">4·completed</button>
+    </nav>
+  </div>
+
+  <script>
+    // ── job lifecycle state (the management variable for set 3) ──────────────
+    // states: awaiting → inprogress → approval → completed
+    const STEPS = [
+      {key:"awaiting",   label:"بانتظار البدء"},
+      {key:"inprogress", label:"عَ الشغل"},
+      {key:"approval",   label:"بانتظار الموافقة"},
+      {key:"completed",  label:"خلصان"},
+    ];
+    let jobState = "awaiting";
+    let updates = []; // activity entries the provider adds while in-progress
+
+    // ── screen switching ─────────────────────────────────────────────────
+    const screens = { entry:"screen-entry", job:"screen-job", done:"screen-done" };
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      // map screen → picker highlight
+      const pk = name==="done" ? "done" : (name==="job" ? jobState : "entry");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===pk));
+      document.getElementById("pub-header").style.display = (name==="done") ? "none" : "flex";
+      if(name==="job") renderJob();
+      // clean-mode back-link visibility
+      if(window.__clean){
+        document.getElementById("back-to-dash-job").style.display  = (name==="job"  && jobState==="completed") ? "block" : "none";
+        document.getElementById("back-to-dash-done").style.display = (name==="done") ? "block" : "none";
+      }
+      window.scrollTo(0,0);
+    }
+    function setState(s){ jobState = s; goto("job"); }
+
+    // ── activity log seed + helpers ────────────────────────────────────────
+    function seedActivity(){
+      updates = [
+        {icon:"check", text:"صاحب العقار قبِل عرضك — صار شغل.", when:"اليوم · "+t(9,12)},
+      ];
+    }
+    function t(h,m){ return '<bdi>'+String(h).padStart(2,"0")+':'+String(m).padStart(2,"0")+'</bdi>'; }
+    function addUpdate(icon, text){ updates.push({icon, text, when:"اليوم · "+t(10,30)}); }
+
+    // ── render the job-detail (stepper + per-state action + activity) ───────
+    function renderJob(){
+      const curIdx = STEPS.findIndex(s=>s.key===jobState);
+
+      // chip
+      document.getElementById("a-chip-label").textContent = STEPS[curIdx].label;
+
+      // vertical stepper
+      const stepHtml = STEPS.map((s,i)=>{
+        const done = i < curIdx, cur = i === curIdx;
+        const dotBg = (done||cur) ? "#0f7c6c" : "#fff";
+        const dotBorder = (done||cur) ? "#0f7c6c" : "#d8d3ca";
+        const dotColor = (done||cur) ? "#fff" : "#8a857c";
+        const ring = cur ? "box-shadow:0 0 0 3px rgba(15,124,108,.20);" : "";
+        const txt = cur ? "#0a5a4e" : (done ? "#0f7c6c" : "#8a857c");
+        const weight = cur ? 700 : 500;
+        const inner = done
+          ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+          : String(i+1);
+        return ''
+          + '<div class="vstep" style="padding-block:6px;">'
+          +   '<div class="vrail">'
+          +     '<span class="vdot" style="background:'+dotBg+';border:2px solid '+dotBorder+';color:'+dotColor+';'+ring+'">'+inner+'</span>'
+          +   '</div>'
+          +   '<div style="padding-block-start:3px;"><span class="t-small" style="color:'+txt+';font-weight:'+weight+';">'+s.label+'</span>'
+          +     (cur ? ' <span class="t-caption" style="color:#0f7c6c;">· هلّق</span>' : '')
+          +   '</div>'
+          + '</div>';
+      }).join("");
+      document.getElementById("a-stepper").innerHTML = stepHtml;
+
+      // per-state structured action panel
+      const action = document.getElementById("a-action");
+      const revSim = document.getElementById("a-revision-sim");
+      revSim.style.display = "none";
+      const chip = document.getElementById("a-chip");
+      chip.className = "inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption";
+
+      if(jobState === "awaiting"){
+        action.innerHTML =
+          '<p class="t-h3 mb-1">جاهز تبلّش؟</p>'
+          + '<p class="t-small text-soft mb-3">لمّا تبدأ، صاحب العقار بيشوف إنك بلّشت الشغل.</p>'
+          + '<button class="cta-primary" onclick="startWork()">ابدأ الشغل</button>';
+      }
+      else if(jobState === "inprogress"){
+        chip.className = "inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption";
+        action.innerHTML =
+          '<div class="flex items-center justify-between mb-1"><p class="t-h3">عَ الشغل</p>'
+          +   '<span class="t-caption text-soft">حدّث صاحب العقار</span></div>'
+          + '<p class="t-small text-soft mb-3">ضيف تحديث أو صورة تبيّن شو عم تعمل، وبعدها سلّم للموافقة.</p>'
+          // proof-of-work uploads [BE]
+          + '<div class="rounded-xl2 border border-dashed border-line bg-card p-3 mb-3">'
+          +   '<p class="t-small mb-2" style="font-weight:600;">صور الشغل <span class="t-caption text-amber" dir="ltr" style="text-align:start;">[BE] رفع صور</span></p>'
+          +   '<div class="grid grid-cols-3 gap-2">'
+          +     '<button class="prooftile" onclick="addUpdate(\'photo\',\'أضفت صورة قبل الشغل.\');renderJob();"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></button>'
+          +     '<button class="prooftile" onclick="addUpdate(\'photo\',\'أضفت صورة بعد الشغل.\');renderJob();"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>'
+          +     '<div></div>'
+          +   '</div>'
+          + '</div>'
+          // text update
+          + '<textarea id="a-update" dir="auto" rows="2" class="field mb-2 resize-none" placeholder="اكتب تحديث قصير… (متلاً: بدّلت السيفون وحكمت الوصلة)"></textarea>'
+          + '<button class="cta-ghost mb-3" onclick="postTextUpdate()">أضف تحديث</button>'
+          + '<button class="cta-primary" onclick="submitForApproval()">سلّم الشغل للموافقة</button>';
+        revSim.style.display = "block";
+      }
+      else if(jobState === "approval"){
+        chip.className = "inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption";
+        action.innerHTML =
+          '<p class="t-h3 mb-1">سلّمت الشغل ✓</p>'
+          + '<p class="t-small text-soft mb-3">بانتظار صاحب العقار يراجع ويوافق. لمّا يوافق، بتقبض أجرتك كاش.</p>'
+          // MODERATOR-SIM: owner approves
+          + '<div class="moderator-sim">'
+          +   '<p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>'
+          +   '<button class="cta-ghost mb-2" style="border-color:#efe2bd;color:#8a6d00;" onclick="ownerApprove()">صاحب العقار وافق ✓</button>'
+          +   '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button>'
+          + '</div>';
+      }
+      else if(jobState === "completed"){
+        action.innerHTML =
+          '<div class="flex items-center gap-2 mb-1"><span class="grid place-items-center size-7 rounded-full bg-wash text-brandink shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><p class="t-h3">خلص الشغل!</p></div>'
+          + '<p class="t-small text-soft mb-3">صاحب العقار وافق — استلمت أجرتك <bdi>$150</bdi> كاش، وترك تقييم.</p>'
+          + '<button class="cta-primary" onclick="goto(\'done\')">شوف الخلاصة والتقييم</button>';
+      }
+
+      // activity log
+      const icons = {
+        check:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+        play:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 14 9-14 9V3z"/></svg>',
+        photo:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>',
+        note:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>',
+        send:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>',
+        revision:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M21 17v-6h-6"/><path d="M3 13a9 9 0 0 1 15-6.7L21 9M21 11a9 9 0 0 1-15 6.7L3 15"/></svg>',
+      };
+      document.getElementById("a-activity").innerHTML = updates.slice().reverse().map(u=>(
+        '<div class="flex items-start gap-2.5">'
+        + '<span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0" style="margin-block-start:2px;">'+(icons[u.icon]||icons.note)+'</span>'
+        + '<div class="min-w-0"><p class="t-small text-ink">'+u.text+'</p><p class="t-caption text-faint">'+u.when+'</p></div>'
+        + '</div>'
+      )).join("");
+    }
+
+    // ── state transitions (the advance controls) ───────────────────────────
+    function startWork(){ addUpdate("play","بلّشت الشغل."); jobState="inprogress"; renderJob(); }
+    function postTextUpdate(){
+      const ta=document.getElementById("a-update");
+      const v=(ta&&ta.value||"").trim();
+      addUpdate("note", v.length ? v : "أضفت تحديث على الشغل.");
+      renderJob();
+    }
+    function submitForApproval(){ addUpdate("send","سلّمت الشغل للموافقة."); jobState="approval"; renderJob(); }
+    function ownerApprove(){ addUpdate("check","صاحب العقار وافق — خلص الشغل!"); jobState="completed"; goto("done"); }
+    function requestRevision(){
+      // light revision loop: back to in-progress ONCE
+      addUpdate("revision","صاحب العقار طلب تعديل — رجعت عالشغل.");
+      jobState="inprogress"; renderJob();
+    }
+
+    // ── (footer unused in this variant — actions live in the action panel) ──
+    function onCta(){}
+
+    // init
+    seedActivity();
+    goto("entry");
+
+    // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      window.__clean = true;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ VARIANT A — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Lead-in present: provider entry «شغل جديد إلك · مقبول · صار شغل» card (title «تسريب مياه تحت مغسلة الحمام» · سباكة · بيروت — الأشرفية · السعر <bdi>$150</bdi>) → opens the job-detail. Identical in MEANING to B & C (only the management UI differs).
+   2. SHARED LIFECYCLE present in order: awaiting-start → in-progress → submit-for-approval → (owner approves via moderator-sim) → completed («خلّصت — استلمت أجرتك $150» + the 5★ rating the owner left). All four active states reachable via the moderator picker (setState) + the done screen.
+   3. A = STATUS TIMELINE: the job-detail carries a clear VERTICAL STATUS STEPPER (بانتظار البدء → عَ الشغل → بانتظار الموافقة → خلصان) with the current step ringed/«هلّق», STRUCTURED per-state action buttons («ابدأ الشغل» → «أضف تحديث/صورة» + «سلّم الشغل للموافقة»), proof-of-work photo tiles ([BE] shell), and an ACTIVITY LOG that grows as the provider acts.
+   4. COLOR = GREEN (cool teal #0f7c6c) throughout — the only accent for CTAs, the stepper dots, the chips, the action panel border. The owner's 5★ rating uses gold stars (non-directional, don't flip).
+   5. NO DEAD-ENDS: every state has a working in-page control to advance — «ابدأ الشغل» (awaiting→in-progress), «سلّم الشغل للموافقة» (in-progress→awaiting-approval), the moderator-sim «صاحب العقار وافق ✓» (awaiting-approval→completed). A light REVISION loop: the moderator-sim «صاحب العقار طلب تعديل ↩» returns to in-progress.
+   6. MODERATOR-SIMS: the awaiting-approval action panel carries amber-dashed «صاحب العقار وافق ✓» (advances to completed) and «صاحب العقار طلب تعديل ↩» (loops back to in-progress), standing in for the owner (no customer client). In-progress also exposes the revision sim.
+   7. COMPLETED end: «خلّصت — واستلمت أجرتك!» + the payout (<bdi>$150</bdi> cash, off-platform) + the rating the owner left (5★ + comment). Off-platform cash + rating-after-completion per the live model.
+   8. PROOF-OF-WORK + ACTIVITY: photo tiles ([BE]) + a text-update field append to the activity log; status changes («بلّشت الشغل», «سلّمت الشغل», approval, revision) appear as activity entries with icons. Western numerals, times <bdi>-isolated.
+   9. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17). A/B/C differ ONLY on the management model (flow/layout/color).
+  10. CLEAN MODE (`?clean`): hides the banner + switcher and reveals «رجوع للقائمة ↩» → provider-job-dashboard.html on the completed job-detail + the done screen; runs entry→completed via in-page controls + the moderator-sims.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; reading flow + the vertical stepper run right-anchored (dots on the inline-START/right via flex gap; the connector line sits on inset-inline-start:13px); the entry chevron is directional and FLIPS in RTL; check/camera/plus/star/send/play/note glyphs are non-directional and do NOT flip; prices/times <bdi>-isolated on inline-START. Logical properties only (ps/pe, inset-inline-*, text-align:start, grid-cols) — no physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — real copy-deck §7/§8 strings only (no Lorem Ipsum): «شغل جديد إلك», «بانتظار البدء», «عَ الشغل», «بانتظار الموافقة», «خلصان», «جاهز تبلّش؟», «ابدأ الشغل», «سلّم الشغل للموافقة», «صاحب العقار وافق ✓», «صاحب العقار طلب تعديل ↩», «خلّصت — واستلمت أجرتك!», «تقييم صاحب العقار», «كاش · يد بيد». Holds at 390px; the stepper labels + activity entries + the rating comment do not clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0; h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont (400/500/600/700); Western numerals; price/time/rating <bdi>-isolated.
+  -->
+</body>
+</html>
