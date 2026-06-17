@@ -391,8 +391,8 @@
     ];
     let step=0;
 
-    function startChat(){ goto("chat"); resetChat(); askNext(); }
-    function restartChat(){ goto("chat"); resetChat(); askNext(); }
+    function startChat(){ resetChat(); goto("chat"); }
+    function restartChat(){ resetChat(); goto("chat"); }
     function resetChat(){ step=0; document.getElementById("chat-log").innerHTML=""; document.getElementById("quick-zone").innerHTML=""; document.getElementById("chat-input").value=""; }
 
     function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
