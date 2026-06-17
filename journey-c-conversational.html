@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — FULL JOURNEY C · «Conversational / chat» (DEEP INDIGO)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Spec:    design/flows/post-a-request.md  ·  IA: design/ia/triage.md + navigation.md
+  Copy:    design/content/copy-deck.md     (every AR string is a copy-deck key — no Lorem Ipsum)
+  Type:    design/system/tokens.json       (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:     design/system/rtl-arabic.md     (logical properties; bidi/number isolation; directional-icon flips)
+  Kit:     design/research/abc-journey-session-kit.md
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  One of THREE full-journey prototypes (landing → onboarding/register-late → first request)
+  for the founder's session with 3 property owners. The three differ ONLY on FLOW / LAYOUT / COLOR.
+  The FONT IS LOCKED to IBM Plex Sans Arabic and held CONSTANT (validated by all 3 testers
+  2026-06-17, tokens.json firmness.face_decision) so this A/B/C tests direction, not type.
+
+  JOURNEY C = CONVERSATIONAL / CHAT · DEEP INDIGO (the third on-brand color, clearly distinct from
+  Journey A's green and Journey B's warm orange).
+    Landing (chat-flavored value prop + «ابدأ الحكي»)
+      → conversational core: a ONE-QUESTION-AT-A-TIME chat that gathers the SAME essentials as A & B —
+        what's the problem? (quick-reply chips) · where? · how urgent? · the category quick-question (W3 gate) ·
+        with «مش متأكد؟ فرجينا» ALWAYS available + a free-text composer + a media affordance ([BE]).
+      → register-late signup  (account ONLY at the moment of sending)
+      → W4 completion  «شو بيصير بعدين؟»
+
+  Same data captured as A (guided list) and B (media-first), but elicited as a back-and-forth like
+  texting a helpful local dispatcher. Plain Levantine prompts; quick-reply chips reduce typing.
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — رحلة C (حكي) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic — held CONSTANT across A/B/C -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#181a24", soft:"#565a6e", faint:"#8a8ea3", line:"#e4e3ee",
+            bg:"#f4f4f8", card:"#ffffff",
+            /* DEEP INDIGO — Journey C's identity (distinct from green & orange) */
+            indigo:"#4338ca", indigoink:"#312a9c", wash:"#eceafb", indigoln:"#d6d2f5",
+            amber:"#9a6a00", amberbg:"#fdf4dd", amberln:"#efddb0",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f4f4f8);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #e7e6f0, 0 24px 60px -28px rgba(20,20,50,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    /* ── chat bubbles ── */
+    .bubble-bot{
+      max-width:84%; align-self:flex-start;
+      background:#fff; border:1px solid #e4e3ee; color:#181a24;
+      border-radius:18px; border-start-start-radius:6px; /* tail on the inline-start (right in RTL) */
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+      box-shadow:0 1px 2px rgba(20,20,50,.04);
+    }
+    .bubble-user{
+      max-width:84%; align-self:flex-end;
+      background:#4338ca; color:#fff;
+      border-radius:18px; border-end-end-radius:6px; /* tail on the inline-end (left in RTL) */
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+    }
+    .row{display:flex;}
+    .row.bot{justify-content:flex-start;}
+    .row.user{justify-content:flex-end;}
+    .avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:#4338ca;color:#fff;flex-shrink:0;font-weight:700;font-size:14px;}
+
+    /* typing indicator */
+    .typing{display:inline-flex;gap:4px;align-items:center;}
+    .typing span{width:7px;height:7px;border-radius:999px;background:#b7b5d6;animation:blink 1.2s infinite ease-in-out;}
+    .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+
+    /* quick-reply chips (reduce typing) */
+    .qchip{
+      display:inline-flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:600;
+      border:1.5px solid #d6d2f5;border-radius:999px;background:#fff;color:#312a9c;padding:9px 14px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;
+    }
+    .qchip:hover{background:#eceafb;}
+    .qchip.is-media{border-style:dashed;}
+
+    /* composer */
+    .composer{display:flex;align-items:center;gap:8px;}
+    .composer input{flex:1;font-size:16px;line-height:1.5;font-weight:500;border:1px solid #e4e3ee;border-radius:999px;background:#fff;padding:11px 16px;outline:none;}
+    .composer input:focus{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.16);}
+    .icon-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;border:1px solid #e4e3ee;background:#fff;color:#4338ca;cursor:pointer;flex-shrink:0;}
+    .send-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:#4338ca;color:#fff;border:none;cursor:pointer;flex-shrink:0;}
+
+    .field{font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #e4e3ee;border-radius:12px;background:#fff;padding:12px 14px;outline:none;}
+    .field:focus{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.16);}
+
+    .cta-primary{font-size:16px;line-height:1.3;font-weight:600;background:#4338ca;color:#fff;border:none;border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;transition:transform .12s ease,box-shadow .15s ease;}
+    .cta-primary:disabled{background:#b8b4e4;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(67,56,202,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#312a9c;border:1px solid #d6d2f5;border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;}
+    .vtab{font-size:12px;font-weight:600;border:1px solid #e4e3ee;background:#fff;color:#565a6e;border-radius:999px;padding:6px 12px;cursor:pointer;}
+    .vtab.is-sel{background:#181a24;color:#fff;border-color:#181a24;}
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#181a24;opacity:1;}
+    @media (prefers-reduced-motion:reduce){ .cta-primary.is-ready,.typing span{animation:none;} }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · JOURNEY C (Conversational · deep indigo) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-indigo text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4">عندك حساب؟ سجّل الدخول</a>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — LANDING (chat-flavored) ════════════════════════════ -->
+    <section id="screen-landing" class="screen is-active">
+      <div class="px-5 pt-8 pb-7 bg-wash">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-indigoink px-3 py-1 t-caption mb-4">
+          <span class="size-1.5 rounded-full bg-indigo"></span> احكِ معنا متل ما بتحكي مع حدا بتعرفو.
+        </span>
+        <h1 class="t-display mb-3">احكِ شو في…<br/>ونحنا مندبّرها.</h1>
+        <p class="t-body text-soft mb-6">منسألك سؤال سؤال — سهل، بلا فورم طويل — ومنوصّلك بمحترفين قربك بياخدوا طلبك ويبعتولك عروض.</p>
+        <button class="cta-primary" onclick="startChat()">ابدأ الحكي</button>
+        <p class="t-caption text-soft mt-3 text-center">ببلاش · بلا حساب لتبلّش · سؤال سؤال</p>
+      </div>
+
+      <!-- chat preview -->
+      <div class="px-5 py-7">
+        <h2 class="t-h2 mb-4">كيف بتمشي؟</h2>
+        <div class="rounded-xl2 border border-line bg-card p-4 space-y-2.5">
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;">أهلين! شو المشكلة اليوم؟</div></div>
+          <div class="row user"><div class="bubble-user">في تسريب تحت مغسلة الحمام</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;">تمام، فهمت. وين العقار؟</div></div>
+        </div>
+        <p class="t-small text-soft mt-3">منجمع نفس المعلومات — بس على شكل حكي، مش فورم.</p>
+      </div>
+
+      <div class="px-5 pb-8">
+        <div class="rounded-xl2 border border-line bg-card p-4 flex items-center gap-3">
+          <span class="grid place-items-center size-10 rounded-xl bg-wash text-indigoink shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div class="min-w-0"><p class="t-strong">محترفين مقيَّمين</p><p class="t-small text-soft">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
+        </div>
+        <button class="cta-primary mt-5" onclick="startChat()">ابدأ الحكي</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — CONVERSATIONAL CORE (chat) ════════════════════════════ -->
+    <section id="screen-chat" class="screen">
+      <!-- progress hint (chat-style: "we're at X of a few quick questions") -->
+      <div class="px-4 pt-3 pb-2 flex items-center justify-between">
+        <p class="t-caption text-faint" id="chat-progress">سؤال <bdi>1</bdi> من كم سؤال سريع</p>
+        <button class="t-caption text-indigoink underline underline-offset-2" onclick="notSure()">مش متأكد؟ فرجينا</button>
+      </div>
+
+      <!-- chat log -->
+      <div id="chat-log" class="px-4 pb-3 flex flex-col gap-2.5" style="min-height:46vh;"></div>
+
+      <!-- dynamic answer zone: quick-reply chips for the current question -->
+      <div id="quick-zone" class="px-4 pb-2 flex flex-wrap gap-2"></div>
+
+      <!-- composer (always available: free text + media + send) -->
+      <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2.5" style="padding-bottom:calc(10px + env(safe-area-inset-bottom));">
+        <div class="composer">
+          <button class="icon-btn" title="فرجينا" onclick="mediaTap()" aria-label="أضف صورة أو صوت أو فيديو">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار فوق" onkeydown="if(event.key==='Enter')sendFree()" />
+          <button class="send-btn" onclick="sendFree()" aria-label="ابعت">
+            <!-- send arrow is directional → flips in RTL -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+        <p class="t-caption text-amber mt-1.5" dir="ltr" style="text-align:start;">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — REGISTER-LATE SIGNUP ════════════════════════════ -->
+    <section id="screen-signup" class="screen px-4 pb-28 pt-6">
+      <div class="rounded-xl2 border border-indigo/30 bg-wash/70 p-4 mb-5">
+        <p class="t-small text-indigoink flex items-center gap-2">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          جمعنا كل شي من الحكي — وطلبك محفوظ. آخر خطوة لتبعتو.
+        </p>
+      </div>
+
+      <h1 class="t-h1 mb-1">آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.</h1>
+      <p class="t-body text-soft mb-5">منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.</p>
+
+      <!-- request summary built from the chat answers -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-caption text-faint mb-2">طلبك (من الحكي)</p>
+        <p class="t-strong mb-1">تسريب مياه تحت مغسلة الحمام</p>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">عادي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">نقطة نقطة</span>
+        </div>
+      </div>
+
+      <label class="block mb-4"><span class="t-small text-ink">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" /></label>
+      <label class="block mb-5">
+        <span class="t-small text-ink">رقم تلفونك</span>
+        <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
+        <span class="t-caption text-soft mt-1 block">منبعتلك رمز تأكيد عالرسائل.</span>
+      </label>
+
+      <!-- in-page send CTA — completes the journey without the dev switcher -->
+      <button class="cta-primary" onclick="goto('done')">ابعت طلبك</button>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — W4 COMPLETION ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-indigo mb-4"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1">صار جاهز طلبك!</h1>
+        <p class="t-h3 text-soft">شو بيصير بعدين؟</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-2 mb-4" dir="ltr">
+        <button id="btn-off" class="vtab is-sel" onclick="setVariant('off')">OFF · live now [UI]</button>
+        <button id="btn-on"  class="vtab" onclick="setVariant('on')">ON · review first [BE]</button>
+      </div>
+
+      <div id="var-off" class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-indigo"></span> مفتوح للعروض</span></div>
+        <p class="t-body text-ink">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
+      </div>
+      <div id="var-on" class="hidden rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بمراجعة سريعة</span></div>
+        <p class="t-body text-ink">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
+      </div>
+
+      <p class="t-caption text-soft mb-6">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('landing')">شوف طلبك</button>
+        <button class="cta-ghost" onclick="restartChat()">اعمل طلب تاني</button>
+      </div>
+
+      <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
+      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1.5 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">C:</span>
+      <button class="picker is-sel" data-s="landing" onclick="goto('landing')">0·landing</button>
+      <button class="picker"        data-s="chat"    onclick="goto('chat')">1·chat</button>
+      <button class="picker"        data-s="signup"  onclick="goto('signup')">2·signup</button>
+      <button class="picker"        data-s="done"    onclick="goto('done')">3·done</button>
+    </nav>
+  </div>
+
+  <script>
+    const screens={ landing:"screen-landing", chat:"screen-chat", signup:"screen-signup", done:"screen-done" };
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      document.getElementById("pub-header").style.display=(name==="landing"||name==="done")?"none":"flex";
+      window.scrollTo(0,0);
+    }
+
+    // ── the conversation script: one question at a time, gathering the SAME essentials as A & B ──
+    // each step: bot prompt + quick-reply chips (+ free text always works). «مش متأكد؟» always available.
+    const FLOW = [
+      { id:"problem", bot:"أهلين! 👋 شو المشكلة عندك اليوم؟",
+        chips:["تسريب مياه","كهربا","تكييف", "دهان", "تنظيف"], progress:"سؤال 1 — شو المشكلة" },
+      { id:"where", bot:"تمام. وين العقار؟ (وين بدّك المحترف يجي)",
+        chips:["بيروت — الأشرفية","جبل لبنان — جونية","الشمال — طرابلس","الجنوب — صيدا"], progress:"سؤال 2 — الموقع" },
+      { id:"urgency", bot:"أديش مستعجل؟",
+        chips:["طوارئ","مستعجل","عادي","ما في استعجال"], progress:"سؤال 3 — الاستعجال" },
+      { id:"detail", bot:"آخر شي يساعد المحترف يسعّر صح: المياه شاطفة ولا نقطة نقطة؟",
+        chips:["شاطفة","نقطة نقطة"], progress:"سؤال 4 — تفصيل سريع" },
+    ];
+    let step=0;
+
+    function startChat(){ goto("chat"); resetChat(); askNext(); }
+    function restartChat(){ goto("chat"); resetChat(); askNext(); }
+    function resetChat(){ step=0; document.getElementById("chat-log").innerHTML=""; document.getElementById("quick-zone").innerHTML=""; document.getElementById("chat-input").value=""; }
+
+    function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
+    function scrollChat(){ const log=document.getElementById("chat-log"); log.scrollIntoView({block:"end"}); window.scrollTo(0, document.body.scrollHeight); }
+
+    function botSay(text, cb){
+      const log=document.getElementById("chat-log");
+      // typing indicator
+      const typing=el(`<div class="row bot"><span class="avatar">د</span><div class="bubble-bot" style="margin-inline-start:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(typing); scrollChat();
+      setTimeout(()=>{
+        typing.remove();
+        const bubble=el(`<div class="row bot"><span class="avatar">د</span><div class="bubble-bot" style="margin-inline-start:8px;">${text}</div></div>`);
+        log.appendChild(bubble); scrollChat(); if(cb) cb();
+      }, 650);
+    }
+    function userSay(text){
+      const log=document.getElementById("chat-log");
+      log.appendChild(el(`<div class="row user"><div class="bubble-user">${text}</div></div>`)); scrollChat();
+    }
+
+    function renderChips(){
+      const zone=document.getElementById("quick-zone"); zone.innerHTML="";
+      const q=FLOW[step]; if(!q) return;
+      q.chips.forEach(c=>{
+        const b=el(`<button class="qchip">${c}</button>`);
+        b.onclick=()=>answer(c); zone.appendChild(b);
+      });
+      // always-available «فرجينا» as a media quick-reply
+      const m=el(`<button class="qchip is-media"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>فرجينا بدل ما تكتب</button>`);
+      m.onclick=()=>mediaTap(); zone.appendChild(m);
+    }
+
+    function askNext(){
+      const q=FLOW[step];
+      document.getElementById("quick-zone").innerHTML="";
+      if(!q){ finishChat(); return; }
+      document.getElementById("chat-progress").textContent = q.progress;
+      botSay(q.bot, renderChips);
+    }
+
+    function answer(text){
+      userSay(text);
+      document.getElementById("quick-zone").innerHTML="";
+      step++;
+      if(step<FLOW.length){ askNext(); }
+      else {
+        // all essentials gathered → confirm + hand to register-late
+        botSay("تمام، صار عندي كل شي! 🙌 جمعتلك الطلب — آخر خطوة لتبعتو.", ()=>{
+          const log=document.getElementById("chat-log");
+          const goBtn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">د</span><button class="cta-primary is-ready" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">تابِع — انضمّ لتنشر</button></div>`);
+          log.appendChild(goBtn); scrollChat();
+          document.getElementById("chat-progress").textContent="جاهز — آخر خطوة";
+        });
+      }
+    }
+    function sendFree(){
+      const inp=document.getElementById("chat-input"); const v=(inp.value||"").trim();
+      if(!v) return; inp.value=""; answer(v);
+    }
+    function mediaTap(){
+      // «فرجينا» path: simulate a media attachment as the user's turn, then continue the same flow
+      userSay(`<span style="display:inline-flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> صورة + رسالة صوتية <bdi>0:18</bdi></span>`);
+      document.getElementById("quick-zone").innerHTML="";
+      botSay("أخدناهن! حسب اللي فرجيتنا، شكلها سباكة — صح؟", ()=>{
+        const zone=document.getElementById("quick-zone");
+        const yes=el(`<button class="qchip">آه، سباكة</button>`); yes.onclick=()=>answer("آه، سباكة");
+        const no=el(`<button class="qchip">لأ، غيّرها</button>`); no.onclick=()=>{ document.getElementById("chat-input").focus(); };
+        zone.appendChild(yes); zone.appendChild(no);
+      });
+    }
+    function notSure(){
+      // «مش متأكد؟ فرجينا» from the header — same media path
+      mediaTap();
+    }
+
+    function finishChat(){ goto("signup"); }
+
+    function setVariant(v){
+      document.getElementById("var-off").classList.toggle("hidden", v!=="off");
+      document.getElementById("var-on").classList.toggle("hidden", v!=="on");
+      document.getElementById("btn-off").classList.toggle("is-sel", v==="off");
+      document.getElementById("btn-on").classList.toggle("is-sel", v==="on");
+    }
+
+    // moderator may jump straight to the chat via the picker → seed it if empty
+    const _goto=goto;
+    goto=function(name){ _goto(name); if(name==="chat" && document.getElementById("chat-log").children.length===0){ resetChat(); askNext(); } };
+
+    goto("landing");
+
+    // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
+    // ?clean → hide the artifact banner + the dev screen-switcher so the owner
+    // sees ONLY the product, and reveal the «رجوع للقائمة» button on the done screen.
+    // Plain DOM only — works on file:// (no fetch / no modules).
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      var back=document.getElementById("back-to-dash"); if(back) back.style.display="block";
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ JOURNEY C — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Full journey present in order: landing → conversational chat core → register-late signup → W4 completion.
+      Four screens switchable via the picker; the chat advances one question at a time and hands off with a CTA.
+   2. CONVERSATIONAL direction: a ONE-QUESTION-AT-A-TIME chat (bot prompt + user reply bubbles + typing indicator),
+      gathering the SAME essentials as A & B (problem → where → urgency → category quick-question/W3 gate). Plain
+      Levantine prompts; quick-reply CHIPS reduce typing; a free-text composer + a media affordance are ALWAYS available;
+      «مش متأكد؟ فرجينا» is ALWAYS available (header link + a per-question media chip). Media is a UI shell tagged [BE].
+   3. COLOR = DEEP INDIGO (#4338ca) for accents/CTAs/user bubbles/progress — the third on-brand color, clearly distinct
+      from Journey A (green) and Journey B (warm orange).
+   4. register-late: the whole chat runs as a GUEST; the account is created ONLY at the send step (screen 2),
+      with a saved-request banner + a request summary BUILT FROM the chat answers. Header sign-in is secondary (O1).
+   5. W3 gate as a conversational turn: the required category quick-question («شاطفة ولا نقطة نقطة؟») is asked as the
+      last chat step; the flow cannot complete without an answer (no silent dead button — the bot simply doesn't advance).
+   6. W4 completion «شو بيصير بعدين؟» with BOTH approval variants (OFF live [UI] / ON review-first [BE]) via the toggle.
+   7. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17). A/B/C differ ONLY on flow/layout/color.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; chat reads right→left: BOT bubbles anchor to the inline-START (right) with the tail on
+     border-start-start, USER bubbles anchor to the inline-END (left) with the tail on border-end-end; avatar margin uses
+     margin-inline-start; the SEND arrow is directional and FLIPS in RTL (scaleX(-1)); the completion check + shield are
+     non-directional and do NOT flip; composer + chips use logical properties. No physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — real copy-deck-aligned strings only (no Lorem Ipsum): «احكِ شو في… ونحنا مندبّرها»,
+     «شو المشكلة عندك اليوم؟», «وين العقار؟», «أديش مستعجل؟», «شاطفة ولا نقطة نقطة؟», «مش متأكد؟ فرجينا»,
+     «تسريب مياه تحت مغسلة الحمام», «صار جاهز طلبك!», «طلبك صار منشور!». Holds at 390px; long replies wrap, don't clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0 on every bubble, chip, prompt;
+     h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont
+     (400/500/600/700); Western numerals; durations/counts <bdi>-isolated.
+  -->
+</body>
+</html>

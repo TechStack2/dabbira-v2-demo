@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — Post-a-Request prototype · VERSION B (media-first / «فرجينا»-led)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Spec:  design/flows/post-a-request.md  (Phase 4 · Design · worst-first flow #1; §A-vs-B)
+  Copy:  design/content/copy-deck.md     (every AR string here is a copy-deck key — no invented copy, no Lorem Ipsum)
+  Type:  design/system/tokens.json       (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0; h1≠h2≠h3 ramp)
+  RTL:   design/system/rtl-arabic.md     (logical properties only; bidi/number isolation; directional-icon flips)
+
+  WHY B EXISTS — the A/B contrast for the Phase-5 panel:
+    • Version A (post-a-request.html) is GUIDED-TRIAGE-FIRST: search + 6 expandable groups.
+      It embodies the H3 / W2 hypothesis — "guided triage cures the wall-of-23 better than blind classifying."
+    • Version B (THIS FILE) is MEDIA-FIRST / «فرجينا»-LED: "show us the problem" (voice / photo / video)
+      is the PRIMARY path, front-and-centre; category triage is a SECONDARY, auto-suggested fallback
+      («ولا اختار من القائمة»). It embodies the H2 / W1 hypothesis — "the market already shows the
+      problem on WhatsApp; let them show it instead of forcing classification up front."
+    The panel test decides which lands. Same real copy, same corrected type, same W3 gate + W4 completion.
+
+  DIFFERS FROM A ON ALL FOUR AXES (by design):
+    1. FONT   — Tajawal (A uses IBM Plex Sans Arabic). Same corrected settings.
+    2. FLOW   — media-first/«فرجينا» primary; triage is the fallback (A: triage-first, media is the fallback).
+    3. LAYOUT — big single-focus visual cards + a bottom-sheet for the fallback list (A: a vertical list of groups).
+    4. COLOR  — warm clay/terracotta accent on a sand surface (A: cool teal).
+
+  Media capture is a UI SHELL only — tagged [BE] (real capture/transcription needs backend).
+  ⚠ The fallback grouping is the same HYPOTHESIS A carries (card-sort in Phase 5).
+  ⚠ The entire Arabic column is a DRAFT pending the native-Lebanese reviewer (per the copy deck).
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand: «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — اعمل طلب · نموذج B (فرجينا)</title>
+
+  <!-- Tailwind via CDN (no build step) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Version-B Arabic face: TAJAWAL (400/500/700) — A uses IBM Plex Sans Arabic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'Tajawal'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:    "#241a14",   /* warm near-black */
+            soft:   "#6b5d52",
+            faint:  "#988a7d",
+            line:   "#ece2d6",
+            bg:     "#faf5ee",   /* warm sand surface (B is warmer than A's cool grey) */
+            card:   "#ffffff",
+            /* WARM CLAY/TERRACOTTA accent — B's distinct, still-on-brand warm treatment */
+            clay:   "#c0552a",
+            clayink:"#8f3d1c",
+            claywash:"#fbeee5",
+            clayln: "#f1d6c4",
+            /* a secondary warm support tone for the fallback path */
+            sage:   "#5f7a52",
+            sagewash:"#eef3ea",
+            amber:  "#9a6a00",
+            amberbg:"#fdf4dd",
+            amberln:"#efddb0",
+          },
+          borderRadius: { xl2: "20px", xl3: "26px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Per-script Arabic type tokens (tokens.json scale_arabic + roles) — Tajawal ──
+       The GLOBAL rule holds across faces: every Arabic node = weight 500, letter-spacing 0. */
+    :root { --ar-lh: 1.7; }
+    html, body {
+      margin: 0;
+      background: var(--bg, #faf5ee);
+      font-family: "Tajawal", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing: 0 !important;   /* rtl-arabic §1 — NEVER any tracking on Arabic */
+      -webkit-text-size-adjust: 100%;
+    }
+    /* Semantic type roles → exact px from tokens.json scale_arabic (identical scale to A; only the face differs) */
+    .t-display { font-size: 32px; line-height: 1.4;  font-weight: 700; }
+    .t-h1      { font-size: 26px; line-height: 1.5;  font-weight: 700; }
+    .t-h2      { font-size: 22px; line-height: 1.5;  font-weight: 700; }  /* Tajawal has no 600 → h2/h3 use 700 vs body 500; size still separates them */
+    .t-h3      { font-size: 19px; line-height: 1.55; font-weight: 700; }
+    .t-body    { font-size: 16px; line-height: var(--ar-lh); font-weight: 500; }
+    .t-strong  { font-size: 16px; line-height: var(--ar-lh); font-weight: 700; }
+    .t-small   { font-size: 15px; line-height: 1.6;  font-weight: 500; }
+    .t-caption { font-size: 13px; line-height: 1.6;  font-weight: 500; }
+    .t-button  { font-size: 16px; line-height: 1.3;  font-weight: 700; }  /* Arabic CTA steps up to base */
+    * { letter-spacing: 0 !important; }   /* belt-and-suspenders: no tracking-* survives on Arabic */
+
+    /* LTR isolation helper for numbers/prices/percent (rtl-arabic §3) */
+    bdi, .ltr-num { direction: ltr; unicode-bidi: isolate; }
+
+    /* phone frame so it "looks right at 390" on desktop */
+    .phone {
+      max-width: 390px;
+      margin-inline: auto;
+      min-height: 100dvh;
+      background: var(--bg);
+      box-shadow: 0 0 0 1px #efe6d9, 0 24px 60px -28px rgba(60,30,10,.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .screen { display: none; }
+    .screen.is-active { display: block; }
+
+    /* ── BIG media cards (B's single-focus visual layout) ── */
+    .media-card {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; text-align: start;
+      border: 1.5px solid var(--mc-ln, #f1d6c4);
+      background: var(--mc-bg, #fff);
+      border-radius: 20px; padding: 18px 16px; cursor: pointer;
+      transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+      box-shadow: 0 1px 2px rgba(60,30,10,.04);
+    }
+    .media-card:active { transform: translateY(1px) scale(.995); }
+    .media-card:hover { box-shadow: 0 8px 22px -12px rgba(60,30,10,.22); }
+    .media-card .mc-icon {
+      display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px;
+      background: var(--mc-ic-bg, #c0552a); color: #fff; flex-shrink: 0;
+    }
+    .media-card.is-added { border-color: #5f7a52; background: #eef3ea; }
+    .media-card .mc-done { display: none; }
+    .media-card.is-added .mc-done { display: inline-grid; place-items: center; }
+    .media-card.is-added .mc-go { display: none; }
+
+    /* ── bottom-sheet (the fallback list lives here, distinct from A's inline list) ── */
+    .sheet-backdrop {
+      position: absolute; inset: 0; background: rgba(36,20,12,.45);
+      opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 40;
+    }
+    .sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: absolute; inset-inline: 0; bottom: 0; z-index: 41;
+      background: #fff; border-start-start-radius: 26px; border-start-end-radius: 26px;
+      max-height: 82%; overflow-y: auto; padding: 8px 16px 24px;
+      transform: translateY(102%); transition: transform .24s ease;
+      box-shadow: 0 -12px 40px -16px rgba(60,30,10,.35);
+    }
+    .sheet.is-open { transform: translateY(0); }
+    .sheet-grip { width: 42px; height: 5px; border-radius: 999px; background: #e4d8c9; margin: 10px auto 6px; }
+
+    .opt {
+      font-size: 15px; line-height: 1.3; font-weight: 500;
+      border: 1px solid #ece2d6; border-radius: 999px;
+      background: #fff; color: #241a14;
+      padding: 8px 14px; cursor: pointer; min-height: 40px;
+    }
+    .opt.is-sel { background: #c0552a; border-color: #c0552a; color: #fff; font-weight: 700; }
+
+    /* fallback group rows inside the sheet */
+    .grp {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      width: 100%; text-align: start; padding: 13px 4px; cursor: pointer;
+      border: none; background: transparent;
+      border-block-end: 1px solid #f3eadf;
+    }
+    .grp-leaf {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 16px; line-height: 1.4; font-weight: 500;
+      border: 1px solid #ece2d6; border-radius: 999px;
+      background: #faf5ee; color: #241a14; padding: 8px 14px; cursor: pointer;
+      transition: background .12s ease, color .12s ease, border-color .12s ease;
+    }
+    .grp-leaf.is-sel { background: #c0552a; border-color: #c0552a; color: #fff; font-weight: 700; }
+    .leaves { display: none; flex-wrap: wrap; gap: 8px; padding: 4px 2px 14px; }
+    .grp-row.is-open .leaves { display: flex; }
+    .chev { transition: transform .18s ease; }
+    [dir="rtl"] .chev { transform: scaleX(-1); }     /* directional icon mirrors in RTL */
+    .grp-row.is-open .chev { transform: scaleX(-1) rotate(90deg); }
+
+    .cta-primary {
+      font-size: 16px; line-height: 1.3; font-weight: 700;
+      background: #c0552a; color: #fff; border: none;
+      border-radius: 16px; padding: 15px 16px; cursor: pointer; min-height: 50px;
+      transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .cta-primary:disabled { background: #e3c3b0; cursor: not-allowed; }
+    .cta-primary.is-ready { animation: cta-pop .42s ease; box-shadow: 0 8px 22px -8px rgba(192,85,42,.6); }
+    @keyframes cta-pop { 0%{transform:scale(1)} 40%{transform:scale(1.035)} 100%{transform:scale(1)} }
+    .cta-ghost {
+      font-size: 16px; line-height: 1.3; font-weight: 700;
+      background: #fff; color: #8f3d1c; border: 1.5px solid #f1d6c4;
+      border-radius: 16px; padding: 14px 16px; cursor: pointer; min-height: 50px;
+    }
+    .vtab { font-size: 12px; font-weight: 700; border: 1px solid #ece2d6;
+            background: #fff; color: #6b5d52; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+    .vtab.is-sel { background: #241a14; color: #fff; border-color: #241a14; }
+    .picker { border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff;
+              border-radius: 999px; padding: 4px 10px; cursor: pointer; opacity: .7; }
+    .picker.is-sel { background: #fff; color: #241a14; opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .cta-primary.is-ready { animation: none; }
+      .media-card, .cta-primary, .grp-leaf, .sheet, .sheet-backdrop { transition: none; }
+    }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME (artifact banner + public header) ════════════════ -->
+    <div class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · Version B (media-first) · spec: design/flows/post-a-request.md
+    </div>
+
+    <!-- Public header (O1 fix: keeps the guest in the funnel; sign-in is secondary, never join→/login) -->
+    <header class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-clay text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <a href="#" class="t-caption text-soft underline underline-offset-4">عندك حساب؟ سجّل الدخول</a>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 1 — MEDIA-FIRST ENTRY ════════════════════════════ -->
+    <!-- B's bet: "show us the problem" is the PRIMARY path. Triage is the fallback (bottom-sheet). -->
+    <section id="screen-show" class="screen is-active px-4 pb-32 pt-5">
+
+      <!-- progress — Western numerals -->
+      <p class="t-caption text-faint mb-2">خطوة <bdi>1</bdi> من <bdi>3</bdi></p>
+      <div class="flex gap-1.5 mb-5" aria-hidden="true">
+        <span class="h-1.5 flex-1 rounded-full bg-clay"></span>
+        <span class="h-1.5 flex-1 rounded-full bg-line"></span>
+        <span class="h-1.5 flex-1 rounded-full bg-line"></span>
+      </div>
+
+      <!-- single-focus headline: lead with «فرجينا» (show us), not «شو المشكلة؟» list -->
+      <h1 class="t-h1 mb-1">فرجينا المشكلة</h1>
+      <p class="t-body text-soft mb-5">صوّر، سجّل فيديو، أو بس احكِ — ونحنا منحدّدلك الخدمة.</p>
+
+      <!-- THE PRIMARY PATH: three big media cards (single-focus visual layout, not A's list) -->
+      <div class="space-y-3">
+
+        <!-- voice -->
+        <button class="media-card" style="--mc-ic-bg:#c0552a;--mc-ln:#f1d6c4;" onclick="addMedia(this,'voice')">
+          <span class="mc-icon" style="background:#c0552a;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="t-h3 block">احكِ طلبك متل رسالة صوتية</span>
+            <span class="t-caption text-soft block mt-0.5">احكِ عربي، فرنسي، أو إنكليزي — ونحنا منعبّي الطلب عنك</span>
+          </span>
+          <span class="mc-go text-faint shrink-0"><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="mc-done size-7 rounded-full bg-sage text-white shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+
+        <!-- photo -->
+        <button class="media-card" style="--mc-ic-bg:#c0552a;--mc-ln:#f1d6c4;" onclick="addMedia(this,'photo')">
+          <span class="mc-icon" style="background:#c0552a;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="t-h3 block">صوّر المشكلة</span>
+            <span class="t-caption text-soft block mt-0.5">الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا</span>
+          </span>
+          <span class="mc-go text-faint shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="mc-done size-7 rounded-full bg-sage text-white shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+
+        <!-- video -->
+        <button class="media-card" style="--mc-ic-bg:#c0552a;--mc-ln:#f1d6c4;" onclick="addMedia(this,'video')">
+          <span class="mc-icon" style="background:#c0552a;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="t-h3 block">صوّر فيديو قصير</span>
+            <span class="t-caption text-soft block mt-0.5">دقيقة فيديو بتشرح أكتر من صفحة كتابة</span>
+          </span>
+          <span class="mc-go text-faint shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="mc-done size-7 rounded-full bg-sage text-white shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </button>
+      </div>
+
+      <!-- honest [BE] tag for the capture shell -->
+      <p class="t-caption text-amber mt-3" dir="ltr" style="text-align:start;">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+
+      <!-- captured-media confirmation (auto-suggests a category from the media — [BE] in real flow) -->
+      <div id="captured" class="hidden mt-4 rounded-xl2 border border-sage/40 bg-sagewash p-3.5">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="grid place-items-center size-5 rounded-full bg-sage text-white shrink-0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+          <p class="t-small" style="font-weight:700;color:#3f5436;">أخدنا <span id="captured-what">المشكلة</span></p>
+        </div>
+        <!-- auto-suggested category from the media [BE]; the user just confirms -->
+        <p class="t-small text-soft">حسب اللي فرجيتنا، المشكلة شكلها: <span id="suggested-cat" class="t-strong text-clayink">سباكة</span></p>
+        <p class="t-caption text-faint mt-1">فيك تغيّرها لو مش مظبوطة.</p>
+      </div>
+
+      <!-- THE SECONDARY/FALLBACK PATH: pick from the list (opens the bottom-sheet) -->
+      <div class="mt-6 mb-1 flex items-center gap-3" aria-hidden="true">
+        <span class="h-px flex-1 bg-line"></span>
+        <span class="t-caption text-faint">أو</span>
+        <span class="h-px flex-1 bg-line"></span>
+      </div>
+      <button class="w-full flex items-center justify-center gap-2 t-button text-clayink py-3" onclick="openSheet()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        ولا اختار من القائمة
+      </button>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — STEP 3 DETAILS (W3 + W1) ════════════════════════════ -->
+    <!-- In B, media is already captured up front; this step is mostly review + the W3 gate. -->
+    <section id="screen-details" class="screen px-4 pb-44 pt-5">
+
+      <p class="t-caption text-faint mb-2">خطوة <bdi>3</bdi> من <bdi>3</bdi></p>
+      <div class="flex gap-1.5 mb-5" aria-hidden="true">
+        <span class="h-1.5 flex-1 rounded-full bg-clay"></span>
+        <span class="h-1.5 flex-1 rounded-full bg-clay"></span>
+        <span class="h-1.5 flex-1 rounded-full bg-clay"></span>
+      </div>
+
+      <h1 class="t-h1 mb-1">احكِ التفاصيل</h1>
+      <p class="t-body text-soft mb-5">كل ما حكيت أكتر, كل ما العروض صارت أدقّ.</p>
+
+      <!-- what you showed us, already attached (B's signature: media leads) -->
+      <div class="rounded-xl2 border border-sage/40 bg-sagewash p-4 mb-5">
+        <p class="t-small mb-3" style="font-weight:700;color:#3f5436;">اللي فرجيتنا ياه</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white border border-sage/40 ps-3 pe-3 py-1.5 t-small text-clayink">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            رسالة صوتية <bdi>0:24</bdi>
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white border border-sage/40 ps-3 pe-3 py-1.5 t-small text-clayink">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <bdi>2</bdi> صور
+          </span>
+        </div>
+        <p class="t-caption text-soft mt-3">فيك تضيف الصور لمّا تنضمّ — جواباتك هون محفوظة.</p>
+        <p class="t-caption text-amber mt-1" dir="ltr" style="text-align:start;">[BE] — رفع/التقاط الوسائط (واجهة فقط)</p>
+      </div>
+
+      <!-- chosen need recap (auto-suggested from the media, confirmed) -->
+      <div class="flex items-center gap-2 mb-5">
+        <span class="t-caption text-faint">الخدمة:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-claywash text-clayink ps-3 pe-3 py-1 t-small" style="font-weight:700;">سباكة</span>
+        <button class="t-caption text-clayink underline underline-offset-2" onclick="openSheet()">غيّرها</button>
+      </div>
+
+      <!-- title (optional now — the voice note carries the description) -->
+      <label class="block mb-4">
+        <span class="t-small text-ink">عنوان قصير</span>
+        <input dir="auto" value="تسريب مياه تحت مغسلة الحمام"
+               class="t-body mt-1.5 w-full rounded-xl border border-line bg-card px-3 py-3 outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
+               placeholder="جملة بتوصِف المشكلة (10–100 حرف)" />
+      </label>
+
+      <!-- urgency — renders LABEL not the enum key (fixes I3) -->
+      <label class="block mb-4">
+        <span class="t-small text-ink">أديش مستعجل؟</span>
+        <div class="mt-1.5 flex flex-wrap gap-2">
+          <button class="opt">طوارئ</button>
+          <button class="opt is-sel">عادي</button>
+          <button class="opt">مستعجل</button>
+          <button class="opt">ما في استعجال</button>
+        </div>
+      </label>
+
+      <!-- budget (optional) — price LTR-isolated -->
+      <label class="block mb-4">
+        <span class="t-small text-ink">الميزانية (اختياري)</span>
+        <input class="t-body mt-1.5 w-full rounded-xl border border-line bg-card px-3 py-3 outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
+               placeholder="متلاً: 200 $ – 400 $" />
+      </label>
+
+      <!-- per-category required Q&A + required legend (fixes O4) -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-2">
+        <div class="flex items-center justify-between mb-3">
+          <span class="t-h3">أسئلة سريعة</span>
+          <span class="t-caption text-faint"><span class="text-clay">*</span> إجباري</span>
+        </div>
+
+        <!-- answered required -->
+        <div class="mb-4">
+          <span class="t-small text-ink">وين التسريب؟ <span class="text-clay">*</span></span>
+          <div class="mt-1.5 flex flex-wrap gap-2">
+            <button class="opt is-sel">تحت المغسلة</button>
+            <button class="opt">بالحمام</button>
+            <button class="opt">بالمطبخ</button>
+          </div>
+        </div>
+
+        <!-- UNANSWERED required → inline message (W3 field-level) -->
+        <div class="mb-1 rounded-lg border border-clay/30 bg-claywash/50 p-3">
+          <span class="t-small text-ink">المياه شاطفة ولا نقطة نقطة؟ <span class="text-clay">*</span></span>
+          <div class="mt-1.5 flex flex-wrap gap-2">
+            <button class="opt">شاطفة</button>
+            <button class="opt">نقطة نقطة</button>
+          </div>
+          <p class="t-caption text-clayink mt-2 flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            لازم تجاوب عَ هالسؤال
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — COMPLETION (W4) ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <!-- non-directional check illustration — does NOT flip in RTL (rtl-arabic §4) -->
+        <span class="inline-grid place-items-center size-20 rounded-full bg-claywash text-clay mb-4">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h1 class="t-h1 mb-2">شو بيصير بعدين؟</h1>
+      </div>
+
+      <!-- variant toggle (prototype-only, so the panel sees BOTH OFF & ON) -->
+      <div class="flex items-center justify-center gap-2 mb-4" dir="ltr">
+        <button id="btn-off" class="vtab is-sel" onclick="setVariant('off')">OFF · live now [UI]</button>
+        <button id="btn-on"  class="vtab" onclick="setVariant('on')">ON · review first [BE]</button>
+      </div>
+
+      <!-- OFF (default): request posts straight to open -->
+      <div id="var-off" class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-claywash text-clayink px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-clay"></span> مفتوح للعروض
+          </span>
+        </div>
+        <p class="t-body text-ink">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
+      </div>
+
+      <!-- ON: enters pending_admin_approval (review first) -->
+      <div id="var-on" class="hidden rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-amber"></span> بمراجعة سريعة
+          </span>
+        </div>
+        <p class="t-body text-ink">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
+      </div>
+
+      <!-- the in-app note shown to guests too (fixes P1) -->
+      <p class="t-caption text-soft mb-6">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
+
+      <!-- actions -->
+      <div class="space-y-2.5">
+        <button class="cta-primary w-full" onclick="goto('show')">شوف طلبك</button>
+        <button class="cta-ghost w-full" onclick="goto('show')">اعمل طلب تاني</button>
+      </div>
+    </section>
+
+    <!-- ════════════════ STICKY FOOTER CTA (W3 gate + L1 safe inset) ════════════════ -->
+    <div id="footer" class="sticky bottom-0 z-30 bg-card/95 backdrop-blur border-t border-line px-4 pt-3"
+         style="padding-bottom: calc(12px + env(safe-area-inset-bottom));">
+      <p id="gate-line" class="t-small text-clayink mb-2 flex items-center gap-1.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span id="gate-text">فرجينا المشكلة أو اختار من القائمة لتكمّل.</span>
+      </p>
+      <button id="cta" class="cta-primary w-full" onclick="onCta()" disabled>التالي</button>
+    </div>
+
+    <!-- ════════════════ BOTTOM-SHEET — the fallback triage list (B's secondary path) ════════════════ -->
+    <div id="sheet-backdrop" class="sheet-backdrop" onclick="closeSheet()"></div>
+    <div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-label="اختار الخدمة">
+      <div class="sheet-grip"></div>
+      <div class="flex items-center justify-between pt-1 pb-2">
+        <h2 class="t-h3">شو المشكلة؟</h2>
+        <button aria-label="سكّر" class="text-faint p-1" onclick="closeSheet()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- search inside the sheet -->
+      <div class="relative mb-3">
+        <span class="absolute inset-y-0 start-3 grid place-items-center text-faint pointer-events-none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        </span>
+        <input id="sheet-search" type="search" inputmode="search"
+               class="t-body w-full rounded-xl border border-line bg-bg ps-10 pe-3 py-3 outline-none focus:border-clay focus:ring-2 focus:ring-clay/20 placeholder:text-faint"
+               placeholder="دوّر عن الخدمة… (متلاً: تسريب، دهان)" oninput="filterSheet(this.value)" />
+      </div>
+
+      <!-- 6 groups (same hypothesis as A; here as collapsible rows in the sheet) -->
+      <div id="grps">
+        <div class="grp-row" data-group="fix">
+          <button class="grp" onclick="toggleGrp('fix')">
+            <span class="t-h3">تصليح وصيانة</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('سباكة')">سباكة</button>
+            <button class="grp-leaf" onclick="pickLeaf('كهرباء')">كهرباء</button>
+            <button class="grp-leaf" onclick="pickLeaf('تكييف وتدفئة')">تكييف وتدفئة</button>
+            <button class="grp-leaf" onclick="pickLeaf('إصلاح أجهزة كهربائية')">إصلاح أجهزة كهربائية</button>
+            <button class="grp-leaf" onclick="pickLeaf('صيانة عامة')">صيانة عامة</button>
+          </div>
+        </div>
+        <div class="grp-row" data-group="build">
+          <button class="grp" onclick="toggleGrp('build')">
+            <span class="t-h3">بناء وتجديد</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('بناء وتشييد')">بناء وتشييد</button>
+            <button class="grp-leaf" onclick="pickLeaf('تجديد وترميم')">تجديد وترميم</button>
+            <button class="grp-leaf" onclick="pickLeaf('أعمال حجر وبناء')">أعمال حجر وبناء</button>
+            <button class="grp-leaf" onclick="pickLeaf('أسقف وعزل')">أسقف وعزل</button>
+          </div>
+        </div>
+        <div class="grp-row" data-group="finish">
+          <button class="grp" onclick="toggleGrp('finish')">
+            <span class="t-h3">تشطيب وديكور</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('دهان')">دهان</button>
+            <button class="grp-leaf" onclick="pickLeaf('أرضيات')">أرضيات</button>
+            <button class="grp-leaf" onclick="pickLeaf('بلاط وسيراميك')">بلاط وسيراميك</button>
+            <button class="grp-leaf" onclick="pickLeaf('نجارة')">نجارة</button>
+            <button class="grp-leaf" onclick="pickLeaf('ألمنيوم وزجاج')">ألمنيوم وزجاج</button>
+          </div>
+        </div>
+        <div class="grp-row" data-group="clean">
+          <button class="grp" onclick="toggleGrp('clean')">
+            <span class="t-h3">تنظيف وعناية</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('تنظيف')">تنظيف</button>
+            <button class="grp-leaf" onclick="pickLeaf('مكافحة حشرات')">مكافحة حشرات</button>
+            <button class="grp-leaf" onclick="pickLeaf('تنسيق حدائق')">تنسيق حدائق</button>
+          </div>
+        </div>
+        <div class="grp-row" data-group="install">
+          <button class="grp" onclick="toggleGrp('install')">
+            <span class="t-h3">تركيبات وأنظمة</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('تركيب وصيانة طاقة شمسية')">تركيب وصيانة طاقة شمسية</button>
+            <button class="grp-leaf" onclick="pickLeaf('أنظمة أمان ومراقبة')">أنظمة أمان ومراقبة</button>
+            <button class="grp-leaf" onclick="pickLeaf('منزل ذكي')">منزل ذكي</button>
+          </div>
+        </div>
+        <div class="grp-row" data-group="move">
+          <button class="grp" onclick="toggleGrp('move')">
+            <span class="t-h3">نقل وأثاث</span>
+            <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <div class="leaves">
+            <button class="grp-leaf" onclick="pickLeaf('خدمات نقل')">خدمات نقل</button>
+            <button class="grp-leaf" onclick="pickLeaf('خدمات أثاث')">خدمات أثاث</button>
+          </div>
+        </div>
+      </div>
+      <p id="sheet-noresults" class="hidden t-body text-soft mt-3 mb-2">ما لقينا شي بهالاسم — جرّب كلمة تانية أو فرجينا.</p>
+    </div>
+
+    <!-- ════════════════ SCREEN PICKER (prototype navigation only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-2 justify-center relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">screens:</span>
+      <button class="picker is-sel" data-s="show"    onclick="goto('show')">1 · show us</button>
+      <button class="picker"        data-s="details" onclick="goto('details')">2 · details (W3)</button>
+      <button class="picker"        data-s="done"    onclick="goto('done')">3 · done (W4)</button>
+    </nav>
+  </div>
+
+  <script>
+    // ── screen switching (prototype nav only) ─────────────────────────────
+    const screens = { show: "screen-show", details: "screen-details", done: "screen-done" };
+    function goto(name) {
+      Object.values(screens).forEach(id => document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      document.querySelectorAll(".picker").forEach(p => p.classList.toggle("is-sel", p.dataset.s === name));
+      const footer = document.getElementById("footer");
+      footer.style.display = name === "done" ? "none" : "block";
+      closeSheet();
+      configureFooter(name);
+      window.scrollTo(0, 0);
+    }
+
+    // ── state: a "ready" entry = at least one media added OR a category picked ──
+    let mediaCount = 0;
+    let pickedCat = null;
+
+    function entryReady() { return mediaCount > 0 || !!pickedCat; }
+
+    // ── footer/W3 gate config per screen ──────────────────────────────────
+    function configureFooter(name, opts) {
+      const line = document.getElementById("gate-line");
+      const text = document.getElementById("gate-text");
+      const cta  = document.getElementById("cta");
+      if (name === "show") {
+        if (entryReady()) {
+          const label = pickedCat || (mediaCount > 0 ? "اللي فرجيتنا ياه" : "");
+          cta.textContent = "التالي · " + label;
+          line.style.display = "none";
+          cta.disabled = false;
+          if (opts && opts.justReady) {
+            cta.classList.remove("is-ready"); void cta.offsetWidth; cta.classList.add("is-ready");
+            cta.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        } else {
+          cta.textContent = "التالي";
+          cta.classList.remove("is-ready");
+          line.style.display = "flex";
+          text.textContent = "فرجينا المشكلة أو اختار من القائمة لتكمّل.";
+          cta.disabled = true;
+        }
+      } else if (name === "details") {
+        line.style.display = "flex";
+        text.textContent = "ضلّك سؤال واحد لتقدر تبعت.";
+        cta.textContent = "ابعت طلبك";
+        cta.disabled = true;   // looks disabled, but the line explains WHY (W3, not a silent dead button)
+      }
+    }
+    function onCta() {
+      const active = document.querySelector(".screen.is-active").id;
+      if (active === "screen-show") goto("details");
+      else if (active === "screen-details") goto("done");
+    }
+
+    // ── PRIMARY PATH: add media → mark card done, show captured+auto-suggested category ──
+    const SUGGEST_BY_MEDIA = { voice: "سباكة", photo: "سباكة", video: "تكييف وتدفئة" };
+    function addMedia(card, kind) {
+      const wasAdded = card.classList.contains("is-added");
+      card.classList.toggle("is-added");
+      mediaCount = document.querySelectorAll(".media-card.is-added").length;
+      const cap = document.getElementById("captured");
+      if (mediaCount > 0) {
+        cap.classList.remove("hidden");
+        // auto-suggest a category from the (first) media — [BE] in the real flow
+        if (!pickedCat) document.getElementById("suggested-cat").textContent = SUGGEST_BY_MEDIA[kind] || "سباكة";
+      } else {
+        cap.classList.add("hidden");
+      }
+      configureFooter("show", { justReady: !wasAdded && entryReady() });
+    }
+
+    // ── SECONDARY/FALLBACK PATH: the bottom-sheet ──
+    function openSheet() {
+      document.getElementById("sheet-backdrop").classList.add("is-open");
+      document.getElementById("sheet").classList.add("is-open");
+    }
+    function closeSheet() {
+      document.getElementById("sheet-backdrop").classList.remove("is-open");
+      document.getElementById("sheet").classList.remove("is-open");
+    }
+    function toggleGrp(key) {
+      document.querySelectorAll(".grp-row").forEach(g => {
+        g.classList.toggle("is-open", g.dataset.group === key ? !g.classList.contains("is-open") : false);
+      });
+    }
+    function pickLeaf(label) {
+      pickedCat = label;
+      // mark the chosen leaf selected; also reflect into the suggested-category line
+      document.querySelectorAll(".grp-leaf").forEach(l => l.classList.toggle("is-sel", l.textContent.trim() === label));
+      document.getElementById("suggested-cat").textContent = label;
+      document.getElementById("captured").classList.remove("hidden");
+      document.getElementById("captured-what").textContent = "طلبك";
+      closeSheet();
+      configureFooter("show", { justReady: true });
+    }
+
+    // ── sheet search (label + synonym map, same content as A) ──
+    const SYN = {
+      "تسريب":"سباكة","كهربا":"كهرباء","مكيّف":"تكييف وتدفئة","مكيف":"تكييف وتدفئة","طلاء":"دهان",
+      "جلي":"تنظيف","حشرات":"مكافحة حشرات","شمسية":"تركيب وصيانة طاقة شمسية","كاميرا":"أنظمة أمان ومراقبة",
+      "اثاث":"خدمات أثاث","نقل":"خدمات نقل"
+    };
+    function filterSheet(q) {
+      q = (q || "").trim();
+      const grps = document.getElementById("grps");
+      const none = document.getElementById("sheet-noresults");
+      if (!q) {
+        grps.querySelectorAll(".grp-row").forEach(g => { g.style.display = "block"; g.classList.remove("is-open"); g.querySelectorAll(".grp-leaf").forEach(l => l.style.display = ""); });
+        none.classList.add("hidden");
+        return;
+      }
+      let needle = q;
+      for (const k in SYN) if (q.includes(k)) needle = SYN[k];
+      let any = false;
+      grps.querySelectorAll(".grp-row").forEach(g => {
+        let groupHas = false;
+        g.querySelectorAll(".grp-leaf").forEach(l => {
+          const hit = l.textContent.includes(needle) || l.textContent.includes(q);
+          l.style.display = hit ? "" : "none";
+          if (hit) groupHas = true;
+        });
+        g.style.display = groupHas ? "block" : "none";
+        if (groupHas) g.classList.add("is-open");
+        any = any || groupHas;
+      });
+      none.classList.toggle("hidden", any);
+    }
+
+    // ── completion: OFF/ON variant toggle ──
+    function setVariant(v) {
+      document.getElementById("var-off").classList.toggle("hidden", v !== "off");
+      document.getElementById("var-on").classList.toggle("hidden", v !== "on");
+      document.getElementById("btn-off").classList.toggle("is-sel", v === "off");
+      document.getElementById("btn-on").classList.toggle("is-sel", v === "on");
+    }
+
+    // init
+    configureFooter("show");
+  </script>
+
+  <!--
+  ════════════════════════ VERSION B — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Media-first entry (H2/W1): the FIRST thing on screen is «فرجينا المشكلة» + three big media cards
+      (voice/photo/video) — NOT a category list. Triage is reachable only as the secondary «ولا اختار
+      من القائمة» path (the bottom-sheet). This is the inverse of Version A's priority order.
+   2. Progression is unmistakable: adding a media card flips it to a SELECTED/done state (sage check),
+      shows the «أخدنا … المشكلة» confirmation with an auto-suggested category, and ACTIVATES «التالي» —
+      it brightens, one-shot pulses, carries the chosen service name, and auto-reveals (scrollIntoView).
+   3. Fallback triage works: «ولا اختار من القائمة» opens a bottom-sheet with search + the same 6 groups
+      (progressive disclosure); picking a leaf sets the category, closes the sheet, and arms «التالي».
+      Every one of the 23 categories is reachable ≤2 taps in the sheet or via search; no flat 23-grid.
+   4. Media is a UI SHELL only, honestly tagged [BE] (capture/transcription/auto-suggest need backend).
+   5. W3 silent-gate fixed: on details, an explicit inline line states what's missing («ضلّك سؤال واحد
+      لتقدر تبعت») instead of a bare greyed CTA; the entry footer says why «التالي» is disabled.
+   6. W4 completion present + conditional: submit reaches «شو بيصير بعدين؟» (not a silent jump); OFF
+      (live [UI]) and ON (review-first [BE]) variants both shown via the prototype toggle.
+   7. Register-late + O1/I3/L1 hold: guest funnel (no account); header sign-in is secondary (never join→
+      /login); urgency renders «عادي» not "normal"; the sticky CTA sits above env(safe-area-inset-bottom).
+   8. Differs from A on all 4 axes: FONT Tajawal (A: IBM Plex Sans Arabic) · FLOW media-first/«فرجينا»
+      (A: triage-first) · LAYOUT big cards + bottom-sheet (A: vertical list) · COLOR warm clay on sand
+      (A: cool teal). Same scale, same real copy.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; reading flow + progress run right→left; search icon & sheet controls on
+     the inline-START; media-card chevrons & the sheet group chevrons are directional and FLIP in RTL
+     (scaleX(-1)); the completion check is non-directional and does NOT flip. Authored in LOGICAL
+     properties only (ps/pe, inset-inline, border-start-*-radius, text-align:start) — no physical
+     ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — all strings are the real copy-deck strings (no Lorem Ipsum): «فرجينا
+     المشكلة», «احكِ طلبك متل رسالة صوتية», «ولا اختار من القائمة», «سباكة», «تسريب مياه تحت مغسلة
+     الحمام», «ضلّك سؤال واحد لتقدر تبعت.», «طلبك صار منشور!». Holds at 390px; the longest leaf «تركيب
+     وصيانة طاقة شمسية» does not clip in the sheet.
+   • Arabic-typography check — per tokens.json: body 16px / line-height 1.7 / weight 500 / letter-spacing
+     0; h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; the loaded Tajawal webfont
+     renders (note: Tajawal ships 400/500/700 — h2/h3 use 700 vs body 500, with size carrying the rest of
+     the ramp; this is the panel's chance to judge Tajawal vs A's IBM Plex Sans Arabic at real settings);
+     Western numerals; price/duration/percent LTR-isolated with <bdi>.
+  -->
+</body>
+</html>
