@@ -40,7 +40,8 @@
   <!-- LOCKED Arabic face: IBM Plex Sans Arabic — held CONSTANT across A/B/C -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Latin face for EN/LTR: IBM Plex Sans (same superfamily) -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
@@ -67,6 +68,13 @@
       font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
       letter-spacing:0 !important; -webkit-text-size-adjust:100%;
     }
+    /* EN/LTR swaps the Latin face in; line-height tightens to Latin defaults */
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    /* compact AR|EN language switcher — visible in normal AND clean mode */
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #d6d2f5;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#565a6e;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#4338ca;color:#fff;}
     .t-display{font-size:32px;line-height:1.4;font-weight:700;}
     .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
     .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
@@ -151,43 +159,49 @@
       DESIGN ARTIFACT — not production · JOURNEY C (Conversational · deep indigo) · font LOCKED: IBM Plex Sans Arabic
     </div>
 
+    <!-- Floating AR|EN language switcher — always visible (incl. landing/done + clean mode). -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
     <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
       <div class="flex items-center gap-2">
-        <span class="grid place-items-center size-8 rounded-lg bg-indigo text-white t-strong">د</span>
-        <span class="t-h3">دبّرها</span>
+        <span class="grid place-items-center size-8 rounded-lg bg-indigo text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
       </div>
-      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4">عندك حساب؟ سجّل الدخول</a>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4" data-i18n="signin_secondary">عندك حساب؟ سجّل الدخول</a>
     </header>
 
     <!-- ════════════════════════════ SCREEN 0 — LANDING (chat-flavored) ════════════════════════════ -->
     <section id="screen-landing" class="screen is-active">
       <div class="px-5 pt-8 pb-7 bg-wash">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-indigoink px-3 py-1 t-caption mb-4">
-          <span class="size-1.5 rounded-full bg-indigo"></span> احكِ معنا متل ما بتحكي مع حدا بتعرفو.
+          <span class="size-1.5 rounded-full bg-indigo"></span> <span data-i18n="tagline">احكِ معنا متل ما بتحكي مع حدا بتعرفو.</span>
         </span>
-        <h1 class="t-display mb-3">احكِ شو في…<br/>ونحنا مندبّرها.</h1>
-        <p class="t-body text-soft mb-6">منسألك سؤال سؤال — سهل، بلا فورم طويل — ومنوصّلك بمحترفين قربك بياخدوا طلبك ويبعتولك عروض.</p>
-        <button class="cta-primary" onclick="startChat()">ابدأ الحكي</button>
-        <p class="t-caption text-soft mt-3 text-center">ببلاش · بلا حساب لتبلّش · سؤال سؤال</p>
+        <h1 class="t-display mb-3" data-i18n="hero_title">احكِ شو في…<br/>ونحنا مندبّرها.</h1>
+        <p class="t-body text-soft mb-6" data-i18n="hero_sub">منسألك سؤال سؤال — سهل، بلا فورم طويل — ومنوصّلك بمحترفين قربك بياخدوا طلبك ويبعتولك عروض.</p>
+        <button class="cta-primary" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
+        <p class="t-caption text-soft mt-3 text-center" data-i18n="free_note">ببلاش · بلا حساب لتبلّش · سؤال سؤال</p>
       </div>
 
       <!-- chat preview -->
       <div class="px-5 py-7">
-        <h2 class="t-h2 mb-4">كيف بتمشي؟</h2>
+        <h2 class="t-h2 mb-4" data-i18n="how_it_works">كيف بتمشي؟</h2>
         <div class="rounded-xl2 border border-line bg-card p-4 space-y-2.5">
-          <div class="row bot"><div class="bubble-bot" style="max-width:90%;">أهلين! شو المشكلة اليوم؟</div></div>
-          <div class="row user"><div class="bubble-user">في تسريب تحت مغسلة الحمام</div></div>
-          <div class="row bot"><div class="bubble-bot" style="max-width:90%;">تمام، فهمت. وين العقار؟</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q1">أهلين! شو المشكلة اليوم؟</div></div>
+          <div class="row user"><div class="bubble-user" data-i18n="preview_a1">في تسريب تحت مغسلة الحمام</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q2">تمام، فهمت. وين العقار؟</div></div>
         </div>
-        <p class="t-small text-soft mt-3">منجمع نفس المعلومات — بس على شكل حكي، مش فورم.</p>
+        <p class="t-small text-soft mt-3" data-i18n="preview_note">منجمع نفس المعلومات — بس على شكل حكي، مش فورم.</p>
       </div>
 
       <div class="px-5 pb-8">
         <div class="rounded-xl2 border border-line bg-card p-4 flex items-center gap-3">
           <span class="grid place-items-center size-10 rounded-xl bg-wash text-indigoink shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <div class="min-w-0"><p class="t-strong">محترفين مقيَّمين</p><p class="t-small text-soft">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
+          <div class="min-w-0"><p class="t-strong" data-i18n="trust_t">محترفين مقيَّمين</p><p class="t-small text-soft" data-i18n="trust_d">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
         </div>
-        <button class="cta-primary mt-5" onclick="startChat()">ابدأ الحكي</button>
+        <button class="cta-primary mt-5" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
       </div>
     </section>
 
@@ -195,8 +209,8 @@
     <section id="screen-chat" class="screen">
       <!-- progress hint (chat-style: "we're at X of a few quick questions") -->
       <div class="px-4 pt-3 pb-2 flex items-center justify-between">
-        <p class="t-caption text-faint" id="chat-progress">سؤال <bdi>1</bdi> من كم سؤال سريع</p>
-        <button class="t-caption text-indigoink underline underline-offset-2" onclick="notSure()">مش متأكد؟ فرجينا</button>
+        <p class="t-caption text-faint" id="chat-progress" data-i18n="chat_progress_init">سؤال <bdi>1</bdi> من كم سؤال سريع</p>
+        <button class="t-caption text-indigoink underline underline-offset-2" onclick="notSure()" data-i18n="notsure_cta">مش متأكد؟ فرجينا</button>
       </div>
 
       <!-- chat log -->
@@ -208,16 +222,16 @@
       <!-- composer (always available: free text + media + send) -->
       <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2.5" style="padding-bottom:calc(10px + env(safe-area-inset-bottom));">
         <div class="composer">
-          <button class="icon-btn" title="فرجينا" onclick="mediaTap()" aria-label="أضف صورة أو صوت أو فيديو">
+          <button class="icon-btn" data-i18n-title="show_us_title" data-i18n-aria="add_media_aria" title="فرجينا" onclick="mediaTap()" aria-label="أضف صورة أو صوت أو فيديو">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار فوق" onkeydown="if(event.key==='Enter')sendFree()" />
-          <button class="send-btn" onclick="sendFree()" aria-label="ابعت">
-            <!-- send arrow is directional → flips in RTL -->
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار فوق" data-i18n-ph="composer_ph" onkeydown="if(event.key==='Enter')sendFree()" />
+          <button class="send-btn" onclick="sendFree()" data-i18n-aria="send_aria" aria-label="ابعت">
+            <!-- send arrow is directional → flips in RTL only (JS toggles in LTR) -->
+            <svg id="send-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
           </button>
         </div>
-        <p class="t-caption text-amber mt-1.5" dir="ltr" style="text-align:start;">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+        <p class="t-caption text-amber mt-1.5" dir="ltr" style="text-align:start;" data-i18n="be_media_capture">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
       </div>
     </section>
 
@@ -226,42 +240,42 @@
       <div class="rounded-xl2 border border-indigo/30 bg-wash/70 p-4 mb-5">
         <p class="t-small text-indigoink flex items-center gap-2">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          جمعنا كل شي من الحكي — وطلبك محفوظ. آخر خطوة لتبعتو.
+          <span data-i18n="saved_banner">جمعنا كل شي من الحكي — وطلبك محفوظ. آخر خطوة لتبعتو.</span>
         </p>
       </div>
 
-      <h1 class="t-h1 mb-1">آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.</h1>
-      <p class="t-body text-soft mb-5">منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.</p>
+      <h1 class="t-h1 mb-1" data-i18n="continue_request_banner">آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.</h1>
+      <p class="t-body text-soft mb-5" data-i18n="signup_sub">منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.</p>
 
       <!-- request summary built from the chat answers -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-caption text-faint mb-2">طلبك (من الحكي)</p>
-        <p class="t-strong mb-1">تسريب مياه تحت مغسلة الحمام</p>
+        <p class="t-caption text-faint mb-2" data-i18n="request_from_chat">طلبك (من الحكي)</p>
+        <p class="t-strong mb-1" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</p>
         <div class="flex flex-wrap gap-2 mt-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">سباكة</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">عادي</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">نقطة نقطة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-i18n="ans_dripping">نقطة نقطة</span>
         </div>
       </div>
 
-      <label class="block mb-4"><span class="t-small text-ink">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" /></label>
+      <label class="block mb-4"><span class="t-small text-ink" data-i18n="name_label">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" data-i18n-ph="name_ph" /></label>
       <label class="block mb-5">
-        <span class="t-small text-ink">رقم تلفونك</span>
+        <span class="t-small text-ink" data-i18n="phone_label">رقم تلفونك</span>
         <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
-        <span class="t-caption text-soft mt-1 block">منبعتلك رمز تأكيد عالرسائل.</span>
+        <span class="t-caption text-soft mt-1 block" data-i18n="otp_note">منبعتلك رمز تأكيد عالرسائل.</span>
       </label>
 
       <!-- in-page send CTA — completes the journey without the dev switcher -->
-      <button class="cta-primary" onclick="goto('done')">ابعت طلبك</button>
+      <button class="cta-primary" onclick="goto('done')" data-i18n="cta_send">ابعت طلبك</button>
     </section>
 
     <!-- ════════════════════════════ SCREEN 3 — W4 COMPLETION ════════════════════════════ -->
     <section id="screen-done" class="screen px-4 pb-28 pt-8">
       <div class="text-center mb-6">
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-indigo mb-4"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-        <h1 class="t-h1 mb-1">صار جاهز طلبك!</h1>
-        <p class="t-h3 text-soft">شو بيصير بعدين؟</p>
+        <h1 class="t-h1 mb-1" data-i18n="done_title">صار جاهز طلبك!</h1>
+        <p class="t-h3 text-soft" data-i18n="whats_next_heading">شو بيصير بعدين؟</p>
       </div>
 
       <div class="flex items-center justify-center gap-2 mb-4" dir="ltr">
@@ -270,23 +284,23 @@
       </div>
 
       <div id="var-off" class="rounded-xl2 border border-line bg-card p-5 mb-5">
-        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-indigo"></span> مفتوح للعروض</span></div>
-        <p class="t-body text-ink">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-indigo"></span> <span data-i18n="open_for_offers">مفتوح للعروض</span></span></div>
+        <p class="t-body text-ink" data-i18n="whats_next_off">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
       </div>
       <div id="var-on" class="hidden rounded-xl2 border border-line bg-card p-5 mb-5">
-        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بمراجعة سريعة</span></div>
-        <p class="t-body text-ink">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="in_review">بمراجعة سريعة</span></span></div>
+        <p class="t-body text-ink" data-i18n="whats_next_on">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
       </div>
 
-      <p class="t-caption text-soft mb-6">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
+      <p class="t-caption text-soft mb-6" data-i18n="page_note">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('request')">شوف طلبك</button>
-        <button class="cta-ghost" onclick="restartChat()">اعمل طلب تاني</button>
+        <button class="cta-primary" onclick="goto('request')" data-i18n="view_request">شوف طلبك</button>
+        <button class="cta-ghost" onclick="restartChat()" data-i18n="another_request">اعمل طلب تاني</button>
       </div>
 
       <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
-      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 4 — REQUEST DETAIL «طلبك» (post-submit, as the owner sees it) ════════════════════════════ -->
@@ -295,39 +309,39 @@
       <!-- status chip -->
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-indigo"></span> منشور · مفتوح للعروض
+          <span class="size-1.5 rounded-full bg-indigo"></span> <span data-i18n="status_published">منشور · مفتوح للعروض</span>
         </span>
-        <span class="t-caption text-faint">طلبك</span>
+        <span class="t-caption text-faint" data-i18n="your_request">طلبك</span>
       </div>
 
       <!-- title + key chips -->
-      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</h1>
       <div class="flex flex-wrap gap-2 mb-2">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption">عادي</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-indigoink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
       </div>
       <!-- C's signature note: this was gathered from the chat -->
       <p class="t-caption text-faint mb-5 flex items-center gap-1.5">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        مجموعة من الحكي
+        <span data-i18n="gathered_from_chat">مجموعة من الحكي</span>
       </p>
 
       <!-- captured details / quick-answers (same fields as A & B) -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <p class="t-h3 mb-3" data-i18n="req_details">تفاصيل الطلب</p>
         <dl class="space-y-2.5">
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
-            <dd class="t-small text-ink">تحت المغسلة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_where_leak">وين التسريب</dt>
+            <dd class="t-small text-ink" data-i18n="ans_under_sink">تحت المغسلة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
-            <dd class="t-small text-ink">نقطة نقطة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_water">المياه</dt>
+            <dd class="t-small text-ink" data-i18n="ans_dripping">نقطة نقطة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
-            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_desc">الوصف</dt>
+            <dd class="t-small text-ink" data-i18n="desc_value">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
           </div>
         </dl>
       </div>
@@ -336,23 +350,23 @@
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="grid place-items-center size-6 rounded-full bg-wash text-indigoink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
-          <p class="t-strong"><bdi>0</bdi> عروض لهلّق</p>
+          <p class="t-strong"><bdi>0</bdi> <span data-i18n="offers_now">عروض لهلّق</span></p>
         </div>
-        <p class="t-small text-soft">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
+        <p class="t-small text-soft" data-i18n="offers_now_help">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
       </div>
 
       <!-- actions: prominent Edit (→ signup summary, where the chat answers are reviewable) + secondary WhatsApp share -->
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('signup')">عدّل الطلب</button>
+        <button class="cta-primary" onclick="goto('signup')" data-i18n="edit_request">عدّل الطلب</button>
         <button class="cta-ghost flex items-center justify-center gap-2" onclick="return false">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          شارك عبر واتساب
+          <span data-i18n="share_whatsapp">شارك عبر واتساب</span>
         </button>
       </div>
-      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;">[BE] — مشاركة عبر واتساب</p>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_whatsapp">[BE] — مشاركة عبر واتساب</p>
 
       <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
-      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
@@ -367,6 +381,162 @@
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived from copy-deck.md.
+    //  Chat bubbles are built dynamically → they carry data-tkey / data-tar/data-ten
+    //  so the switcher re-localizes them in place, and the layout mirrors in LTR.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar";
+    const LEAF = {
+      "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتدفئة":"Heating & cooling",
+      "إصلاح أجهزة كهربائية":"Appliance repair","صيانة عامة":"General maintenance",
+      "بناء وتشييد":"Construction","تجديد وترميم":"Renovation","أعمال حجر وبناء":"Stone & masonry","أسقف وعزل":"Roofing & insulation",
+      "دهان":"Painting","أرضيات":"Flooring","بلاط وسيراميك":"Tiling","نجارة":"Carpentry","ألمنيوم وزجاج":"Aluminium & glass",
+      "تنظيف":"Cleaning","مكافحة حشرات":"Pest control","تنسيق حدائق":"Landscaping",
+      "تركيب وصيانة طاقة شمسية":"Solar install & service","أنظمة أمان ومراقبة":"Security & surveillance","منزل ذكي":"Smart home",
+      "خدمات نقل":"Moving services","خدمات أثاث":"Furniture services"
+    };
+    function tLeaf(arLabel){ return LANG==="ar" ? arLabel : (LEAF[arLabel] || arLabel); }
+
+    const I18N = {
+      ar: {
+        brand_mark:"د", brand:"دبّرها", signin_secondary:"عندك حساب؟ سجّل الدخول",
+        tagline:"احكِ معنا متل ما بتحكي مع حدا بتعرفو.",
+        hero_title:"احكِ شو في…<br/>ونحنا مندبّرها.",
+        hero_sub:"منسألك سؤال سؤال — سهل، بلا فورم طويل — ومنوصّلك بمحترفين قربك بياخدوا طلبك ويبعتولك عروض.",
+        start_chat:"ابدأ الحكي", free_note:"ببلاش · بلا حساب لتبلّش · سؤال سؤال",
+        how_it_works:"كيف بتمشي؟",
+        preview_q1:"أهلين! شو المشكلة اليوم؟", preview_a1:"في تسريب تحت مغسلة الحمام", preview_q2:"تمام، فهمت. وين العقار؟",
+        preview_note:"منجمع نفس المعلومات — بس على شكل حكي، مش فورم.",
+        trust_t:"محترفين مقيَّمين", trust_d:"تقييمات حقيقية من ناس وظّفوهم قبلك.",
+        chat_progress_init:"سؤال <bdi>1</bdi> من كم سؤال سريع", notsure_cta:"مش متأكد؟ فرجينا",
+        show_us_title:"فرجينا", add_media_aria:"أضف صورة أو صوت أو فيديو",
+        composer_ph:"اكتب جوابك… أو دوس على خيار فوق", send_aria:"ابعت",
+        be_media_capture:"[BE] — التقاط/تفريغ الوسائط (واجهة فقط)",
+        saved_banner:"جمعنا كل شي من الحكي — وطلبك محفوظ. آخر خطوة لتبعتو.",
+        continue_request_banner:"آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.",
+        signup_sub:"منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.",
+        request_from_chat:"طلبك (من الحكي)", req_title:"تسريب مياه تحت مغسلة الحمام",
+        region_beirut:"بيروت — الأشرفية", urg_normal:"عادي", ans_dripping:"نقطة نقطة",
+        name_label:"اسمك", name_ph:"متلاً: سامر", phone_label:"رقم تلفونك", otp_note:"منبعتلك رمز تأكيد عالرسائل.",
+        cta_send:"ابعت طلبك",
+        done_title:"صار جاهز طلبك!", whats_next_heading:"شو بيصير بعدين؟",
+        open_for_offers:"مفتوح للعروض",
+        whats_next_off:"طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.",
+        in_review:"بمراجعة سريعة",
+        whats_next_on:"وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.",
+        page_note:"أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.",
+        view_request:"شوف طلبك", another_request:"اعمل طلب تاني", back_to_list:"رجوع للقائمة ↩",
+        status_published:"منشور · مفتوح للعروض", your_request:"طلبك",
+        gathered_from_chat:"مجموعة من الحكي", req_details:"تفاصيل الطلب",
+        dt_where_leak:"وين التسريب", dt_water:"المياه", dt_desc:"الوصف", ans_under_sink:"تحت المغسلة",
+        desc_value:"في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.",
+        offers_now:"عروض لهلّق", offers_now_help:"المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.",
+        edit_request:"عدّل الطلب", share_whatsapp:"شارك عبر واتساب", be_whatsapp:"[BE] — مشاركة عبر واتساب",
+        // ── chat dynamic content ──
+        q_problem_bot:"أهلين! 👋 شو المشكلة عندك اليوم؟",
+        q_where_bot:"تمام. وين العقار؟ (وين بدّك المحترف يجي)",
+        q_urgency_bot:"أديش مستعجل؟",
+        q_detail_bot:"آخر شي يساعد المحترف يسعّر صح: المياه شاطفة ولا نقطة نقطة؟",
+        prog_problem:"سؤال 1 — شو المشكلة", prog_where:"سؤال 2 — الموقع",
+        prog_urgency:"سؤال 3 — الاستعجال", prog_detail:"سؤال 4 — تفصيل سريع", prog_ready:"جاهز — آخر خطوة",
+        chip_leak:"تسريب مياه", chip_elec:"كهربا", chip_ac:"تكييف", chip_paint:"دهان", chip_clean:"تنظيف",
+        chip_emergency:"طوارئ", chip_urgent:"مستعجل", chip_normal:"عادي", chip_norush:"ما في استعجال",
+        chip_gushing:"شاطفة", chip_dripping:"نقطة نقطة",
+        media_chip:"فرجينا بدل ما تكتب", chat_done:"تمام، صار عندي كل شي! 🙌 جمعتلك الطلب — آخر خطوة لتبعتو.",
+        cta_continue_join:"تابِع — انضمّ لتنشر",
+        media_user:"صورة + رسالة صوتية", media_bot:"أخدناهن! حسب اللي فرجيتنا، شكلها سباكة — صح؟",
+        media_yes:"آه، سباكة", media_no:"لأ، غيّرها"
+      },
+      en: {
+        brand_mark:"D", brand:"Dabbira", signin_secondary:"Have an account? Sign in",
+        tagline:"Talk to us like you'd talk to someone you know.",
+        hero_title:"Tell us what's up…<br/>and we'll handle it.",
+        hero_sub:"We ask one question at a time — easy, no long form — and connect you with pros nearby who take your request and send offers.",
+        start_chat:"Start chatting", free_note:"Free · No account to start · One question at a time",
+        how_it_works:"How it works",
+        preview_q1:"Hi! What's the problem today?", preview_a1:"There's a leak under the bathroom sink", preview_q2:"Got it. Where's the place?",
+        preview_note:"We gather the same info — just as a chat, not a form.",
+        trust_t:"Rated pros", trust_d:"Real reviews from people who hired them before you.",
+        chat_progress_init:"Question <bdi>1</bdi> of a few quick ones", notsure_cta:"Not sure? Show us",
+        show_us_title:"Show us", add_media_aria:"Add a photo, voice, or video",
+        composer_ph:"Type your answer… or tap an option above", send_aria:"Send",
+        be_media_capture:"[BE] — Media capture / transcription (UI only)",
+        saved_banner:"We gathered everything from the chat — your request is saved. One last step to send it.",
+        continue_request_banner:"One last step — create your account and your request goes live.",
+        signup_sub:"We'll create the account just now — so you can receive offers and talk to pros.",
+        request_from_chat:"Your request (from the chat)", req_title:"Water leak under the bathroom sink",
+        region_beirut:"Beirut — Achrafieh", urg_normal:"Normal", ans_dripping:"Dripping",
+        name_label:"Your name", name_ph:"e.g. Samer", phone_label:"Your phone number", otp_note:"We'll text you a confirmation code.",
+        cta_send:"Send my request",
+        done_title:"Your request is ready!", whats_next_heading:"What happens next?",
+        open_for_offers:"Open for offers",
+        whats_next_off:"Your request is live! Pros in your area will see it and send offers — often within an hour.",
+        in_review:"In quick review",
+        whats_next_on:"Got your request! We'll do a quick review, then pros can see it and send you offers.",
+        page_note:"Most requests go live right away — flagged content gets a quick review first.",
+        view_request:"View my request", another_request:"Make another request", back_to_list:"Back to list ↩",
+        status_published:"Live · Open for offers", your_request:"Your request",
+        gathered_from_chat:"Gathered from the chat", req_details:"Request details",
+        dt_where_leak:"Where's the leak", dt_water:"Water", dt_desc:"Description", ans_under_sink:"Under the sink",
+        desc_value:"There's a water leak under the bathroom sink; it's been dripping for an hour and started soaking the cabinet below.",
+        offers_now:"offers so far", offers_now_help:"Pros in your area are seeing your request; many reply within an hour.",
+        edit_request:"Edit request", share_whatsapp:"Share via WhatsApp", be_whatsapp:"[BE] — Share via WhatsApp",
+        // ── chat dynamic content ──
+        q_problem_bot:"Hi! 👋 What's the problem today?",
+        q_where_bot:"Got it. Where's the place? (where should the pro come)",
+        q_urgency_bot:"How urgent is it?",
+        q_detail_bot:"One last thing to help the pro price it right: is the water gushing or dripping?",
+        prog_problem:"Question 1 — the problem", prog_where:"Question 2 — location",
+        prog_urgency:"Question 3 — urgency", prog_detail:"Question 4 — a quick detail", prog_ready:"Ready — one last step",
+        chip_leak:"Water leak", chip_elec:"Electrical", chip_ac:"AC / heating", chip_paint:"Painting", chip_clean:"Cleaning",
+        chip_emergency:"Emergency", chip_urgent:"Urgent", chip_normal:"Normal", chip_norush:"No rush",
+        chip_gushing:"Gushing", chip_dripping:"Dripping",
+        media_chip:"Show us instead of typing", chat_done:"Done — I've got everything! 🙌 I put your request together — one last step to send it.",
+        cta_continue_join:"Continue — join to post",
+        media_user:"Photo + voice note", media_bot:"Got them! From what you showed, it looks like plumbing — right?",
+        media_yes:"Yes, plumbing", media_no:"No, change it"
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-i18n-title]").forEach(node=>{ const k=node.getAttribute("data-i18n-title"); if(d[k]!=null) node.setAttribute("title",d[k]); });
+      document.querySelectorAll("[data-leaf]").forEach(node=>{ node.textContent=tLeaf(node.getAttribute("data-leaf")); });
+    }
+
+    // re-localize already-rendered chat bubbles + quick-reply chips + progress.
+    // bubbles carry data-tkey (dictionary key) OR data-tar/data-ten (literal pair, e.g. media sim).
+    function relocalizeChat(){
+      document.querySelectorAll("#chat-log [data-tkey], #quick-zone [data-tkey]").forEach(node=>{
+        node.innerHTML = t(node.getAttribute("data-tkey"));
+      });
+      document.querySelectorAll("#chat-log [data-tar], #quick-zone [data-tar]").forEach(node=>{
+        node.innerHTML = (LANG==="en") ? node.getAttribute("data-ten") : node.getAttribute("data-tar");
+      });
+      const prog=document.getElementById("chat-progress");
+      if(prog && prog.getAttribute("data-tkey")) prog.innerHTML = t(prog.getAttribute("data-tkey"));
+    }
+
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      // the send arrow is hand-flipped for RTL; un-flip it in LTR
+      const arrow=document.getElementById("send-arrow");
+      if(arrow) arrow.style.transform = (LANG==="en") ? "none" : "scaleX(-1)";
+      applyStaticI18n();
+      relocalizeChat();
+    }
+
     const screens={ landing:"screen-landing", chat:"screen-chat", signup:"screen-signup", done:"screen-done", request:"screen-request" };
     function goto(name){
       Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
@@ -378,17 +548,21 @@
     }
 
     // ── the conversation script: one question at a time, gathering the SAME essentials as A & B ──
-    // each step: bot prompt + quick-reply chips (+ free text always works). «مش متأكد؟» always available.
+    // each step keyed (botKey + chips keyed AR/EN + progressKey) so it localizes on switch.
+    // chips: {key} = dictionary key → user reply bubble re-localizes via data-tkey.
     const FLOW = [
-      { id:"problem", bot:"أهلين! 👋 شو المشكلة عندك اليوم؟",
-        chips:["تسريب مياه","كهربا","تكييف", "دهان", "تنظيف"], progress:"سؤال 1 — شو المشكلة" },
-      { id:"where", bot:"تمام. وين العقار؟ (وين بدّك المحترف يجي)",
-        chips:["بيروت — الأشرفية","جبل لبنان — جونية","الشمال — طرابلس","الجنوب — صيدا"], progress:"سؤال 2 — الموقع" },
-      { id:"urgency", bot:"أديش مستعجل؟",
-        chips:["طوارئ","مستعجل","عادي","ما في استعجال"], progress:"سؤال 3 — الاستعجال" },
-      { id:"detail", bot:"آخر شي يساعد المحترف يسعّر صح: المياه شاطفة ولا نقطة نقطة؟",
-        chips:["شاطفة","نقطة نقطة"], progress:"سؤال 4 — تفصيل سريع" },
+      { id:"problem", botKey:"q_problem_bot", progKey:"prog_problem",
+        chips:["chip_leak","chip_elec","chip_ac","chip_paint","chip_clean"] },
+      { id:"where", botKey:"q_where_bot", progKey:"prog_where",
+        chips:["region_beirut","region_mtleb","region_north","region_south"] },
+      { id:"urgency", botKey:"q_urgency_bot", progKey:"prog_urgency",
+        chips:["chip_emergency","chip_urgent","chip_normal","chip_norush"] },
+      { id:"detail", botKey:"q_detail_bot", progKey:"prog_detail",
+        chips:["chip_gushing","chip_dripping"] },
     ];
+    // region keys not in this file's base dict → add the extra regions used only as chips
+    I18N.ar.region_mtleb="جبل لبنان — جونية"; I18N.ar.region_north="الشمال — طرابلس"; I18N.ar.region_south="الجنوب — صيدا";
+    I18N.en.region_mtleb="Mount Lebanon — Jounieh"; I18N.en.region_north="North — Tripoli"; I18N.en.region_south="South — Saida";
     let step=0;
 
     function startChat(){ resetChat(); goto("chat"); }
@@ -398,31 +572,37 @@
     function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
     function scrollChat(){ const log=document.getElementById("chat-log"); log.scrollIntoView({block:"end"}); window.scrollTo(0, document.body.scrollHeight); }
 
-    function botSay(text, cb){
+    // bot bubble keyed by dictionary key (re-localizes via data-tkey)
+    function botSayKey(key, cb){
       const log=document.getElementById("chat-log");
-      // typing indicator
       const typing=el(`<div class="row bot"><span class="avatar">د</span><div class="bubble-bot" style="margin-inline-start:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
       log.appendChild(typing); scrollChat();
       setTimeout(()=>{
         typing.remove();
-        const bubble=el(`<div class="row bot"><span class="avatar">د</span><div class="bubble-bot" style="margin-inline-start:8px;">${text}</div></div>`);
+        const bubble=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" data-tkey="${key}" style="margin-inline-start:8px;">${t(key)}</div></div>`);
         log.appendChild(bubble); scrollChat(); if(cb) cb();
       }, 650);
     }
-    function userSay(text){
+    // user bubble keyed by dictionary key
+    function userSayKey(key){
       const log=document.getElementById("chat-log");
-      log.appendChild(el(`<div class="row user"><div class="bubble-user">${text}</div></div>`)); scrollChat();
+      log.appendChild(el(`<div class="row user"><div class="bubble-user" data-tkey="${key}">${t(key)}</div></div>`)); scrollChat();
+    }
+    // user bubble for a free-typed string (no translation — shown as typed in both langs)
+    function userSayRaw(html){
+      const log=document.getElementById("chat-log");
+      log.appendChild(el(`<div class="row user"><div class="bubble-user">${html}</div></div>`)); scrollChat();
     }
 
     function renderChips(){
       const zone=document.getElementById("quick-zone"); zone.innerHTML="";
       const q=FLOW[step]; if(!q) return;
-      q.chips.forEach(c=>{
-        const b=el(`<button class="qchip">${c}</button>`);
-        b.onclick=()=>answer(c); zone.appendChild(b);
+      q.chips.forEach(key=>{
+        const b=el(`<button class="qchip" data-tkey="${key}">${t(key)}</button>`);
+        b.onclick=()=>answerKey(key); zone.appendChild(b);
       });
-      // always-available «فرجينا» as a media quick-reply
-      const m=el(`<button class="qchip is-media"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>فرجينا بدل ما تكتب</button>`);
+      // always-available «فرجينا» as a media quick-reply (icon + keyed label)
+      const m=el(`<button class="qchip is-media"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg><span data-tkey="media_chip">${t("media_chip")}</span></button>`);
       m.onclick=()=>mediaTap(); zone.appendChild(m);
     }
 
@@ -430,37 +610,46 @@
       const q=FLOW[step];
       document.getElementById("quick-zone").innerHTML="";
       if(!q){ finishChat(); return; }
-      document.getElementById("chat-progress").textContent = q.progress;
-      botSay(q.bot, renderChips);
+      const prog=document.getElementById("chat-progress"); prog.removeAttribute("data-i18n"); prog.setAttribute("data-tkey", q.progKey); prog.textContent=t(q.progKey);
+      botSayKey(q.botKey, renderChips);
     }
 
-    function answer(text){
-      userSay(text);
+    // answer chosen from a keyed chip → echo the keyed user bubble + advance
+    function answerKey(key){ userSayKey(key); advanceAfterAnswer(); }
+    // answer typed free-form → echo raw + advance
+    function answerRaw(html){ userSayRaw(html); advanceAfterAnswer(); }
+    function advanceAfterAnswer(){
       document.getElementById("quick-zone").innerHTML="";
       step++;
       if(step<FLOW.length){ askNext(); }
       else {
         // all essentials gathered → confirm + hand to register-late
-        botSay("تمام، صار عندي كل شي! 🙌 جمعتلك الطلب — آخر خطوة لتبعتو.", ()=>{
+        botSayKey("chat_done", ()=>{
           const log=document.getElementById("chat-log");
-          const goBtn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">د</span><button class="cta-primary is-ready" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">تابِع — انضمّ لتنشر</button></div>`);
+          const goBtn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">د</span><button class="cta-primary is-ready" data-tkey="cta_continue_join" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_continue_join")}</button></div>`);
           log.appendChild(goBtn); scrollChat();
-          document.getElementById("chat-progress").textContent="جاهز — آخر خطوة";
+          const prog=document.getElementById("chat-progress"); prog.removeAttribute("data-i18n"); prog.setAttribute("data-tkey","prog_ready"); prog.textContent=t("prog_ready");
         });
       }
     }
     function sendFree(){
       const inp=document.getElementById("chat-input"); const v=(inp.value||"").trim();
-      if(!v) return; inp.value=""; answer(v);
+      if(!v) return; inp.value=""; answerRaw(v.replace(/</g,"&lt;").replace(/>/g,"&gt;"));
     }
     function mediaTap(){
-      // «فرجينا» path: simulate a media attachment as the user's turn, then continue the same flow
-      userSay(`<span style="display:inline-flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> صورة + رسالة صوتية <bdi>0:18</bdi></span>`);
+      // «فرجينا» path: simulate a media attachment as the user's turn, then continue the same flow.
+      // the bubble's full inner markup (icon + label + duration) is a literal AR/EN pair so it re-localizes.
+      const log=document.getElementById("chat-log");
+      const ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+      const wrap=v=>`<span style="display:inline-flex;align-items:center;gap:6px;">${ICON} ${v} <bdi>0:18</bdi></span>`;
+      const arHtml=wrap(I18N.ar.media_user), enHtml=wrap(I18N.en.media_user);
+      const bubble=el(`<div class="row user"><div class="bubble-user" data-tar="${arHtml.replace(/"/g,"&quot;")}" data-ten="${enHtml.replace(/"/g,"&quot;")}">${LANG==="en"?enHtml:arHtml}</div></div>`);
+      log.appendChild(bubble); scrollChat();
       document.getElementById("quick-zone").innerHTML="";
-      botSay("أخدناهن! حسب اللي فرجيتنا، شكلها سباكة — صح؟", ()=>{
+      botSayKey("media_bot", ()=>{
         const zone=document.getElementById("quick-zone");
-        const yes=el(`<button class="qchip">آه، سباكة</button>`); yes.onclick=()=>answer("آه، سباكة");
-        const no=el(`<button class="qchip">لأ، غيّرها</button>`); no.onclick=()=>{ document.getElementById("chat-input").focus(); };
+        const yes=el(`<button class="qchip" data-tkey="media_yes">${t("media_yes")}</button>`); yes.onclick=()=>answerKey("media_yes");
+        const no=el(`<button class="qchip" data-tkey="media_no">${t("media_no")}</button>`); no.onclick=()=>{ document.getElementById("chat-input").focus(); };
         zone.appendChild(yes); zone.appendChild(no);
       });
     }
@@ -482,6 +671,8 @@
     const _goto=goto;
     goto=function(name){ _goto(name); if(name==="chat" && document.getElementById("chat-log").children.length===0){ resetChat(); askNext(); } };
 
+    // init — render Arabic from the dictionary (source of truth), then show landing
+    setLang("ar");
     goto("landing");
 
     // ── CLEAN MODE (moderator demo) ──────────────────────────────────────

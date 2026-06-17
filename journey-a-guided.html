@@ -38,9 +38,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <!-- Latin face for EN/LTR: IBM Plex Sans (same superfamily, so the scripts feel unified) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
@@ -67,6 +68,13 @@
       font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
       letter-spacing:0 !important; -webkit-text-size-adjust:100%;
     }
+    /* EN/LTR swaps the Latin face in; line-height tightens to Latin defaults */
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    /* compact AR|EN language switcher — visible in normal AND clean mode */
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #cfe6e0;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#5b554d;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#0f7c6c;color:#fff;}
     /* per-script Arabic type roles → exact px from tokens.json scale_arabic */
     .t-display{font-size:32px;line-height:1.4;font-weight:700;}
     .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
@@ -149,13 +157,19 @@
       DESIGN ARTIFACT — not production · JOURNEY A (Guided · green) · font LOCKED: IBM Plex Sans Arabic
     </div>
 
+    <!-- Floating AR|EN language switcher — always visible (incl. landing/done + clean mode), near the brand on the inline-END. -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
     <!-- Public header — register-late funnel. Sign-IN is the only secondary affordance (O1 fix). Hidden on welcome/done. -->
     <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
       <div class="flex items-center gap-2">
-        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
-        <span class="t-h3">دبّرها</span>
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
       </div>
-      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4">عندك حساب؟ سجّل الدخول</a>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4" data-i18n="signin_secondary">عندك حساب؟ سجّل الدخول</a>
     </header>
 
     <!-- ════════════════════════════ SCREEN 0 — LANDING ════════════════════════════ -->
@@ -163,29 +177,29 @@
       <!-- hero -->
       <div class="px-5 pt-8 pb-7 bg-wash">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-brandink px-3 py-1 t-caption mb-4">
-          <span class="size-1.5 rounded-full bg-brand"></span> خدمات بيتك… مدبّرة.
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="tagline">خدمات بيتك… مدبّرة.</span>
         </span>
-        <h1 class="t-display mb-3">دبّرها بضغطة.<br/>محترفين لبيتك بمنطقتك.</h1>
-        <p class="t-body text-soft mb-6">احكِ شو المشكلة، ومنوصّلك بمحترفين قربك — بياخدوا طلبك ويبعتولك عروض، كتير منها خلال ساعة.</p>
-        <button class="cta-primary" onclick="goto('triage')">ابدأ طلبك</button>
-        <p class="t-caption text-soft mt-3 text-center">ببلاش · بلا حساب لتبلّش · دقيقتين بس</p>
+        <h1 class="t-display mb-3" data-i18n="hero_title">دبّرها بضغطة.<br/>محترفين لبيتك بمنطقتك.</h1>
+        <p class="t-body text-soft mb-6" data-i18n="hero_sub">احكِ شو المشكلة، ومنوصّلك بمحترفين قربك — بياخدوا طلبك ويبعتولك عروض، كتير منها خلال ساعة.</p>
+        <button class="cta-primary" onclick="goto('triage')" data-i18n="start_request">ابدأ طلبك</button>
+        <p class="t-caption text-soft mt-3 text-center" data-i18n="free_note">ببلاش · بلا حساب لتبلّش · دقيقتين بس</p>
       </div>
 
       <!-- value prop: 3 simple steps -->
       <div class="px-5 py-7">
-        <h2 class="t-h2 mb-4">كيف بتمشي؟</h2>
+        <h2 class="t-h2 mb-4" data-i18n="how_it_works">كيف بتمشي؟</h2>
         <ol class="space-y-3.5">
           <li class="flex items-start gap-3">
             <span class="grid place-items-center size-8 rounded-full bg-wash text-brandink t-strong shrink-0"><bdi>1</bdi></span>
-            <div><p class="t-strong">احكِ شو المشكلة</p><p class="t-small text-soft">اختار الخدمة أو دوّر عنها — وزِد صورة لو حابب.</p></div>
+            <div><p class="t-strong" data-i18n="step1_t">احكِ شو المشكلة</p><p class="t-small text-soft" data-i18n="step1_d">اختار الخدمة أو دوّر عنها — وزِد صورة لو حابب.</p></div>
           </li>
           <li class="flex items-start gap-3">
             <span class="grid place-items-center size-8 rounded-full bg-wash text-brandink t-strong shrink-0"><bdi>2</bdi></span>
-            <div><p class="t-strong">بتوصلك عروض</p><p class="t-small text-soft">محترفين بمنطقتك بيشوفوا طلبك ويبعتولك أسعار.</p></div>
+            <div><p class="t-strong" data-i18n="step2_t">بتوصلك عروض</p><p class="t-small text-soft" data-i18n="step2_d">محترفين بمنطقتك بيشوفوا طلبك ويبعتولك أسعار.</p></div>
           </li>
           <li class="flex items-start gap-3">
             <span class="grid place-items-center size-8 rounded-full bg-wash text-brandink t-strong shrink-0"><bdi>3</bdi></span>
-            <div><p class="t-strong">إنت بتختار</p><p class="t-small text-soft">قارِن، اسأل، ووظّف اللي بيناسبك. الدفع كاش بينك وبينه.</p></div>
+            <div><p class="t-strong" data-i18n="step3_t">إنت بتختار</p><p class="t-small text-soft" data-i18n="step3_d">قارِن، اسأل، ووظّف اللي بيناسبك. الدفع كاش بينك وبينه.</p></div>
           </li>
         </ol>
       </div>
@@ -197,25 +211,25 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>
           </span>
           <div class="min-w-0">
-            <p class="t-strong">محترفين مقيَّمين</p>
-            <p class="t-small text-soft">تقييمات حقيقية من ناس وظّفوهم قبلك.</p>
+            <p class="t-strong" data-i18n="trust_t">محترفين مقيَّمين</p>
+            <p class="t-small text-soft" data-i18n="trust_d">تقييمات حقيقية من ناس وظّفوهم قبلك.</p>
           </div>
         </div>
-        <button class="cta-primary mt-5" onclick="goto('triage')">ابدأ طلبك</button>
+        <button class="cta-primary mt-5" onclick="goto('triage')" data-i18n="start_request">ابدأ طلبك</button>
       </div>
     </section>
 
     <!-- ════════════════════════════ SCREEN 1 — GUIDED TRIAGE (reuses post-a-request.html core) ════════════════════════════ -->
     <section id="screen-triage" class="screen px-4 pb-28 pt-4">
-      <p class="t-caption text-faint mb-2">خطوة <bdi>1</bdi> من <bdi>3</bdi></p>
+      <p class="t-caption text-faint mb-2"><span data-i18n="step_word">خطوة</span> <bdi>1</bdi> <span data-i18n="of_word">من</span> <bdi>3</bdi></p>
       <div class="flex gap-1.5 mb-4" aria-hidden="true">
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
         <span class="h-1.5 flex-1 rounded-full bg-line"></span>
         <span class="h-1.5 flex-1 rounded-full bg-line"></span>
       </div>
 
-      <h1 class="t-h1 mb-1">شو المشكلة؟</h1>
-      <p class="t-body text-soft mb-4">اختار شو لازمك، أو دوّر، أو فرجينا.</p>
+      <h1 class="t-h1 mb-1" data-i18n="triage_title">شو المشكلة؟</h1>
+      <p class="t-body text-soft mb-4" data-i18n="triage_sub">اختار شو لازمك، أو دوّر، أو فرجينا.</p>
 
       <div class="relative mb-4">
         <span class="absolute inset-y-0 start-3 grid place-items-center text-faint pointer-events-none">
@@ -223,7 +237,7 @@
         </span>
         <input id="triage-search" type="search" inputmode="search"
                class="t-body w-full rounded-xl border border-line bg-card ps-10 pe-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 placeholder:text-faint placeholder:font-medium"
-               placeholder="دوّر عن الخدمة… (متلاً: تسريب، دهان)" oninput="filterTriage(this.value)" />
+               placeholder="دوّر عن الخدمة… (متلاً: تسريب، دهان)" data-i18n-ph="search_ph" oninput="filterTriage(this.value)" />
       </div>
 
       <!-- selected-need confirmation -->
@@ -232,14 +246,14 @@
           <span class="grid place-items-center size-5 rounded-full bg-brand text-white shrink-0">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </span>
-          <p class="t-small text-brandink" style="font-weight:600;">اخترت: <span id="primary-pick-name">—</span></p>
+          <p class="t-small text-brandink" style="font-weight:600;"><span data-i18n="picked_label">اخترت:</span> <span id="primary-pick-name">—</span></p>
         </div>
         <div id="pick-list" class="flex flex-wrap gap-2"></div>
         <button class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" onclick="addAnother()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          ضيف خدمة تانية
+          <span data-i18n="add_another">ضيف خدمة تانية</span>
         </button>
-        <p id="reuse-note" class="hidden t-caption text-soft mt-2">منستعمل نفس العقار والموقع — ما بدّك تعبّيهن من جديد.</p>
+        <p id="reuse-note" class="hidden t-caption text-soft mt-2" data-i18n="reuse_note">منستعمل نفس العقار والموقع — ما بدّك تعبّيهن من جديد.</p>
       </div>
 
       <!-- 6 problem groups -->
@@ -248,107 +262,107 @@
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('fix')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2-2 2.1-2.1Z"/></svg></span>
-              <span class="t-h3">تصليح وصيانة</span>
+              <span class="t-h3" data-i18n="grp_fix">تصليح وصيانة</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('سباكة')">سباكة</button>
-            <button class="leaf" onclick="pick('كهرباء')">كهرباء</button>
-            <button class="leaf" onclick="pick('تكييف وتدفئة')">تكييف وتدفئة</button>
-            <button class="leaf" onclick="pick('إصلاح أجهزة كهربائية')">إصلاح أجهزة كهربائية</button>
-            <button class="leaf" onclick="pick('صيانة عامة')">صيانة عامة</button>
+            <button class="leaf" data-leaf="سباكة" onclick="pick('سباكة')">سباكة</button>
+            <button class="leaf" data-leaf="كهرباء" onclick="pick('كهرباء')">كهرباء</button>
+            <button class="leaf" data-leaf="تكييف وتدفئة" onclick="pick('تكييف وتدفئة')">تكييف وتدفئة</button>
+            <button class="leaf" data-leaf="إصلاح أجهزة كهربائية" onclick="pick('إصلاح أجهزة كهربائية')">إصلاح أجهزة كهربائية</button>
+            <button class="leaf" data-leaf="صيانة عامة" onclick="pick('صيانة عامة')">صيانة عامة</button>
           </div>
         </div>
         <div class="group rounded-xl2 border border-line bg-card overflow-hidden" data-group="build">
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('build')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></span>
-              <span class="t-h3">بناء وتجديد</span>
+              <span class="t-h3" data-i18n="grp_build">بناء وتجديد</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('بناء وتشييد')">بناء وتشييد</button>
-            <button class="leaf" onclick="pick('تجديد وترميم')">تجديد وترميم</button>
-            <button class="leaf" onclick="pick('أعمال حجر وبناء')">أعمال حجر وبناء</button>
-            <button class="leaf" onclick="pick('أسقف وعزل')">أسقف وعزل</button>
+            <button class="leaf" data-leaf="بناء وتشييد" onclick="pick('بناء وتشييد')">بناء وتشييد</button>
+            <button class="leaf" data-leaf="تجديد وترميم" onclick="pick('تجديد وترميم')">تجديد وترميم</button>
+            <button class="leaf" data-leaf="أعمال حجر وبناء" onclick="pick('أعمال حجر وبناء')">أعمال حجر وبناء</button>
+            <button class="leaf" data-leaf="أسقف وعزل" onclick="pick('أسقف وعزل')">أسقف وعزل</button>
           </div>
         </div>
         <div class="group rounded-xl2 border border-line bg-card overflow-hidden" data-group="finish">
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('finish')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7h16ZM6 11v3a2 2 0 0 0 2 2h2v3a2 2 0 0 0 2 2 2 2 0 0 0 2-2v-5"/></svg></span>
-              <span class="t-h3">تشطيب وديكور</span>
+              <span class="t-h3" data-i18n="grp_finish">تشطيب وديكور</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('دهان')">دهان</button>
-            <button class="leaf" onclick="pick('أرضيات')">أرضيات</button>
-            <button class="leaf" onclick="pick('بلاط وسيراميك')">بلاط وسيراميك</button>
-            <button class="leaf" onclick="pick('نجارة')">نجارة</button>
-            <button class="leaf" onclick="pick('ألمنيوم وزجاج')">ألمنيوم وزجاج</button>
+            <button class="leaf" data-leaf="دهان" onclick="pick('دهان')">دهان</button>
+            <button class="leaf" data-leaf="أرضيات" onclick="pick('أرضيات')">أرضيات</button>
+            <button class="leaf" data-leaf="بلاط وسيراميك" onclick="pick('بلاط وسيراميك')">بلاط وسيراميك</button>
+            <button class="leaf" data-leaf="نجارة" onclick="pick('نجارة')">نجارة</button>
+            <button class="leaf" data-leaf="ألمنيوم وزجاج" onclick="pick('ألمنيوم وزجاج')">ألمنيوم وزجاج</button>
           </div>
         </div>
         <div class="group rounded-xl2 border border-line bg-card overflow-hidden" data-group="clean">
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('clean')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 6-6m0 0 3-9 6 6-9 3Zm3-9 6 6"/></svg></span>
-              <span class="t-h3">تنظيف وعناية</span>
+              <span class="t-h3" data-i18n="grp_clean">تنظيف وعناية</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('تنظيف')">تنظيف</button>
-            <button class="leaf" onclick="pick('مكافحة حشرات')">مكافحة حشرات</button>
-            <button class="leaf" onclick="pick('تنسيق حدائق')">تنسيق حدائق</button>
+            <button class="leaf" data-leaf="تنظيف" onclick="pick('تنظيف')">تنظيف</button>
+            <button class="leaf" data-leaf="مكافحة حشرات" onclick="pick('مكافحة حشرات')">مكافحة حشرات</button>
+            <button class="leaf" data-leaf="تنسيق حدائق" onclick="pick('تنسيق حدائق')">تنسيق حدائق</button>
           </div>
         </div>
         <div class="group rounded-xl2 border border-line bg-card overflow-hidden" data-group="install">
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('install')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3m0 14v3M4.2 4.2l2.1 2.1m11.4 11.4 2.1 2.1M2 12h3m14 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg></span>
-              <span class="t-h3">تركيبات وأنظمة</span>
+              <span class="t-h3" data-i18n="grp_install">تركيبات وأنظمة</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('تركيب وصيانة طاقة شمسية')">تركيب وصيانة طاقة شمسية</button>
-            <button class="leaf" onclick="pick('أنظمة أمان ومراقبة')">أنظمة أمان ومراقبة</button>
-            <button class="leaf" onclick="pick('منزل ذكي')">منزل ذكي</button>
+            <button class="leaf" data-leaf="تركيب وصيانة طاقة شمسية" onclick="pick('تركيب وصيانة طاقة شمسية')">تركيب وصيانة طاقة شمسية</button>
+            <button class="leaf" data-leaf="أنظمة أمان ومراقبة" onclick="pick('أنظمة أمان ومراقبة')">أنظمة أمان ومراقبة</button>
+            <button class="leaf" data-leaf="منزل ذكي" onclick="pick('منزل ذكي')">منزل ذكي</button>
           </div>
         </div>
         <div class="group rounded-xl2 border border-line bg-card overflow-hidden" data-group="move">
           <button class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-start" onclick="toggleGroup('move')">
             <span class="flex items-center gap-3">
               <span class="grid place-items-center size-10 rounded-xl bg-wash text-brandink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7M6 19a2 2 0 1 0 0-.01M18 19a2 2 0 1 0 0-.01"/></svg></span>
-              <span class="t-h3">نقل وأثاث</span>
+              <span class="t-h3" data-i18n="grp_move">نقل وأثاث</span>
             </span>
             <svg class="chev text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
           <div class="leaves flex-wrap gap-2 px-4 pb-4 pt-1">
-            <button class="leaf" onclick="pick('خدمات نقل')">خدمات نقل</button>
-            <button class="leaf" onclick="pick('خدمات أثاث')">خدمات أثاث</button>
+            <button class="leaf" data-leaf="خدمات نقل" onclick="pick('خدمات نقل')">خدمات نقل</button>
+            <button class="leaf" data-leaf="خدمات أثاث" onclick="pick('خدمات أثاث')">خدمات أثاث</button>
           </div>
         </div>
       </div>
 
-      <p id="no-results" class="hidden t-body text-soft mt-4">ما لقينا شي بهالاسم — جرّب كلمة تانية أو فرجينا.</p>
+      <p id="no-results" class="hidden t-body text-soft mt-4" data-i18n="no_results">ما لقينا شي بهالاسم — جرّب كلمة تانية أو فرجينا.</p>
 
       <!-- «مش متأكد؟ فرجينا» — secondary path (media shell, [BE]) -->
       <div class="mt-5 rounded-xl2 border border-dashed border-brand/40 bg-wash/60 p-4">
         <div class="flex items-start gap-3">
           <span class="grid place-items-center size-10 rounded-xl bg-brand text-white shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg></span>
           <div class="min-w-0">
-            <h3 class="t-h3 mb-1">مش متأكد؟ فرجينا</h3>
-            <p class="t-small text-soft">صوّر، سجّل فيديو، أو بس احكِ — ونحنا منحدّدلك الخدمة.</p>
+            <h3 class="t-h3 mb-1" data-i18n="notsure_title">مش متأكد؟ فرجينا</h3>
+            <p class="t-small text-soft" data-i18n="notsure_help">صوّر، سجّل فيديو، أو بس احكِ — ونحنا منحدّدلك الخدمة.</p>
             <div class="mt-3 flex flex-wrap gap-2">
-              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg> رسالة صوتية</button>
-              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> صورة</button>
-              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg> فيديو</button>
+              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg> <span data-i18n="media_voice">رسالة صوتية</span></button>
+              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> <span data-i18n="media_photo">صورة</span></button>
+              <button class="media-chip" onclick="goto('property')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg> <span data-i18n="media_video">فيديو</span></button>
             </div>
-            <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;">[BE] — التقاط/تفريغ الوسائط</p>
+            <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;" data-i18n="be_media_capture">[BE] — التقاط/تفريغ الوسائط</p>
           </div>
         </div>
       </div>
@@ -356,117 +370,117 @@
 
     <!-- ════════════════════════════ SCREEN 2 — PROPERTY «وين العقار؟» ════════════════════════════ -->
     <section id="screen-property" class="screen px-4 pb-28 pt-4">
-      <p class="t-caption text-faint mb-2">خطوة <bdi>2</bdi> من <bdi>3</bdi></p>
+      <p class="t-caption text-faint mb-2"><span data-i18n="step_word">خطوة</span> <bdi>2</bdi> <span data-i18n="of_word">من</span> <bdi>3</bdi></p>
       <div class="flex gap-1.5 mb-4" aria-hidden="true">
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
         <span class="h-1.5 flex-1 rounded-full bg-line"></span>
       </div>
 
-      <h1 class="t-h1 mb-1">وين العقار؟</h1>
-      <p class="t-body text-soft mb-5">وين بدّك المحترف يجي؟</p>
+      <h1 class="t-h1 mb-1" data-i18n="prop_title">وين العقار؟</h1>
+      <p class="t-body text-soft mb-5" data-i18n="prop_sub">وين بدّك المحترف يجي؟</p>
 
       <!-- chosen need recap -->
       <div class="flex items-center gap-2 mb-5">
-        <span class="t-caption text-faint">اللي اخترتو:</span>
-        <span id="prop-need" class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">سباكة</span>
+        <span class="t-caption text-faint" data-i18n="picked_label2">اللي اخترتو:</span>
+        <span id="prop-need" class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small" data-leaf="سباكة">سباكة</span>
       </div>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">المنطقة</span>
-        <select class="field mt-1.5"><option>بيروت — الأشرفية</option><option>جبل لبنان — جونية</option><option>الشمال — طرابلس</option><option>الجنوب — صيدا</option></select>
+        <span class="t-small text-ink" data-i18n="region_label">المنطقة</span>
+        <select class="field mt-1.5"><option data-i18n="region_beirut">بيروت — الأشرفية</option><option data-i18n="region_mtleb">جبل لبنان — جونية</option><option data-i18n="region_north">الشمال — طرابلس</option><option data-i18n="region_south">الجنوب — صيدا</option></select>
       </label>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">العنوان (شارع / مبنى)</span>
-        <input dir="auto" class="field mt-1.5" placeholder="متلاً: شارع الحمرا، مبنى السعد، طابق 3" />
+        <span class="t-small text-ink" data-i18n="address_label">العنوان (شارع / مبنى)</span>
+        <input dir="auto" class="field mt-1.5" placeholder="متلاً: شارع الحمرا، مبنى السعد، طابق 3" data-i18n-ph="address_ph" />
       </label>
 
       <!-- pin on map (optional, exact vs area) -->
       <div class="rounded-xl2 border border-line bg-card p-4">
         <div class="flex items-center justify-between">
-          <span class="t-small text-ink">حدّد الموقع عالخريطة</span>
-          <span class="t-caption text-faint">اختياري</span>
+          <span class="t-small text-ink" data-i18n="map_label">حدّد الموقع عالخريطة</span>
+          <span class="t-caption text-faint" data-i18n="optional">اختياري</span>
         </div>
         <button class="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-brand/40 bg-wash/50 py-5 t-small text-brandink">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          حطّ دبّوس عالخريطة
+          <span data-i18n="drop_pin">حطّ دبّوس عالخريطة</span>
         </button>
-        <p class="t-caption text-soft mt-2">الموقع الدقيق بيخلّي المحترف يوصلك أسرع — بتقدر تشاركه لاحقًا كمان.</p>
+        <p class="t-caption text-soft mt-2" data-i18n="pin_help">الموقع الدقيق بيخلّي المحترف يوصلك أسرع — بتقدر تشاركه لاحقًا كمان.</p>
       </div>
     </section>
 
     <!-- ════════════════════════════ SCREEN 3 — DETAILS (W3 inline gate) ════════════════════════════ -->
     <section id="screen-details" class="screen px-4 pb-40 pt-4">
-      <p class="t-caption text-faint mb-2">خطوة <bdi>3</bdi> من <bdi>3</bdi></p>
+      <p class="t-caption text-faint mb-2"><span data-i18n="step_word">خطوة</span> <bdi>3</bdi> <span data-i18n="of_word">من</span> <bdi>3</bdi></p>
       <div class="flex gap-1.5 mb-4" aria-hidden="true">
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
         <span class="h-1.5 flex-1 rounded-full bg-brand"></span>
       </div>
 
-      <h1 class="t-h1 mb-1">احكِ التفاصيل</h1>
-      <p class="t-body text-soft mb-4">كل ما حكيت أكتر، كل ما العروض صارت أدقّ.</p>
+      <h1 class="t-h1 mb-1" data-i18n="details_title">احكِ التفاصيل</h1>
+      <p class="t-body text-soft mb-4" data-i18n="details_sub">كل ما حكيت أكتر، كل ما العروض صارت أدقّ.</p>
 
       <div class="flex items-center gap-2 mb-5">
-        <span class="t-caption text-faint">اللي اخترتو:</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">سباكة</span>
+        <span class="t-caption text-faint" data-i18n="picked_label2">اللي اخترتو:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small" data-leaf="سباكة">سباكة</span>
       </div>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">عنوان قصير <span class="text-brand">*</span></span>
-        <input dir="auto" value="تسريب مياه تحت مغسلة الحمام" class="field mt-1.5" placeholder="جملة بتوصِف المشكلة (10–100 حرف)" />
+        <span class="t-small text-ink"><span data-i18n="title_label">عنوان قصير</span> <span class="text-brand">*</span></span>
+        <input dir="auto" value="تسريب مياه تحت مغسلة الحمام" data-i18n-val="title_val" class="field mt-1.5" placeholder="جملة بتوصِف المشكلة (10–100 حرف)" data-i18n-ph="title_ph" />
       </label>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">الوصف</span>
-        <textarea dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="احكِ شو لازمك — صورة أو رسالة صوتية بتكفي كمان…"></textarea>
+        <span class="t-small text-ink" data-i18n="desc_label">الوصف</span>
+        <textarea dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="احكِ شو لازمك — صورة أو رسالة صوتية بتكفي كمان…" data-i18n-ph="desc_ph"></textarea>
       </label>
 
       <!-- media shell (guest funnel) -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <span class="t-small text-ink">الصور</span>
-        <p class="t-caption text-soft mt-0.5 mb-3">الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا</p>
+        <span class="t-small text-ink" data-i18n="photos_label">الصور</span>
+        <p class="t-caption text-soft mt-0.5 mb-3" data-i18n="photos_hint">الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا</p>
         <div class="flex flex-wrap gap-2">
-          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg> احكِ طلبك متل رسالة صوتية</button>
-          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> صورة</button>
-          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg> صوّر فيديو قصير</button>
+          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg> <span data-i18n="voice_button">احكِ طلبك متل رسالة صوتية</span></button>
+          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg> <span data-i18n="media_photo">صورة</span></button>
+          <button class="media-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7zM1 5h15v14H1z"/></svg> <span data-i18n="video_button">صوّر فيديو قصير</span></button>
         </div>
-        <p class="t-caption text-soft mt-3">فيك تضيف الصور لمّا تنضمّ — جواباتك هون محفوظة.</p>
-        <p class="t-caption text-amber mt-1" dir="ltr" style="text-align:start;">[BE] — رفع/التقاط الوسائط</p>
+        <p class="t-caption text-soft mt-3" data-i18n="guest_photos_hint">فيك تضيف الصور لمّا تنضمّ — جواباتك هون محفوظة.</p>
+        <p class="t-caption text-amber mt-1" dir="ltr" style="text-align:start;" data-i18n="be_media_upload">[BE] — رفع/التقاط الوسائط</p>
       </div>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">أديش مستعجل؟</span>
+        <span class="t-small text-ink" data-i18n="urgency_label">أديش مستعجل؟</span>
         <div class="mt-1.5 flex flex-wrap gap-2">
-          <button class="opt">طوارئ</button><button class="opt is-sel">عادي</button><button class="opt">مستعجل</button><button class="opt">ما في استعجال</button>
+          <button class="opt" data-i18n="urg_emergency">طوارئ</button><button class="opt is-sel" data-i18n="urg_normal">عادي</button><button class="opt" data-i18n="urg_urgent">مستعجل</button><button class="opt" data-i18n="urg_flexible">ما في استعجال</button>
         </div>
       </label>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">الميزانية (اختياري)</span>
-        <input class="field mt-1.5" placeholder="متلاً: 200 $ – 400 $" />
+        <span class="t-small text-ink" data-i18n="budget_label">الميزانية (اختياري)</span>
+        <input class="field mt-1.5" placeholder="متلاً: 200 $ – 400 $" data-i18n-ph="budget_ph" />
       </label>
 
       <!-- per-category required Q&A + W3 inline gate -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-2">
         <div class="flex items-center justify-between mb-3">
-          <span class="t-h3">أسئلة سريعة</span>
-          <span class="t-caption text-faint"><span class="text-brand">*</span> إجباري</span>
+          <span class="t-h3" data-i18n="quick_questions">أسئلة سريعة</span>
+          <span class="t-caption text-faint"><span class="text-brand">*</span> <span data-i18n="required_legend">إجباري</span></span>
         </div>
         <div class="mb-4">
-          <span class="t-small text-ink">وين التسريب؟ <span class="text-brand">*</span></span>
-          <div class="mt-1.5 flex flex-wrap gap-2"><button class="opt is-sel">تحت المغسلة</button><button class="opt">بالحمام</button><button class="opt">بالمطبخ</button></div>
+          <span class="t-small text-ink"><span data-i18n="q_where_leak">وين التسريب؟</span> <span class="text-brand">*</span></span>
+          <div class="mt-1.5 flex flex-wrap gap-2"><button class="opt is-sel" data-i18n="ans_under_sink">تحت المغسلة</button><button class="opt" data-i18n="ans_bathroom">بالحمام</button><button class="opt" data-i18n="ans_kitchen">بالمطبخ</button></div>
         </div>
         <div id="gate-q" class="mb-1 rounded-lg border border-brand/30 bg-wash/40 p-3">
-          <span class="t-small text-ink">المياه شاطفة ولا نقطة نقطة؟ <span class="text-brand">*</span></span>
+          <span class="t-small text-ink"><span data-i18n="q_flow">المياه شاطفة ولا نقطة نقطة؟</span> <span class="text-brand">*</span></span>
           <div class="mt-1.5 flex flex-wrap gap-2">
-            <button class="opt" onclick="answerGate(this)">شاطفة</button>
-            <button class="opt" onclick="answerGate(this)">نقطة نقطة</button>
+            <button class="opt" onclick="answerGate(this)" data-i18n="ans_gushing">شاطفة</button>
+            <button class="opt" onclick="answerGate(this)" data-i18n="ans_dripping">نقطة نقطة</button>
           </div>
           <p id="gate-q-msg" class="t-caption text-brandink mt-2 flex items-center gap-1.5">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-            لازم تجاوب عَ هالسؤال
+            <span data-i18n="field_required_inline">لازم تجاوب عَ هالسؤال</span>
           </p>
         </div>
       </div>
@@ -477,32 +491,32 @@
       <div class="rounded-xl2 border border-brand/30 bg-wash/60 p-4 mb-5">
         <p class="t-small text-brandink flex items-center gap-2">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          طلبك جاهز ومحفوظ — آخر خطوة لتبعتو.
+          <span data-i18n="saved_banner">طلبك جاهز ومحفوظ — آخر خطوة لتبعتو.</span>
         </p>
       </div>
 
-      <h1 class="t-h1 mb-1">آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.</h1>
-      <p class="t-body text-soft mb-5">منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.</p>
+      <h1 class="t-h1 mb-1" data-i18n="continue_request_banner">آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.</h1>
+      <p class="t-body text-soft mb-5" data-i18n="signup_sub">منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.</p>
 
       <!-- request summary card so the guest sees what they're about to send -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-caption text-faint mb-2">طلبك</p>
-        <p class="t-strong mb-1">تسريب مياه تحت مغسلة الحمام</p>
+        <p class="t-caption text-faint mb-2" data-i18n="your_request">طلبك</p>
+        <p class="t-strong mb-1" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</p>
         <div class="flex flex-wrap gap-2 mt-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
         </div>
       </div>
 
       <label class="block mb-4">
-        <span class="t-small text-ink">اسمك</span>
-        <input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" />
+        <span class="t-small text-ink" data-i18n="name_label">اسمك</span>
+        <input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" data-i18n-ph="name_ph" />
       </label>
       <label class="block mb-4">
-        <span class="t-small text-ink">رقم تلفونك</span>
+        <span class="t-small text-ink" data-i18n="phone_label">رقم تلفونك</span>
         <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
-        <span class="t-caption text-soft mt-1 block">منبعتلك رمز تأكيد عالرسائل.</span>
+        <span class="t-caption text-soft mt-1 block" data-i18n="otp_note">منبعتلك رمز تأكيد عالرسائل.</span>
       </label>
     </section>
 
@@ -512,8 +526,8 @@
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         </span>
-        <h1 class="t-h1 mb-1">صار جاهز طلبك!</h1>
-        <p class="t-h3 text-soft">شو بيصير بعدين؟</p>
+        <h1 class="t-h1 mb-1" data-i18n="done_title">صار جاهز طلبك!</h1>
+        <p class="t-h3 text-soft" data-i18n="whats_next_heading">شو بيصير بعدين؟</p>
       </div>
 
       <div class="flex items-center justify-center gap-2 mb-4" dir="ltr">
@@ -523,26 +537,26 @@
 
       <div id="var-off" class="rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center gap-2 mb-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> مفتوح للعروض</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="open_for_offers">مفتوح للعروض</span></span>
         </div>
-        <p class="t-body text-ink">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
+        <p class="t-body text-ink" data-i18n="whats_next_off">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
       </div>
       <div id="var-on" class="hidden rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center gap-2 mb-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بمراجعة سريعة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="in_review">بمراجعة سريعة</span></span>
         </div>
-        <p class="t-body text-ink">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
+        <p class="t-body text-ink" data-i18n="whats_next_on">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
       </div>
 
-      <p class="t-caption text-soft mb-6">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
+      <p class="t-caption text-soft mb-6" data-i18n="page_note">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('request')">شوف طلبك</button>
-        <button class="cta-ghost" onclick="goto('triage')">اعمل طلب تاني</button>
+        <button class="cta-primary" onclick="goto('request')" data-i18n="view_request">شوف طلبك</button>
+        <button class="cta-ghost" onclick="goto('triage')" data-i18n="another_request">اعمل طلب تاني</button>
       </div>
 
       <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
-      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 6 — REQUEST DETAIL «طلبك» (post-submit, as the owner sees it) ════════════════════════════ -->
@@ -551,34 +565,34 @@
       <!-- status chip -->
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-brand"></span> منشور · مفتوح للعروض
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="status_published">منشور · مفتوح للعروض</span>
         </span>
-        <span class="t-caption text-faint">طلبك</span>
+        <span class="t-caption text-faint" data-i18n="your_request">طلبك</span>
       </div>
 
       <!-- title + key chips -->
-      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</h1>
       <div class="flex flex-wrap gap-2 mb-5">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
       </div>
 
       <!-- captured details / quick-answers -->
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <p class="t-h3 mb-3" data-i18n="req_details">تفاصيل الطلب</p>
         <dl class="space-y-2.5">
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
-            <dd class="t-small text-ink">تحت المغسلة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_where_leak">وين التسريب</dt>
+            <dd class="t-small text-ink" data-i18n="ans_under_sink">تحت المغسلة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
-            <dd class="t-small text-ink">نقطة نقطة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_water">المياه</dt>
+            <dd class="t-small text-ink" data-i18n="ans_dripping">نقطة نقطة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
-            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_desc">الوصف</dt>
+            <dd class="t-small text-ink" data-i18n="desc_value">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
           </div>
         </dl>
       </div>
@@ -588,9 +602,9 @@
         <div class="flex items-start gap-3">
           <span class="grid place-items-center size-10 rounded-xl bg-brand text-white shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
           <div class="min-w-0">
-            <p class="t-strong mb-0.5">أضف صور لتوصلك عروض أسرع</p>
-            <p class="t-small text-soft">الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا — بتقدر تضيفها هلّق.</p>
-            <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;">[BE] — رفع/التقاط الوسائط</p>
+            <p class="t-strong mb-0.5" data-i18n="add_photos_t">أضف صور لتوصلك عروض أسرع</p>
+            <p class="t-small text-soft" data-i18n="add_photos_d">الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا — بتقدر تضيفها هلّق.</p>
+            <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;" data-i18n="be_media_upload">[BE] — رفع/التقاط الوسائط</p>
           </div>
         </div>
       </div>
@@ -599,23 +613,23 @@
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
-          <p class="t-strong"><bdi>0</bdi> عروض لهلّق</p>
+          <p class="t-strong"><bdi>0</bdi> <span data-i18n="offers_now">عروض لهلّق</span></p>
         </div>
-        <p class="t-small text-soft">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
+        <p class="t-small text-soft" data-i18n="offers_now_help">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
       </div>
 
       <!-- actions: prominent Edit + secondary WhatsApp share -->
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('details')">عدّل الطلب</button>
+        <button class="cta-primary" onclick="goto('details')" data-i18n="edit_request">عدّل الطلب</button>
         <button class="cta-ghost flex items-center justify-center gap-2" onclick="return false">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          شارك عبر واتساب
+          <span data-i18n="share_whatsapp">شارك عبر واتساب</span>
         </button>
       </div>
-      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;">[BE] — مشاركة عبر واتساب</p>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_whatsapp">[BE] — مشاركة عبر واتساب</p>
 
       <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
-      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ STICKY FOOTER CTA (drives the journey; W3 gate; L1 safe inset) ════════════════ -->
@@ -641,6 +655,218 @@
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived from copy-deck.md.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar"; // persisted in-memory only (no storage needed)
+
+    // service-name leaves (data-leaf values) → EN. Used by leaves, chips, recaps.
+    const LEAF = {
+      "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتدفئة":"Heating & cooling",
+      "إصلاح أجهزة كهربائية":"Appliance repair","صيانة عامة":"General maintenance",
+      "بناء وتشييد":"Construction","تجديد وترميم":"Renovation","أعمال حجر وبناء":"Stone & masonry","أسقف وعزل":"Roofing & insulation",
+      "دهان":"Painting","أرضيات":"Flooring","بلاط وسيراميك":"Tiling","نجارة":"Carpentry","ألمنيوم وزجاج":"Aluminium & glass",
+      "تنظيف":"Cleaning","مكافحة حشرات":"Pest control","تنسيق حدائق":"Landscaping",
+      "تركيب وصيانة طاقة شمسية":"Solar install & service","أنظمة أمان ومراقبة":"Security & surveillance","منزل ذكي":"Smart home",
+      "خدمات نقل":"Moving services","خدمات أثاث":"Furniture services"
+    };
+    function tLeaf(arLabel){ return LANG==="ar" ? arLabel : (LEAF[arLabel] || arLabel); }
+
+    // static-string dictionary, keyed to data-i18n / data-i18n-ph / data-i18n-val
+    const I18N = {
+      ar: {
+        brand_mark:"د", brand:"دبّرها", signin_secondary:"عندك حساب؟ سجّل الدخول",
+        tagline:"خدمات بيتك… مدبّرة.",
+        hero_title:"دبّرها بضغطة.<br/>محترفين لبيتك بمنطقتك.",
+        hero_sub:"احكِ شو المشكلة، ومنوصّلك بمحترفين قربك — بياخدوا طلبك ويبعتولك عروض، كتير منها خلال ساعة.",
+        start_request:"ابدأ طلبك", free_note:"ببلاش · بلا حساب لتبلّش · دقيقتين بس",
+        how_it_works:"كيف بتمشي؟",
+        step1_t:"احكِ شو المشكلة", step1_d:"اختار الخدمة أو دوّر عنها — وزِد صورة لو حابب.",
+        step2_t:"بتوصلك عروض", step2_d:"محترفين بمنطقتك بيشوفوا طلبك ويبعتولك أسعار.",
+        step3_t:"إنت بتختار", step3_d:"قارِن، اسأل، ووظّف اللي بيناسبك. الدفع كاش بينك وبينه.",
+        trust_t:"محترفين مقيَّمين", trust_d:"تقييمات حقيقية من ناس وظّفوهم قبلك.",
+        step_word:"خطوة", of_word:"من",
+        triage_title:"شو المشكلة؟", triage_sub:"اختار شو لازمك، أو دوّر، أو فرجينا.",
+        search_ph:"دوّر عن الخدمة… (متلاً: تسريب، دهان)",
+        picked_label:"اخترت:", add_another:"ضيف خدمة تانية",
+        reuse_note:"منستعمل نفس العقار والموقع — ما بدّك تعبّيهن من جديد.",
+        grp_fix:"تصليح وصيانة", grp_build:"بناء وتجديد", grp_finish:"تشطيب وديكور",
+        grp_clean:"تنظيف وعناية", grp_install:"تركيبات وأنظمة", grp_move:"نقل وأثاث",
+        no_results:"ما لقينا شي بهالاسم — جرّب كلمة تانية أو فرجينا.",
+        notsure_title:"مش متأكد؟ فرجينا", notsure_help:"صوّر، سجّل فيديو، أو بس احكِ — ونحنا منحدّدلك الخدمة.",
+        media_voice:"رسالة صوتية", media_photo:"صورة", media_video:"فيديو",
+        be_media_capture:"[BE] — التقاط/تفريغ الوسائط",
+        prop_title:"وين العقار؟", prop_sub:"وين بدّك المحترف يجي؟",
+        picked_label2:"اللي اخترتو:",
+        region_label:"المنطقة",
+        region_beirut:"بيروت — الأشرفية", region_mtleb:"جبل لبنان — جونية", region_north:"الشمال — طرابلس", region_south:"الجنوب — صيدا",
+        address_label:"العنوان (شارع / مبنى)", address_ph:"متلاً: شارع الحمرا، مبنى السعد، طابق 3",
+        map_label:"حدّد الموقع عالخريطة", optional:"اختياري", drop_pin:"حطّ دبّوس عالخريطة",
+        pin_help:"الموقع الدقيق بيخلّي المحترف يوصلك أسرع — بتقدر تشاركه لاحقًا كمان.",
+        details_title:"احكِ التفاصيل", details_sub:"كل ما حكيت أكتر، كل ما العروض صارت أدقّ.",
+        title_label:"عنوان قصير", title_val:"تسريب مياه تحت مغسلة الحمام", title_ph:"جملة بتوصِف المشكلة (10–100 حرف)",
+        desc_label:"الوصف", desc_ph:"احكِ شو لازمك — صورة أو رسالة صوتية بتكفي كمان…",
+        photos_label:"الصور", photos_hint:"الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا",
+        voice_button:"احكِ طلبك متل رسالة صوتية", video_button:"صوّر فيديو قصير",
+        guest_photos_hint:"فيك تضيف الصور لمّا تنضمّ — جواباتك هون محفوظة.",
+        be_media_upload:"[BE] — رفع/التقاط الوسائط",
+        urgency_label:"أديش مستعجل؟",
+        urg_emergency:"طوارئ", urg_normal:"عادي", urg_urgent:"مستعجل", urg_flexible:"ما في استعجال",
+        budget_label:"الميزانية (اختياري)", budget_ph:"متلاً: 200 $ – 400 $",
+        quick_questions:"أسئلة سريعة", required_legend:"إجباري",
+        q_where_leak:"وين التسريب؟", ans_under_sink:"تحت المغسلة", ans_bathroom:"بالحمام", ans_kitchen:"بالمطبخ",
+        q_flow:"المياه شاطفة ولا نقطة نقطة؟", ans_gushing:"شاطفة", ans_dripping:"نقطة نقطة",
+        field_required_inline:"لازم تجاوب عَ هالسؤال",
+        saved_banner:"طلبك جاهز ومحفوظ — آخر خطوة لتبعتو.",
+        continue_request_banner:"آخر خطوة — اعمل حسابك ويُنشر طلبك على طول.",
+        signup_sub:"منعمل الحساب بس هلّق — لتقدر تستقبل العروض وتحكي مع المحترفين.",
+        your_request:"طلبك", req_title:"تسريب مياه تحت مغسلة الحمام",
+        name_label:"اسمك", name_ph:"متلاً: سامر",
+        phone_label:"رقم تلفونك", otp_note:"منبعتلك رمز تأكيد عالرسائل.",
+        done_title:"صار جاهز طلبك!", whats_next_heading:"شو بيصير بعدين؟",
+        open_for_offers:"مفتوح للعروض",
+        whats_next_off:"طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.",
+        in_review:"بمراجعة سريعة",
+        whats_next_on:"وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.",
+        page_note:"أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.",
+        view_request:"شوف طلبك", another_request:"اعمل طلب تاني", back_to_list:"رجوع للقائمة ↩",
+        status_published:"منشور · مفتوح للعروض",
+        req_details:"تفاصيل الطلب",
+        dt_where_leak:"وين التسريب", dt_water:"المياه", dt_desc:"الوصف",
+        desc_value:"في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.",
+        add_photos_t:"أضف صور لتوصلك عروض أسرع", add_photos_d:"الصورة بتجيبلك عروض أسرع بمرّتين تقريبًا — بتقدر تضيفها هلّق.",
+        offers_now:"عروض لهلّق", offers_now_help:"المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.",
+        edit_request:"عدّل الطلب", share_whatsapp:"شارك عبر واتساب", be_whatsapp:"[BE] — مشاركة عبر واتساب",
+        // JS-set strings (footer CTA / gate text / chip aria)
+        cta_next:"التالي", cta_next_details:"التالي · التفاصيل", cta_continue_join:"تابِع — انضمّ لتنشر",
+        cta_send:"ابعت طلبك", cta_next_with:"التالي · ",
+        gate_pick:"اختار شو لازمك لتكمّل.", gate_one_q:"ضلّك سؤال واحد لتقدر تبعت.",
+        gate_ready:"كلشي جاهز — فيك تبعت طلبك.", remove_aria:"شيل"
+      },
+      en: {
+        brand_mark:"D", brand:"Dabbira", signin_secondary:"Have an account? Sign in",
+        tagline:"Your home's services, handled.",
+        hero_title:"Sorted in a tap.<br/>Pros for your home, in your area.",
+        hero_sub:"Tell us what's wrong and we'll connect you with pros nearby — they take your request and send offers, many within an hour.",
+        start_request:"Start your request", free_note:"Free · No account to start · Just 2 minutes",
+        how_it_works:"How it works",
+        step1_t:"Tell us what's wrong", step1_d:"Pick a service or search for it — add a photo if you like.",
+        step2_t:"Offers come in", step2_d:"Pros in your area see your request and send you prices.",
+        step3_t:"You choose", step3_d:"Compare, ask, and hire whoever fits. Payment is cash, between you and them.",
+        trust_t:"Rated pros", trust_d:"Real reviews from people who hired them before you.",
+        step_word:"Step", of_word:"of",
+        triage_title:"What's the problem?", triage_sub:"Pick what you need, search, or show us.",
+        search_ph:"Search a service… (e.g. leak, painting)",
+        picked_label:"You picked:", add_another:"Add another service",
+        reuse_note:"We'll reuse the same place and location — no need to re-enter.",
+        grp_fix:"Fix & maintain", grp_build:"Build & renovate", grp_finish:"Finishes & interiors",
+        grp_clean:"Clean & care", grp_install:"Installs & systems", grp_move:"Move & furnish",
+        no_results:"Nothing matched — try another word or show us.",
+        notsure_title:"Not sure? Show us", notsure_help:"Film it, record it, or just talk — we'll figure out the service.",
+        media_voice:"Voice note", media_photo:"Photo", media_video:"Video",
+        be_media_capture:"[BE] — Media capture / transcription",
+        prop_title:"Where's the place?", prop_sub:"Where should the pro come?",
+        picked_label2:"Your pick:",
+        region_label:"Region",
+        region_beirut:"Beirut — Achrafieh", region_mtleb:"Mount Lebanon — Jounieh", region_north:"North — Tripoli", region_south:"South — Saida",
+        address_label:"Address (street / building)", address_ph:"e.g. Hamra St., Saad Bldg, 3rd floor",
+        map_label:"Set the location on the map", optional:"Optional", drop_pin:"Drop a pin on the map",
+        pin_help:"An exact location helps the pro reach you faster — you can also share it later.",
+        details_title:"Tell us the details", details_sub:"The more you say, the sharper the offers.",
+        title_label:"Short title", title_val:"Water leak under the bathroom sink", title_ph:"One line that sums it up (10–100 chars)",
+        desc_label:"Description", desc_ph:"Tell us what you need — a photo or voice note works too…",
+        photos_label:"Photos", photos_hint:"A photo gets offers ~2× faster",
+        voice_button:"Say it like a voice note", video_button:"Film a short clip",
+        guest_photos_hint:"Add photos once you join — your answers are saved.",
+        be_media_upload:"[BE] — Media upload / capture",
+        urgency_label:"How urgent?",
+        urg_emergency:"Emergency", urg_normal:"Normal", urg_urgent:"Urgent", urg_flexible:"No rush",
+        budget_label:"Budget (optional)", budget_ph:"e.g. $200 – $400",
+        quick_questions:"Quick questions", required_legend:"required",
+        q_where_leak:"Where's the leak?", ans_under_sink:"Under the sink", ans_bathroom:"In the bathroom", ans_kitchen:"In the kitchen",
+        q_flow:"Is the water gushing or dripping?", ans_gushing:"Gushing", ans_dripping:"Dripping",
+        field_required_inline:"This one's required",
+        saved_banner:"Your request is ready and saved — one last step to send it.",
+        continue_request_banner:"One last step — create your account and your request goes live.",
+        signup_sub:"We'll create the account just now — so you can receive offers and talk to pros.",
+        your_request:"Your request", req_title:"Water leak under the bathroom sink",
+        name_label:"Your name", name_ph:"e.g. Samer",
+        phone_label:"Your phone number", otp_note:"We'll text you a confirmation code.",
+        done_title:"Your request is ready!", whats_next_heading:"What happens next?",
+        open_for_offers:"Open for offers",
+        whats_next_off:"Your request is live! Pros in your area will see it and send offers — often within an hour.",
+        in_review:"In quick review",
+        whats_next_on:"Got your request! We'll do a quick review, then pros can see it and send you offers.",
+        page_note:"Most requests go live right away — flagged content gets a quick review first.",
+        view_request:"View my request", another_request:"Make another request", back_to_list:"Back to list ↩",
+        status_published:"Live · Open for offers",
+        req_details:"Request details",
+        dt_where_leak:"Where's the leak", dt_water:"Water", dt_desc:"Description",
+        desc_value:"There's a water leak under the bathroom sink; it's been dripping for an hour and started soaking the cabinet below.",
+        add_photos_t:"Add photos to get offers faster", add_photos_d:"A photo gets offers ~2× faster — you can add them now.",
+        offers_now:"offers so far", offers_now_help:"Pros in your area are seeing your request; many reply within an hour.",
+        edit_request:"Edit request", share_whatsapp:"Share via WhatsApp", be_whatsapp:"[BE] — Share via WhatsApp",
+        cta_next:"Next", cta_next_details:"Next · Details", cta_continue_join:"Continue — join to post",
+        cta_send:"Send my request", cta_next_with:"Next · ",
+        gate_pick:"Pick what you need to continue.", gate_one_q:"One more answer and you can send.",
+        gate_ready:"All set — you can send now.", remove_aria:"Remove"
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    // apply all static keyed strings for the active language
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{
+        const k = node.getAttribute("data-i18n"); if(d[k] != null) node.innerHTML = d[k];
+      });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{
+        const k = node.getAttribute("data-i18n-ph"); if(d[k] != null) node.setAttribute("placeholder", d[k]);
+      });
+      document.querySelectorAll("[data-i18n-val]").forEach(node=>{
+        const k = node.getAttribute("data-i18n-val"); if(d[k] != null) node.value = d[k];
+      });
+      // service-name leaves carry their canonical AR in data-leaf → localize the visible label
+      document.querySelectorAll("[data-leaf]").forEach(node=>{
+        const ar = node.getAttribute("data-leaf");
+        // .leaf buttons hold a structured span (check + label); update the label span only
+        const labelSpan = node.querySelector(".leaf-check") ? node.querySelector("span:last-child") : null;
+        if(labelSpan) labelSpan.textContent = tLeaf(ar);
+        else if(!node.querySelector("svg")) node.textContent = tLeaf(ar); // plain recap chips
+      });
+    }
+
+    // THE switcher — defined + wired to both AR and EN buttons (onclick at the header toggle)
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      applyStaticI18n();
+      // re-localize dynamic content: any picked-need chips + the footer/gate for the active screen
+      relocalizeChips();
+      const active = document.querySelector(".screen.is-active");
+      if(active){
+        const name = Object.keys(screens).find(k=>screens[k] === active.id);
+        if(name) configureFooter(name);
+      }
+    }
+    // re-localize the already-built pick chips + recap labels when the language flips
+    function relocalizeChips(){
+      document.querySelectorAll("#pick-list .chip").forEach(chip=>{
+        const ar = chip.dataset.v;
+        const lbl = chip.querySelector("span:first-child"); if(lbl) lbl.textContent = tLeaf(ar);
+        const rm = chip.querySelector("button"); if(rm) rm.setAttribute("aria-label", t("remove_aria"));
+      });
+      const prim = document.getElementById("primary-pick-name");
+      if(prim && prim.dataset.v) prim.textContent = tLeaf(prim.dataset.v);
+      const propNeed = document.getElementById("prop-need");
+      if(propNeed && propNeed.dataset.v) propNeed.textContent = tLeaf(propNeed.dataset.v);
+    }
+
     // ── screen switching ─────────────────────────────────────────────────
     const screens = { landing:"screen-landing", triage:"screen-triage", property:"screen-property", details:"screen-details", signup:"screen-signup", done:"screen-done", request:"screen-request" };
     const ORDER = ["landing","triage","property","details","signup","done","request"];
@@ -665,20 +891,20 @@
       if(name==="triage"){
         const chips=document.querySelectorAll("#pick-list .chip");
         if(chips.length){
-          const n=chips[0].dataset.v, extra=chips.length>1?" +"+(chips.length-1):"";
-          cta.textContent="التالي · "+n+extra;
+          const n=tLeaf(chips[0].dataset.v), extra=chips.length>1?" +"+(chips.length-1):"";
+          cta.textContent=t("cta_next_with")+n+extra;
           if(opts&&opts.justPicked){ void cta.offsetWidth; cta.classList.add("is-ready"); cta.scrollIntoView({behavior:"smooth",block:"nearest"}); }
         } else {
-          cta.textContent="التالي"; line.style.display="flex"; text.textContent="اختار شو لازمك لتكمّل."; cta.disabled=true;
+          cta.textContent=t("cta_next"); line.style.display="flex"; text.textContent=t("gate_pick"); cta.disabled=true;
         }
       } else if(name==="property"){
-        cta.textContent="التالي · التفاصيل";
+        cta.textContent=t("cta_next_details");
       } else if(name==="details"){
-        cta.textContent="تابِع — انضمّ لتنشر";
-        if(!gateAnswered){ line.style.display="flex"; text.textContent="ضلّك سؤال واحد لتقدر تبعت."; cta.disabled=true; }
-        else { line.style.display="flex"; line.className="t-small text-brandink mb-2 flex items-center gap-1.5"; text.textContent="كلشي جاهز — فيك تبعت طلبك."; }
+        cta.textContent=t("cta_continue_join");
+        if(!gateAnswered){ line.style.display="flex"; text.textContent=t("gate_one_q"); cta.disabled=true; }
+        else { line.style.display="flex"; line.className="t-small text-brandink mb-2 flex items-center gap-1.5"; text.textContent=t("gate_ready"); }
       } else if(name==="signup"){
-        cta.textContent="ابعت طلبك";
+        cta.textContent=t("cta_send");
       }
     }
     function onCta(){
@@ -709,7 +935,7 @@
       let any=false;
       groups.querySelectorAll(".group").forEach(g=>{
         let has=false;
-        g.querySelectorAll(".leaf").forEach(l=>{ const hit=l.textContent.includes(needle)||l.textContent.includes(q); l.style.display=hit?"":"none"; if(hit) has=true; });
+        g.querySelectorAll(".leaf").forEach(l=>{ const ar=l.getAttribute("data-leaf")||""; const hit=l.textContent.includes(needle)||l.textContent.includes(q)||ar.includes(needle)||ar.includes(q); l.style.display=hit?"":"none"; if(hit) has=true; });
         g.style.display=has?"block":"none"; if(has) g.classList.add("is-open"); any=any||has;
       });
       none.classList.toggle("hidden", any);
@@ -722,30 +948,33 @@
     function pick(label){
       const list=document.getElementById("pick-list");
       const dup=[...list.children].some(c=>c.dataset.v===label);
+      // selection is keyed to the canonical AR in data-leaf (language-independent)
       document.querySelectorAll(".leaf").forEach(l=>{
-        const t=l.querySelector("span:last-child").textContent;
-        const isSel=[...list.children].some(c=>c.dataset.v===t)||t===label; l.classList.toggle("is-sel",isSel);
+        const ar=l.getAttribute("data-leaf");
+        const isSel=[...list.children].some(c=>c.dataset.v===ar)||ar===label; l.classList.toggle("is-sel",isSel);
       });
       if(dup){ afterPickChange(false); return; }
       const chip=document.createElement("span");
       chip.className="chip inline-flex items-center gap-1.5 rounded-full bg-brand text-white ps-3 pe-2 py-1"; chip.dataset.v=label;
       chip.style.fontSize="15px"; chip.style.fontWeight="600";
-      chip.innerHTML=`<span>${label}</span><button aria-label="شيل" onclick="removeChip(this)" style="display:grid;place-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+      chip.innerHTML=`<span>${tLeaf(label)}</span><button aria-label="${t("remove_aria")}" onclick="removeChip(this)" style="display:grid;place-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
       list.appendChild(chip);
-      // reflect into the property/details recap
-      document.getElementById("prop-need").textContent=label;
+      // reflect into the property/details recap (store canonical AR in data-v so it re-localizes)
+      const propNeed=document.getElementById("prop-need"); propNeed.dataset.v=label; propNeed.textContent=tLeaf(label);
       afterPickChange(true);
     }
     function removeChip(btn){
       const chip=btn.closest(".chip"), label=chip.dataset.v; chip.remove();
-      document.querySelectorAll(".leaf").forEach(l=>{ if(l.querySelector("span:last-child").textContent===label) l.classList.remove("is-sel"); });
+      document.querySelectorAll(".leaf").forEach(l=>{ if(l.getAttribute("data-leaf")===label) l.classList.remove("is-sel"); });
       afterPickChange(false);
     }
     function addAnother(){ document.getElementById("reuse-note").classList.remove("hidden"); const s=document.getElementById("triage-search"); s.scrollIntoView({behavior:"smooth",block:"center"}); s.focus(); }
     function afterPickChange(justPicked){
       const chips=document.querySelectorAll("#pick-list .chip"), has=chips.length>0;
       document.getElementById("picks").classList.toggle("hidden",!has);
-      document.getElementById("primary-pick-name").textContent=has?chips[0].dataset.v:"—";
+      const prim=document.getElementById("primary-pick-name");
+      if(has){ prim.dataset.v=chips[0].dataset.v; prim.textContent=tLeaf(chips[0].dataset.v); }
+      else { prim.removeAttribute("data-v"); prim.textContent="—"; }
       if(!has) document.getElementById("reuse-note").classList.add("hidden");
       configureFooter("triage",{justPicked:!!justPicked});
     }
@@ -758,7 +987,8 @@
       document.getElementById("btn-on").classList.toggle("is-sel", v==="on");
     }
 
-    // init
+    // init — render Arabic from the dictionary (source of truth), then show landing
+    setLang("ar");
     goto("landing");
 
     // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
