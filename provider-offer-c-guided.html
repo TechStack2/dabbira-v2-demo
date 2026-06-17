@@ -34,9 +34,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <!-- Latin face for EN/LTR: IBM Plex Sans (same superfamily, so the scripts feel unified) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
@@ -63,6 +64,13 @@
       font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
       letter-spacing:0 !important; -webkit-text-size-adjust:100%;
     }
+    /* EN/LTR swaps the Latin face in; line-height tightens to Latin defaults */
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    /* compact AR|EN language switcher — visible in normal AND clean mode */
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #d6d2f2;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#5b554d;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#4338ca;color:#fff;}
     .t-display{font-size:32px;line-height:1.4;font-weight:700;}
     .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
     .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
@@ -144,89 +152,95 @@
       DESIGN ARTIFACT — not production · PROVIDER OFFER C (Guided/smart · indigo) · font LOCKED: IBM Plex Sans Arabic
     </div>
 
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode), default Arabic/RTL. -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
     <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
       <div class="flex items-center gap-2">
-        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
-        <span class="t-h3">دبّرها</span>
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
       </div>
-      <span class="t-caption text-soft">محترف · سباكة</span>
+      <span class="t-caption text-soft" data-i18n="provider_chip">محترف · سباكة</span>
     </header>
 
     <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (lead-in · IDENTICAL across A/B/C) ════════════════════════════ -->
     <section id="screen-entry" class="screen px-4 pb-28 pt-5">
-      <h1 class="t-h1 mb-1">طلب جديد إلك</h1>
-      <p class="t-body text-soft mb-5">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك.</p>
+      <h1 class="t-h1 mb-1" data-i18n="entry_title">طلب جديد إلك</h1>
+      <p class="t-body text-soft mb-5" data-i18n="entry_sub">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك.</p>
 
       <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('brief')" style="cursor:pointer;">
         <div class="flex items-center justify-between gap-2 mb-2">
           <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-            <span class="size-1.5 rounded-full bg-brand"></span> جديد · بمجالك بمنطقتك
+            <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="new_in_area">جديد · بمجالك بمنطقتك</span>
           </span>
-          <span class="t-caption text-faint">من <bdi>5</bdi> دقايق</span>
+          <span class="t-caption text-faint"><span data-i18n="ago_prefix">من</span> <bdi>5</bdi> <span data-i18n="minutes">دقايق</span></span>
         </div>
-        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <p class="t-h3 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</p>
         <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
         </div>
         <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
-          افتح الطلب وقدّم عرضك
+          <span data-i18n="open_and_quote">افتح الطلب وقدّم عرضك</span>
           <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </span>
       </button>
 
-      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على خطوة تقديم العرض.</p>
+      <p class="t-caption text-soft" data-i18n="entry_note">هاد نموذج تجربة — منركّز على خطوة تقديم العرض.</p>
     </section>
 
     <!-- ════════════════════════════ SCREEN 1 — REQUEST «QUOTE BRIEF» (IDENTICAL across A/B/C) ════════════════════════════ -->
     <section id="screen-brief" class="screen px-4 pb-32 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-brand"></span> مفتوح للعروض
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="open_for_offers">مفتوح للعروض</span>
         </span>
-        <span class="t-caption text-faint">طلب صاحب العقار</span>
+        <span class="t-caption text-faint" data-i18n="owner_request">طلب صاحب العقار</span>
       </div>
 
-      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</h1>
       <div class="flex flex-wrap gap-2 mb-5">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <p class="t-h3 mb-3" data-i18n="req_details">تفاصيل الطلب</p>
         <dl class="space-y-2.5">
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
-            <dd class="t-small text-ink">تحت المغسلة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_where_leak">وين التسريب</dt>
+            <dd class="t-small text-ink" data-i18n="ans_under_sink">تحت المغسلة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
-            <dd class="t-small text-ink">نقطة نقطة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_water">المياه</dt>
+            <dd class="t-small text-ink" data-i18n="ans_dripping">نقطة نقطة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
-            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_desc">الوصف</dt>
+            <dd class="t-small text-ink" data-i18n="desc_value">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
           </div>
         </dl>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-strong mb-1">جاهز تسعّر؟</p>
-        <p class="t-small text-soft">المشكلة واضحة — قدّم عرض مباشر بسعر وتفاصيل، وصاحب العقار بيقارن ويردّ.</p>
+        <p class="t-strong mb-1" data-i18n="ready_to_quote">جاهز تسعّر؟</p>
+        <p class="t-small text-soft" data-i18n="ready_to_quote_help">المشكلة واضحة — قدّم عرض مباشر بسعر وتفاصيل، وصاحب العقار بيقارن ويردّ.</p>
       </div>
     </section>
 
     <!-- ════════════════════════════ SCREEN 2 — VARIANT C OFFER · GUIDED / SMART (one step at a time) ════════════════════════════ -->
     <section id="screen-offer" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center gap-2 mb-3">
-        <span class="t-caption text-faint">عم تسعّر:</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">تسريب مياه تحت مغسلة الحمام</span>
+        <span class="t-caption text-faint" data-i18n="quoting_label">عم تسعّر:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</span>
       </div>
 
-      <!-- progress (3 guided steps) -->
+      <!-- progress (3 guided steps) — JS-set via t('step_of') -->
       <p id="c-progress-label" class="t-caption text-faint mb-2">خطوة <bdi>1</bdi> من <bdi>3</bdi></p>
       <div class="flex gap-1.5 mb-5" aria-hidden="true">
         <span class="c-bar h-1.5 flex-1 rounded-full bg-brand"></span>
@@ -236,7 +250,7 @@
 
       <!-- STEP 1 — smart suggestion + price -->
       <div id="c-step-1" class="step is-active">
-        <h1 class="t-h1 mb-1">حطّ سعرك</h1>
+        <h1 class="t-h1 mb-1" data-i18n="step1_title">حطّ سعرك</h1>
         <!-- the smart suggestion the provider confirms/adjusts -->
         <div class="rounded-xl2 border border-brand/40 bg-wash/70 p-4 mb-4">
           <div class="flex items-start gap-3">
@@ -244,52 +258,52 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
             </span>
             <div class="min-w-0">
-              <p class="t-strong text-brandink mb-1">اقتراح ذكي</p>
-              <p class="t-small text-ink">شكلو تصليح سيفون / تسريب — النطاق المعتاد لهيك شغل بحدود <bdi>$120</bdi>–<bdi>$180</bdi>. عدّل السعر متل ما بدّك.</p>
+              <p class="t-strong text-brandink mb-1" data-i18n="smart_suggestion">اقتراح ذكي</p>
+              <p class="t-small text-ink" data-i18n="suggestion_body">شكلو تصليح سيفون / تسريب — النطاق المعتاد لهيك شغل بحدود <bdi>$120</bdi>–<bdi>$180</bdi>. عدّل السعر متل ما بدّك.</p>
             </div>
           </div>
         </div>
 
         <label class="block mb-2">
-          <span class="t-small text-ink">سعرك <span class="text-brand">*</span></span>
+          <span class="t-small text-ink"><span data-i18n="price_label">سعرك</span> <span class="text-brand">*</span></span>
           <div class="relative mt-2">
             <span class="absolute inset-y-0 start-4 grid place-items-center text-soft pointer-events-none" style="font-size:26px;font-weight:700;">$</span>
             <input id="c-price" inputmode="numeric" class="pricefield" value="150" oninput="armStep()" />
           </div>
-          <span class="t-caption text-soft mt-2 block">عبّيناها بالوسط من النطاق — غيّرها لو حابب.</span>
+          <span class="t-caption text-soft mt-2 block" data-i18n="price_prefill_help">عبّيناها بالوسط من النطاق — غيّرها لو حابب.</span>
         </label>
       </div>
 
       <!-- STEP 2 — timeline (smart default pre-selected) -->
       <div id="c-step-2" class="step">
-        <h1 class="t-h1 mb-1">إيمتى بتعملو؟</h1>
-        <p class="t-body text-soft mb-4">اخترنالك اللي بيناسب هيك شغل — بدّلها لو لزم.</p>
+        <h1 class="t-h1 mb-1" data-i18n="step2_title">إيمتى بتعملو؟</h1>
+        <p class="t-body text-soft mb-4" data-i18n="step2_sub">اخترنالك اللي بيناسب هيك شغل — بدّلها لو لزم.</p>
         <div class="flex flex-wrap gap-2">
-          <button class="opt" onclick="pickOne(this)">بنفس اليوم</button>
-          <button class="opt is-sel" onclick="pickOne(this)">خلال يوم – يومين</button>
-          <button class="opt" onclick="pickOne(this)">خلال أسبوع</button>
-          <button class="opt" onclick="pickOne(this)">حسب المعاينة</button>
+          <button class="opt" onclick="pickOne(this)" data-i18n="tl_same_day">بنفس اليوم</button>
+          <button class="opt is-sel" onclick="pickOne(this)" data-i18n="tl_1_2_days">خلال يوم – يومين</button>
+          <button class="opt" onclick="pickOne(this)" data-i18n="tl_week">خلال أسبوع</button>
+          <button class="opt" onclick="pickOne(this)" data-i18n="tl_after_visit">حسب المعاينة</button>
         </div>
       </div>
 
       <!-- STEP 3 — what's included (multi-select tap chips, smart defaults pre-filled) -->
       <div id="c-step-3" class="step">
-        <h1 class="t-h1 mb-1">شو مشمول بالعرض؟</h1>
-        <p class="t-body text-soft mb-4">عبّينالك المعتاد — شيل أو ضيف بضغطة.</p>
+        <h1 class="t-h1 mb-1" data-i18n="step3_title">شو مشمول بالعرض؟</h1>
+        <p class="t-body text-soft mb-4" data-i18n="step3_sub">عبّينالك المعتاد — شيل أو ضيف بضغطة.</p>
         <div class="flex flex-col gap-2.5">
-          <button class="inc is-on" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> المواد مشمولة بالسعر.</button>
-          <button class="inc is-on" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> كفالة <bdi>6</bdi> أشهر عالشغل.</button>
-          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> بقدر إجي بنفس اليوم.</button>
-          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> سعر نهائي — بلا مفاجآت.</button>
-          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> بقدر مرّ أول لأأكّد السعر.</button>
+          <button class="inc is-on" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> <span data-i18n="tpl_materials">المواد مشمولة بالسعر.</span></button>
+          <button class="inc is-on" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> <span data-i18n="tpl_warranty">كفالة <bdi>6</bdi> أشهر عالشغل.</span></button>
+          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> <span data-i18n="tpl_same_day">بقدر إجي بنفس اليوم.</span></button>
+          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> <span data-i18n="tpl_final">سعر نهائي — بلا مفاجآت.</span></button>
+          <button class="inc" onclick="this.classList.toggle('is-on')"><span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> <span data-i18n="tpl_visit">بقدر مرّ أول لأأكّد السعر.</span></button>
         </div>
 
         <!-- live preview of the assembled offer -->
         <div class="rounded-xl2 border border-line bg-card p-4 mt-5">
-          <p class="t-caption text-faint mb-2">معاينة عرضك</p>
+          <p class="t-caption text-faint mb-2" data-i18n="preview_label">معاينة عرضك</p>
           <div class="flex items-end justify-between">
             <p class="t-h2 text-ink"><bdi>$150</bdi></p>
-            <p class="t-small text-soft">خلال يوم – يومين</p>
+            <p class="t-small text-soft" data-i18n="tl_1_2_days">خلال يوم – يومين</p>
           </div>
         </div>
       </div>
@@ -301,74 +315,74 @@
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         </span>
-        <h1 class="t-h1 mb-1">انبعت عرضك!</h1>
-        <p class="t-h3 text-soft">عرض كامل ومرتّب — صاحب العقار رح يشوفه.</p>
+        <h1 class="t-h1 mb-1" data-i18n="sent_title">انبعت عرضك!</h1>
+        <p class="t-h3 text-soft" data-i18n="sent_sub">عرض كامل ومرتّب — صاحب العقار رح يشوفه.</p>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <span class="t-caption text-faint">عرضك</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار</span>
+          <span class="t-caption text-faint" data-i18n="your_offer">عرضك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="awaiting_owner">بانتظار رد صاحب العقار</span></span>
         </div>
         <p class="t-display text-ink mb-1"><bdi>$150</bdi></p>
-        <p class="t-small text-soft">خلال يوم – يومين · المواد مشمولة · كفالة <bdi>6</bdi> أشهر</p>
+        <p class="t-small text-soft"><span data-i18n="tl_1_2_days">خلال يوم – يومين</span> · <span data-i18n="tpl_materials_short">المواد مشمولة</span> · <span data-i18n="warranty_short">كفالة</span> <bdi>6</bdi> <span data-i18n="months">أشهر</span></p>
       </div>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('myoffer')">شوف عرضك</button>
-        <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+        <button class="cta-primary" onclick="goto('myoffer')" data-i18n="view_offer">شوف عرضك</button>
+        <button class="cta-ghost" onclick="goto('entry')" data-i18n="back_to_requests">رجوع للطلبات</button>
       </div>
 
-      <a id="back-to-dash-sent" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-sent" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 4 — «MY OFFER» VIEW (deeper state · + Edit) ════════════════════════════ -->
     <section id="screen-myoffer" class="screen px-4 pb-28 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار
+          <span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="awaiting_owner">بانتظار رد صاحب العقار</span>
         </span>
-        <span class="t-caption text-faint">عرضك</span>
+        <span class="t-caption text-faint" data-i18n="your_offer">عرضك</span>
       </div>
 
-      <h1 class="t-h1 mb-2">عرضك عَ: تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2"><span data-i18n="your_offer_on">عرضك عَ:</span> <span data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</span></h1>
       <div class="flex flex-wrap gap-2 mb-5">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
         <div class="flex items-end justify-between mb-3">
           <div>
-            <p class="t-caption text-faint mb-0.5">السعر</p>
+            <p class="t-caption text-faint mb-0.5" data-i18n="price_label">السعر</p>
             <p class="t-display text-ink leading-none"><bdi>$150</bdi></p>
           </div>
           <div class="text-end">
-            <p class="t-caption text-faint mb-0.5">المدّة</p>
-            <p class="t-strong">خلال يوم – يومين</p>
+            <p class="t-caption text-faint mb-0.5" data-i18n="duration_label">المدّة</p>
+            <p class="t-strong" data-i18n="tl_1_2_days">خلال يوم – يومين</p>
           </div>
         </div>
         <hr class="border-line mb-3" />
-        <p class="t-h3 mb-2">شو مشمول</p>
+        <p class="t-h3 mb-2" data-i18n="included_label">شو مشمول</p>
         <ul class="space-y-1.5">
-          <li class="flex items-start gap-2 t-small text-ink"><svg class="shrink-0 mt-0.5 text-brand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> المواد مشمولة بالسعر.</li>
-          <li class="flex items-start gap-2 t-small text-ink"><svg class="shrink-0 mt-0.5 text-brand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> كفالة <bdi>6</bdi> أشهر عالشغل.</li>
+          <li class="flex items-start gap-2 t-small text-ink"><svg class="shrink-0 mt-0.5 text-brand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="tpl_materials">المواد مشمولة بالسعر.</span></li>
+          <li class="flex items-start gap-2 t-small text-ink"><svg class="shrink-0 mt-0.5 text-brand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="tpl_warranty">كفالة <bdi>6</bdi> أشهر عالشغل.</span></li>
         </ul>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center gap-2">
           <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
-          <p class="t-small text-soft">بانتظار رد صاحب العقار. فيك تعدّل عرضك طول ما هو مفتوح.</p>
+          <p class="t-small text-soft" data-i18n="waiting_note">بانتظار رد صاحب العقار. فيك تعدّل عرضك طول ما هو مفتوح.</p>
         </div>
       </div>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="editOffer()">عدّل العرض</button>
-        <button class="cta-ghost" onclick="goto('brief')">شوف الطلب من جديد</button>
+        <button class="cta-primary" onclick="editOffer()" data-i18n="edit_offer">عدّل العرض</button>
+        <button class="cta-ghost" onclick="goto('brief')" data-i18n="view_request_again">شوف الطلب من جديد</button>
       </div>
 
-      <a id="back-to-dash-myoffer" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-myoffer" href="provider-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
@@ -391,6 +405,128 @@
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived from copy-deck.md §5 (NOT yet
+    //  through the Arabic review bar). Numerals stay Western in both languages.
+    //  The 3-step progress label + the step CTAs are JS-set → keyed via t().
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar"; // in-memory only (no storage)
+
+    const LEAF = {
+      "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتدفئة":"Heating & cooling",
+      "إصلاح أجهزة كهربائية":"Appliance repair","صيانة عامة":"General maintenance",
+      "بناء وتشييد":"Construction","تجديد وترميم":"Renovation","أعمال حجر وبناء":"Stone & masonry","أسقف وعزل":"Roofing & insulation",
+      "دهان":"Painting","أرضيات":"Flooring","بلاط وسيراميك":"Tiling","نجارة":"Carpentry","ألمنيوم وزجاج":"Aluminium & glass",
+      "تنظيف":"Cleaning","مكافحة حشرات":"Pest control","تنسيق حدائق":"Landscaping",
+      "تركيب وصيانة طاقة شمسية":"Solar install & service","أنظمة أمان ومراقبة":"Security & surveillance","منزل ذكي":"Smart home",
+      "خدمات نقل":"Moving services","خدمات أثاث":"Furniture services"
+    };
+    function tLeaf(arLabel){ return LANG==="ar" ? arLabel : (LEAF[arLabel] || arLabel); }
+
+    const I18N = {
+      ar: {
+        brand_mark:"د", brand:"دبّرها", provider_chip:"محترف · سباكة",
+        entry_title:"طلب جديد إلك", entry_sub:"وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك.",
+        new_in_area:"جديد · بمجالك بمنطقتك", ago_prefix:"من", minutes:"دقايق",
+        open_and_quote:"افتح الطلب وقدّم عرضك", entry_note:"هاد نموذج تجربة — منركّز على خطوة تقديم العرض.",
+        req_title:"تسريب مياه تحت مغسلة الحمام",
+        region_beirut:"بيروت — الأشرفية", urg_normal:"عادي",
+        open_for_offers:"مفتوح للعروض", owner_request:"طلب صاحب العقار",
+        req_details:"تفاصيل الطلب",
+        dt_where_leak:"وين التسريب", ans_under_sink:"تحت المغسلة",
+        dt_water:"المياه", ans_dripping:"نقطة نقطة",
+        dt_desc:"الوصف", desc_value:"في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.",
+        ready_to_quote:"جاهز تسعّر؟", ready_to_quote_help:"المشكلة واضحة — قدّم عرض مباشر بسعر وتفاصيل، وصاحب العقار بيقارن ويردّ.",
+        // guided offer (C)
+        quoting_label:"عم تسعّر:",
+        step1_title:"حطّ سعرك",
+        smart_suggestion:"اقتراح ذكي",
+        suggestion_body:"شكلو تصليح سيفون / تسريب — النطاق المعتاد لهيك شغل بحدود <bdi>$120</bdi>–<bdi>$180</bdi>. عدّل السعر متل ما بدّك.",
+        price_label:"سعرك", price_prefill_help:"عبّيناها بالوسط من النطاق — غيّرها لو حابب.",
+        step2_title:"إيمتى بتعملو؟", step2_sub:"اخترنالك اللي بيناسب هيك شغل — بدّلها لو لزم.",
+        tl_same_day:"بنفس اليوم", tl_1_2_days:"خلال يوم – يومين", tl_week:"خلال أسبوع", tl_after_visit:"حسب المعاينة",
+        step3_title:"شو مشمول بالعرض؟", step3_sub:"عبّينالك المعتاد — شيل أو ضيف بضغطة.",
+        tpl_materials:"المواد مشمولة بالسعر.", tpl_warranty:"كفالة <bdi>6</bdi> أشهر عالشغل.",
+        tpl_same_day:"بقدر إجي بنفس اليوم.", tpl_final:"سعر نهائي — بلا مفاجآت.", tpl_visit:"بقدر مرّ أول لأأكّد السعر.",
+        preview_label:"معاينة عرضك",
+        // sent
+        sent_title:"انبعت عرضك!", sent_sub:"عرض كامل ومرتّب — صاحب العقار رح يشوفه.",
+        your_offer:"عرضك", awaiting_owner:"بانتظار رد صاحب العقار",
+        tpl_materials_short:"المواد مشمولة", warranty_short:"كفالة", months:"أشهر",
+        view_offer:"شوف عرضك", back_to_requests:"رجوع للطلبات",
+        // my offer
+        your_offer_on:"عرضك عَ:", duration_label:"المدّة", included_label:"شو مشمول",
+        waiting_note:"بانتظار رد صاحب العقار. فيك تعدّل عرضك طول ما هو مفتوح.",
+        edit_offer:"عدّل العرض", view_request_again:"شوف الطلب من جديد", back_to_list:"رجوع للقائمة ↩",
+        // JS-set CTAs + progress
+        cta_open_request:"افتح الطلب", cta_make_offer:"قدّم عرضك",
+        cta_next:"التالي", cta_send_offer:"إرسال العرض", cta_back:"رجوع",
+        step_a:"خطوة", step_of:"من"
+      },
+      en: {
+        brand_mark:"D", brand:"Dabbira", provider_chip:"Pro · Plumbing",
+        entry_title:"A new request for you", entry_sub:"A request in your trade, in your area — you can send an offer.",
+        new_in_area:"New · in your trade & area", ago_prefix:"", minutes:"min ago",
+        open_and_quote:"Open the request and send an offer", entry_note:"This is a test prototype — we focus on the offer step.",
+        req_title:"Water leak under the bathroom sink",
+        region_beirut:"Beirut — Achrafieh", urg_normal:"Normal",
+        open_for_offers:"Open for offers", owner_request:"Owner's request",
+        req_details:"Request details",
+        dt_where_leak:"Where's the leak", ans_under_sink:"Under the sink",
+        dt_water:"Water", ans_dripping:"Dripping",
+        dt_desc:"Description", desc_value:"There's a water leak under the bathroom sink; it's been dripping for an hour and started soaking the cabinet below.",
+        ready_to_quote:"Ready to quote?", ready_to_quote_help:"The problem is clear — send a direct offer with a price and details, and the owner compares and replies.",
+        quoting_label:"You're quoting:",
+        step1_title:"Set your price",
+        smart_suggestion:"Smart suggestion",
+        suggestion_body:"Looks like a siphon repair / leak — the usual range for this kind of job is around <bdi>$120</bdi>–<bdi>$180</bdi>. Adjust the price however you like.",
+        price_label:"Your price", price_prefill_help:"We pre-filled the middle of the range — change it if you like.",
+        step2_title:"When can you do it?", step2_sub:"We picked what suits this kind of job — change it if needed.",
+        tl_same_day:"Same day", tl_1_2_days:"Within a day or two", tl_week:"Within a week", tl_after_visit:"After a visit",
+        step3_title:"What's included in the offer?", step3_sub:"We pre-filled the usual — remove or add with a tap.",
+        tpl_materials:"Materials included.", tpl_warranty:"<bdi>6</bdi>-month workmanship warranty.",
+        tpl_same_day:"I can come the same day.", tpl_final:"Final price — no surprises.", tpl_visit:"I can stop by first to confirm the price.",
+        preview_label:"Offer preview",
+        sent_title:"Offer sent!", sent_sub:"A complete, tidy offer — the owner will see it.",
+        your_offer:"Your offer", awaiting_owner:"Awaiting the owner's reply",
+        tpl_materials_short:"Materials included", warranty_short:"warranty", months:"months",
+        view_offer:"View your offer", back_to_requests:"Back to requests",
+        your_offer_on:"Your offer on:", duration_label:"Duration", included_label:"What's included",
+        waiting_note:"Awaiting the owner's reply. You can edit your offer while it's open.",
+        edit_offer:"Edit offer", view_request_again:"View the request again", back_to_list:"Back to list ↩",
+        cta_open_request:"Open the request", cta_make_offer:"Send your offer",
+        cta_next:"Next", cta_send_offer:"Send offer", cta_back:"Back",
+        step_a:"Step", step_of:"of"
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-leaf]").forEach(node=>{ node.textContent=tLeaf(node.getAttribute("data-leaf")); });
+    }
+
+    // THE switcher — defined + wired to both AR and EN buttons
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      applyStaticI18n();
+      // re-localize the JS-set progress label + footer CTAs for the active screen
+      const active=document.querySelector(".screen.is-active");
+      if(active){
+        const name=Object.keys(screens).find(k=>screens[k]===active.id);
+        if(name==="offer") renderProgress();
+        if(name) configureFooter(name);
+      }
+    }
+
     const screens = { entry:"screen-entry", brief:"screen-brief", offer:"screen-offer", sent:"screen-sent", myoffer:"screen-myoffer" };
     let cStep=1; const C_TOTAL=3;
     function goto(name){
@@ -406,8 +542,9 @@
     function configureFooter(name){
       const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
       cta.classList.remove("is-ready"); cta.disabled=false; back.style.display="none";
-      if(name==="entry"){ cta.textContent="افتح الطلب"; }
-      else if(name==="brief"){ cta.textContent="قدّم عرضك"; }
+      back.textContent=t("cta_back");
+      if(name==="entry"){ cta.textContent=t("cta_open_request"); }
+      else if(name==="brief"){ cta.textContent=t("cta_make_offer"); }
       else if(name==="offer"){ updateOfferFooter(); }
     }
     function onCta(){
@@ -421,10 +558,15 @@
     }
 
     // ── guided step controller ───────────────────────────────────────────
+    // localized progress label «خطوة 1 من 3» / «Step 1 of 3» (Western numerals, bdi-isolated)
+    function renderProgress(){
+      document.getElementById("c-progress-label").innerHTML =
+        t("step_a")+' <bdi>'+cStep+'</bdi> '+t("step_of")+' <bdi>'+C_TOTAL+'</bdi>';
+    }
     function setStep(n){
       cStep=n;
       for(let i=1;i<=C_TOTAL;i++) document.getElementById("c-step-"+i).classList.toggle("is-active", i===n);
-      document.getElementById("c-progress-label").innerHTML = 'خطوة <bdi>'+n+'</bdi> من <bdi>'+C_TOTAL+'</bdi>';
+      renderProgress();
       document.querySelectorAll(".c-bar").forEach((b,i)=>{ b.classList.toggle("bg-brand", i<n); b.classList.toggle("bg-line", i>=n); });
       updateOfferFooter();
       window.scrollTo(0,0);
@@ -432,9 +574,9 @@
     function stepBack(){ if(cStep>1) setStep(cStep-1); else goto("brief"); }
     function updateOfferFooter(){
       const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
-      back.style.display="inline-flex";
-      if(cStep<C_TOTAL){ cta.textContent="التالي"; armStep(); }
-      else { cta.textContent="إرسال العرض"; cta.disabled=false; void cta.offsetWidth; cta.classList.add("is-ready"); }
+      back.style.display="inline-flex"; back.textContent=t("cta_back");
+      if(cStep<C_TOTAL){ cta.textContent=t("cta_next"); armStep(); }
+      else { cta.textContent=t("cta_send_offer"); cta.disabled=false; void cta.offsetWidth; cta.classList.add("is-ready"); }
     }
     // step 1 needs a price; steps 2/3 have smart defaults so they're always ready
     function armStep(){
@@ -452,6 +594,8 @@
     // Edit from "my offer" → re-enter the guided builder at step 1
     function editOffer(){ cStep=1; goto("offer"); }
 
+    // init — render Arabic from the dictionary (source of truth), then show entry
+    setLang("ar");
     goto("entry");
 
     (function(){
