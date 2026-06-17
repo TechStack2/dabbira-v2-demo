@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — FULL JOURNEY D · «Adaptive chat intake» (CYAN / TEAL)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Spec:    design/flows/journey-d-adaptive.md
+  Data:    src/types/enums.ts (ServiceCategory ×23, Sector, Residential/CommercialSubtype)
+           messages/ar.json + en.json → service_categories (REAL labels) + service_questions (REAL probes)
+  Type:    design/system/tokens.json  (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:     design/system/rtl-arabic.md (logical properties; bidi/number isolation; directional-icon flips)
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  The SYNTHESIS of the three shipped owner journeys (A guided · B media-first · C conversational).
+  An adaptive, chat-led intake that optimises BOTH simplicity of submitting AND data quality.
+  Rhythm: FRAME → DRILL → SHOW/TELL → CONFIRM — one continuous conversation (phases conceptual,
+  NOT separate screens). The chatbox is the spine (C). Dropdown metadata becomes chip questions.
+  Probes come VERBATIM from messages/service_questions; «مش متأكد» pivots to media (the heart of D).
+  An Offer-Readiness meter (🟠 floor → 🟢 ceiling, 🟡 visit cap) rides the whole chat, framed around
+  the user's benefit. Register-late only at submit. All 23 services run start→submit, no dead-ends.
+
+  FONT LOCKED to IBM Plex Sans Arabic (validated by all 3 testers 2026-06-17; tokens.json
+  firmness.face_decision). Journey D has its OWN identity: CYAN/TEAL (#0e7490) — distinct from
+  A-green / B-orange / C-indigo.
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+  NOTE: English column is DERIVED (from messages + the brief) and NOT yet through the native-Lebanese review bar.
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — رحلة D (حكي متكيّف) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic — held CONSTANT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#102228", soft:"#4a5b61", faint:"#7f9197", line:"#dce8ea",
+            bg:"#f1f6f7", card:"#ffffff",
+            /* CYAN / TEAL — Journey D's identity (distinct from green, orange, indigo) */
+            teal:"#0e7490", tealink:"#0a586e", wash:"#e3f1f4", tealln:"#bfe0e7",
+            /* meter segment colors */
+            floor:"#c2740b", floorbg:"#fcf1de", ceil:"#0f8a5f", ceilbg:"#e4f5ec", visit:"#9a6a00", visitbg:"#fdf4dd",
+            amber:"#9a6a00", amberbg:"#fdf4dd", amberln:"#efddb0",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f1f6f7);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #bfe0e7;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#4a5b61;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#0e7490;color:#fff;}
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #d8e6e9, 0 24px 60px -28px rgba(10,40,50,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    /* ── chat bubbles ── */
+    .bubble-bot{
+      max-width:86%; align-self:flex-start;
+      background:#fff; border:1px solid #dce8ea; color:#102228;
+      border-radius:18px; border-start-start-radius:6px; /* tail on inline-start (right in RTL) */
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+      box-shadow:0 1px 2px rgba(10,40,50,.04);
+    }
+    .bubble-user{
+      max-width:86%; align-self:flex-end;
+      background:#0e7490; color:#fff;
+      border-radius:18px; border-end-end-radius:6px; /* tail on inline-end (left in RTL) */
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+    }
+    .row{display:flex;}
+    .row.bot{justify-content:flex-start;}
+    .row.user{justify-content:flex-end;}
+    .avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:#0e7490;color:#fff;flex-shrink:0;font-weight:700;font-size:14px;}
+
+    .typing{display:inline-flex;gap:4px;align-items:center;}
+    .typing span{width:7px;height:7px;border-radius:999px;background:#a9c6cd;animation:blink 1.2s infinite ease-in-out;}
+    .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+
+    /* quick-reply / metadata / probe chips */
+    .qchip{
+      display:inline-flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:600;
+      border:1.5px solid #bfe0e7;border-radius:999px;background:#fff;color:#0a586e;padding:9px 14px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .qchip:hover{background:#e3f1f4;}
+    .qchip.is-sel{background:#0e7490;color:#fff;border-color:#0e7490;}
+    .qchip.is-media{border-style:dashed;color:#0e7490;}
+    .qchip.is-notsure{border-style:dashed;border-color:#cdb88a;color:#9a6a00;background:#fdfaf2;}
+    .qchip.is-done{background:#0a586e;color:#fff;border-color:#0a586e;}
+
+    /* domain chip (slightly larger, with emoji) */
+    .dchip{
+      display:inline-flex;align-items:center;gap:7px;font-size:15px;line-height:1.25;font-weight:600;
+      border:1.5px solid #bfe0e7;border-radius:14px;background:#fff;color:#0a586e;padding:11px 13px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .dchip:hover{background:#e3f1f4;}
+
+    /* composer */
+    .composer{display:flex;align-items:center;gap:8px;}
+    .composer input{flex:1;font-size:16px;line-height:1.5;font-weight:500;border:1px solid #dce8ea;border-radius:999px;background:#fff;padding:11px 16px;outline:none;}
+    .composer input:focus{border-color:#0e7490;box-shadow:0 0 0 3px rgba(14,116,144,.16);}
+    .icon-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;border:1px solid #dce8ea;background:#fff;color:#0e7490;cursor:pointer;flex-shrink:0;}
+    .send-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:#0e7490;color:#fff;border:none;cursor:pointer;flex-shrink:0;}
+
+    .field{font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #dce8ea;border-radius:12px;background:#fff;padding:12px 14px;outline:none;}
+    .field:focus{border-color:#0e7490;box-shadow:0 0 0 3px rgba(14,116,144,.16);}
+
+    .cta-primary{font-size:16px;line-height:1.3;font-weight:600;background:#0e7490;color:#fff;border:none;border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;transition:transform .12s ease,box-shadow .15s ease;}
+    .cta-primary:disabled{background:#a9cdd6;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(14,116,144,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#0a586e;border:1px solid #bfe0e7;border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;}
+    .vtab{font-size:12px;font-weight:600;border:1px solid #dce8ea;background:#fff;color:#4a5b61;border-radius:999px;padding:6px 12px;cursor:pointer;}
+    .vtab.is-sel{background:#102228;color:#fff;border-color:#102228;}
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#102228;opacity:1;}
+
+    /* ── Offer-readiness meter ── */
+    .meter-wrap{background:#fff;border:1px solid #dce8ea;border-radius:14px;padding:10px 12px;box-shadow:0 1px 2px rgba(10,40,50,.04);}
+    .meter-track{display:flex;gap:3px;height:9px;border-radius:999px;overflow:hidden;background:#eef4f5;}
+    .meter-seg{flex:1;background:#eef4f5;transition:background .35s ease;}
+    .meter-seg.on-floor{background:#e09a2b;}
+    .meter-seg.on-ceil{background:#0f8a5f;}
+    .meter-seg.on-visit{background:#caa12e;}
+    @keyframes seg-pop{0%{transform:scaleY(.6)}55%{transform:scaleY(1.25)}100%{transform:scaleY(1)}}
+    .meter-seg.just-on{animation:seg-pop .4s ease;}
+
+    /* simulated media bubble inside chat */
+    .media-thumb{display:grid;place-items:center;width:64px;height:64px;border-radius:12px;background:rgba(255,255,255,.18);color:#fff;flex-shrink:0;}
+    .rec-dot{width:9px;height:9px;border-radius:999px;background:#ff5c5c;animation:recblink 1s infinite;}
+    @keyframes recblink{0%,100%{opacity:1}50%{opacity:.25}}
+
+    /* summary edit rows */
+    .sumrow{display:flex;align-items:flex-start;gap:8px;padding:11px 0;border-top:1px solid #eef4f5;}
+    .sumrow:first-child{border-top:none;}
+    .editlink{font-size:13px;font-weight:600;color:#0e7490;cursor:pointer;flex-shrink:0;text-decoration:underline;text-underline-offset:3px;background:none;border:none;}
+
+    @media (prefers-reduced-motion:reduce){ .cta-primary.is-ready,.typing span,.meter-seg.just-on,.rec-dot{animation:none;} }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · OWNER JOURNEY D (Adaptive chat) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode). -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-teal text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
+      </div>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4" data-i18n="signin_secondary">عندك حساب؟ سجّل الدخول</a>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — LANDING ════════════════════════════ -->
+    <section id="screen-landing" class="screen is-active">
+      <div class="px-5 pt-8 pb-7 bg-wash">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-tealink px-3 py-1 t-caption mb-4">
+          <span class="size-1.5 rounded-full bg-teal"></span> <span data-i18n="tagline">احكِ معنا — ونحنا منكمّل السؤال حسب حالتك.</span>
+        </span>
+        <h1 class="t-display mb-3" data-i18n="hero_title">قلّنا شو في…<br/>ونحنا مندبّرها.</h1>
+        <p class="t-body text-soft mb-6" data-i18n="hero_sub">حكي بسيط — منسألك بس اللي بيلزم لحالتك، وبتقدر تفرجينا بصورة أو صوت بدل ما تكتب. كل ما تعطينا أكتر، العروض بتجي أدقّ.</p>
+        <button class="cta-primary" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
+        <p class="t-caption text-soft mt-3 text-center" data-i18n="free_note">ببلاش · بلا حساب لتبلّش · بتفرجينا بدل ما تكتب</p>
+      </div>
+
+      <div class="px-5 py-7">
+        <h2 class="t-h2 mb-4" data-i18n="how_it_works">كيف بتمشي؟</h2>
+        <div class="rounded-xl2 border border-line bg-card p-4 space-y-2.5">
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q1">أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟</div></div>
+          <div class="row user"><div class="bubble-user" data-i18n="preview_a1">لبيت</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q2">تمام. شو بدّك مساعدة فيه؟</div></div>
+        </div>
+        <p class="t-small text-soft mt-3" data-i18n="preview_note">منسأل سؤال سؤال — والأسئلة بتتغيّر حسب نوع الشغلة، مش فورم ثابت.</p>
+      </div>
+
+      <div class="px-5 pb-8">
+        <div class="rounded-xl2 border border-line bg-card p-4 flex items-center gap-3">
+          <span class="grid place-items-center size-10 rounded-xl bg-wash text-tealink shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div class="min-w-0"><p class="t-strong" data-i18n="trust_t">محترفين مقيَّمين</p><p class="t-small text-soft" data-i18n="trust_d">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
+        </div>
+        <button class="cta-primary mt-5" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — ADAPTIVE CHAT CORE ════════════════════════════ -->
+    <section id="screen-chat" class="screen">
+      <!-- offer-readiness meter (rides the whole chat) -->
+      <div class="px-4 pt-3 pb-2">
+        <div class="meter-wrap">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <p class="t-caption" id="meter-label" data-tkey="meter_start" style="font-weight:600;color:#0a586e;">جهوزية العرض</p>
+            <button class="t-caption text-tealink underline underline-offset-2" onclick="reviewNow()" id="meter-review" data-tkey="meter_review" style="display:none;">راجع وابعت ↩</button>
+          </div>
+          <div class="meter-track" id="meter-track">
+            <div class="meter-seg" data-seg="0"></div>
+            <div class="meter-seg" data-seg="1"></div>
+            <div class="meter-seg" data-seg="2"></div>
+            <div class="meter-seg" data-seg="3"></div>
+            <div class="meter-seg" data-seg="4"></div>
+          </div>
+          <p class="t-caption text-soft mt-1.5" id="meter-help" data-tkey="meter_help_start">جاوب شوي وبتوصل لـ «المحترفين بيعطوك سعر تقريبي».</p>
+        </div>
+      </div>
+
+      <!-- chat log -->
+      <div id="chat-log" class="px-4 pb-3 flex flex-col gap-2.5" style="min-height:38vh;"></div>
+
+      <!-- dynamic answer zone -->
+      <div id="quick-zone" class="px-4 pb-2 flex flex-wrap gap-2"></div>
+
+      <!-- composer -->
+      <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2.5" style="padding-bottom:calc(10px + env(safe-area-inset-bottom));">
+        <div class="composer">
+          <button class="icon-btn" data-i18n-title="show_us_title" data-i18n-aria="add_media_aria" title="فرجينا" onclick="mediaTap('photo')" aria-label="أضف صورة أو صوت أو فيديو">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </button>
+          <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار فوق" data-i18n-ph="composer_ph" onkeydown="if(event.key==='Enter')sendFree()" />
+          <button class="send-btn" onclick="sendFree()" data-i18n-aria="send_aria" aria-label="ابعت">
+            <svg id="send-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+        <p class="t-caption text-amber mt-1.5" dir="ltr" style="text-align:start;" data-i18n="be_media_capture">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — CONFIRM (editable summary) ════════════════════════════ -->
+    <section id="screen-confirm" class="screen px-4 pb-28 pt-5">
+      <div class="rounded-xl2 border border-teal/30 bg-wash/70 p-4 mb-5">
+        <p class="t-small text-tealink flex items-center gap-2">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span data-i18n="confirm_banner">جمّعنا طلبك من الحكي. راجِع، عدّل أي شي، وبعدها ابعتو.</span>
+        </p>
+      </div>
+
+      <h1 class="t-h1 mb-1" data-i18n="confirm_title">راجِع طلبك</h1>
+      <p class="t-body text-soft mb-4" data-i18n="confirm_sub">هيدا اللي فهمناه — دوس «عدّل» جنب أي سطر لتغيّرو.</p>
+
+      <!-- meter snapshot here -->
+      <div class="meter-wrap mb-5">
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+          <p class="t-caption" id="confirm-meter-label" style="font-weight:600;color:#0a586e;" data-tkey="meter_ceil">المحترفون بيسعّروا بدقّة 🟢</p>
+        </div>
+        <div class="meter-track" id="confirm-meter-track">
+          <div class="meter-seg on-floor"></div><div class="meter-seg on-floor"></div><div class="meter-seg on-ceil"></div><div class="meter-seg on-ceil"></div><div class="meter-seg on-ceil"></div>
+        </div>
+      </div>
+
+      <!-- editable summary card -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-caption text-faint mb-1" data-i18n="summary_label">ملخّص الطلب</p>
+        <div id="summary-list"></div>
+      </div>
+
+      <button class="cta-primary" onclick="goto('signup')" data-i18n="confirm_send">تمام — تابِع لإرسال الطلب</button>
+      <button class="cta-ghost mt-2.5" onclick="goto('chat')" data-i18n="confirm_back">رجوع للحكي</button>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — REGISTER-LATE GATE ════════════════════════════ -->
+    <section id="screen-signup" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-5">
+        <span class="inline-grid place-items-center size-16 rounded-full bg-ceilbg text-ceil mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1" data-i18n="gate_title">طلبك جاهز ✅</h1>
+        <p class="t-body text-soft" data-i18n="gate_sub">اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.</p>
+      </div>
+
+      <!-- meter state shown in the gate (reinforce value) -->
+      <div class="meter-wrap mb-5">
+        <div class="flex items-center gap-2 mb-1.5">
+          <p class="t-caption" style="font-weight:600;color:#0f8a5f;" data-tkey="meter_ceil">المحترفون بيسعّروا بدقّة 🟢</p>
+        </div>
+        <div class="meter-track">
+          <div class="meter-seg on-floor"></div><div class="meter-seg on-floor"></div><div class="meter-seg on-ceil"></div><div class="meter-seg on-ceil"></div><div class="meter-seg on-ceil"></div>
+        </div>
+        <p class="t-caption text-soft mt-1.5" data-i18n="gate_meter_help">طلبك كامل — المحترفين بيقدروا يسعّروا بدقّة.</p>
+      </div>
+
+      <label class="block mb-4"><span class="t-small text-ink" data-i18n="name_label">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" data-i18n-ph="name_ph" /></label>
+      <label class="block mb-5">
+        <span class="t-small text-ink" data-i18n="phone_label">رقم تلفونك</span>
+        <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
+        <span class="t-caption text-soft mt-1 block" data-i18n="otp_note">منبعتلك رمز تأكيد عالرسائل.</span>
+      </label>
+
+      <button class="cta-primary" onclick="goto('done')" data-i18n="gate_send">اعمل حساب وابعت</button>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_otp">[BE] — تسجيل/تأكيد عبر OTP</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 4 — W4 COMPLETION ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-teal mb-4"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1" data-i18n="done_title">صار جاهز طلبك!</h1>
+        <p class="t-h3 text-soft" data-i18n="whats_next_heading">شو بيصير بعدين؟</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-2 mb-4" dir="ltr">
+        <button id="btn-off" class="vtab is-sel" onclick="setVariant('off')">OFF · live now [UI]</button>
+        <button id="btn-on"  class="vtab" onclick="setVariant('on')">ON · review first [BE]</button>
+      </div>
+
+      <div id="var-off" class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-tealink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-teal"></span> <span data-i18n="open_for_offers">مفتوح للعروض</span></span></div>
+        <p class="t-body text-ink" data-i18n="whats_next_off">طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.</p>
+      </div>
+      <div id="var-on" class="hidden rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="in_review">بمراجعة سريعة</span></span></div>
+        <p class="t-body text-ink" data-i18n="whats_next_on">وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.</p>
+      </div>
+
+      <p class="t-caption text-soft mb-6" data-i18n="page_note">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('request')" data-i18n="view_request">شوف طلبك</button>
+        <button class="cta-ghost" onclick="restartChat()" data-i18n="another_request">اعمل طلب تاني</button>
+      </div>
+
+      <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 5 — REQUEST DETAIL «طلبك» (post-submit) ════════════════════════════ -->
+    <section id="screen-request" class="screen px-4 pb-28 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-tealink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-teal"></span> <span data-i18n="status_published">منشور · مفتوح للعروض</span>
+        </span>
+        <span class="t-caption text-faint" data-i18n="your_request">طلبك</span>
+      </div>
+
+      <h1 class="t-h1 mb-2" id="req-title">تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-2" id="req-chips"></div>
+      <p class="t-caption text-faint mb-5 flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span data-i18n="gathered_from_chat">مجموعة من الحكي المتكيّف</span>
+      </p>
+
+      <!-- attached media (D shows captured media prominently like B) -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4" id="req-media-card">
+        <p class="t-h3 mb-3" data-i18n="media_shown">اللي فرجيتنا ياه</p>
+        <div id="req-media"></div>
+        <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;" data-i18n="be_media_show">[BE] — عرض/تشغيل الوسائط</p>
+      </div>
+
+      <!-- captured details / probe answers -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-h3 mb-3" data-i18n="req_details">تفاصيل الطلب</p>
+        <dl class="space-y-2.5" id="req-details"></dl>
+      </div>
+
+      <!-- offers preference (how many) -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="grid place-items-center size-6 rounded-full bg-wash text-tealink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>
+          <p class="t-strong" id="req-offers-target">بدّك حتى <bdi>5</bdi> عروض لتقارن</p>
+        </div>
+        <p class="t-small text-soft" data-i18n="offers_now_help">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('confirm')" data-i18n="edit_request">عدّل الطلب</button>
+        <button class="cta-ghost flex items-center justify-center gap-2" onclick="return false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span data-i18n="share_whatsapp">شارك عبر واتساب</span>
+        </button>
+      </div>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_whatsapp">[BE] — مشاركة عبر واتساب</p>
+
+      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ SCREEN PICKER + dev jumps (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1.5 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">D:</span>
+      <button class="picker is-sel" data-s="landing" onclick="goto('landing')">0·landing</button>
+      <button class="picker"        data-s="chat"    onclick="goto('chat')">1·chat</button>
+      <button class="picker"        data-s="confirm" onclick="goto('confirm')">2·confirm</button>
+      <button class="picker"        data-s="signup"  onclick="goto('signup')">3·signup</button>
+      <button class="picker"        data-s="done"    onclick="goto('done')">4·done</button>
+      <button class="picker"        data-s="request" onclick="goto('request')">5·request</button>
+      <span class="opacity-60 ms-2">jump svc:</span>
+      <select id="dev-svc" onchange="devJumpService(this.value)" style="background:#1c333a;color:#fff;border:1px solid #2a4750;border-radius:6px;padding:3px 6px;font-size:11px;max-width:150px;"></select>
+    </nav>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived (from messages + brief), NOT review-passed.
+    //  Chat bubbles/chips are built dynamically → carry data-tkey OR data-tar/data-ten
+    //  so the switcher re-localizes them in place; layout mirrors automatically in LTR.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar";
+
+    // ── REAL service-category labels (messages/service_categories) ──
+    const CAT = {
+      ar:{plumbing:"سباكة",electrical:"كهرباء",hvac:"تكييف وتدفئة",carpentry:"نجارة",painting:"دهان",masonry:"أعمال حجر وبناء",roofing:"أسقف وعزل",flooring:"أرضيات",tiling:"بلاط وسيراميك",landscaping:"تنسيق حدائق",pest_control:"مكافحة حشرات",cleaning:"تنظيف",appliance_repair:"إصلاح أجهزة كهربائية",security_systems:"أنظمة أمان ومراقبة",solar_installation:"تركيب وصيانة طاقة شمسية",general_maintenance:"صيانة عامة",renovation:"تجديد وترميم",construction:"بناء وتشييد",smart_home:"منزل ذكي",moving:"خدمات نقل",furniture:"خدمات أثاث",aluminum_and_glass:"ألمنيوم وزجاج",other:"أخرى"},
+      en:{plumbing:"Plumbing",electrical:"Electrical",hvac:"HVAC",carpentry:"Carpentry",painting:"Painting",masonry:"Masonry",roofing:"Roofing",flooring:"Flooring",tiling:"Tiling",landscaping:"Landscaping",pest_control:"Pest Control",cleaning:"Cleaning",appliance_repair:"Appliance Repair",security_systems:"Security Systems",solar_installation:"Solar Installation & Maintenance",general_maintenance:"General Maintenance",renovation:"Renovation",construction:"Construction",smart_home:"Smart Home",moving:"Moving Services",furniture:"Furniture Services",aluminum_and_glass:"Aluminum & Glass",other:"Other"}
+    };
+    function catLabel(id){ return (CAT[LANG] && CAT[LANG][id]) || CAT.ar[id] || id; }
+
+    // ── DOMAIN → SERVICE-TYPE grouping (all 23 reachable; domain-first) ──
+    const DOMAINS = [
+      { id:"plumb",  emoji:"🚰", ar:"سباكة ومياه",                   en:"Plumbing & water",                         services:["plumbing"] },
+      { id:"elec",   emoji:"⚡", ar:"كهرباء وأنظمة",                  en:"Electrical & systems",                     services:["electrical","solar_installation","smart_home","security_systems"] },
+      { id:"cool",   emoji:"❄️", ar:"تبريد وتدفئة وأجهزة",           en:"Cooling, heating & appliances",            services:["hvac","appliance_repair"] },
+      { id:"surf",   emoji:"🎨", ar:"دهان وأرضيات وأسطح",            en:"Paint, floors & surfaces",                 services:["painting","tiling","flooring"] },
+      { id:"wood",   emoji:"🪟", ar:"نجارة وأثاث وألمنيوم وزجاج",    en:"Carpentry, furniture, aluminum & glass",   services:["carpentry","furniture","aluminum_and_glass"] },
+      { id:"build",  emoji:"🧱", ar:"بناء وترميم وأسقف",            en:"Building, renovation & roofing",           services:["renovation","construction","masonry","roofing","general_maintenance"] },
+      { id:"clean",  emoji:"🧽", ar:"تنظيف ومكافحة حشرات",          en:"Cleaning & pest control",                  services:["cleaning","pest_control"] },
+      { id:"garden", emoji:"🌿", ar:"حدائق وخارج",                  en:"Outdoor & garden",                         services:["landscaping"] },
+      { id:"move",   emoji:"🚚", ar:"نقل",                          en:"Moving",                                   services:["moving"] },
+      { id:"other",  emoji:"❓", ar:"غير هيك / مش متأكد",            en:"Other / not sure",                         services:["other"] },
+    ];
+    function domLabel(d){ return LANG==="en" ? d.en : d.ar; }
+
+    // ── REAL probes (messages/service_questions), verbatim AR+EN ──
+    // Shape: { svc: { probes:[ {id, ar:{label,opt{k:v}}, en:{...}, free?:true} ] } }
+    // Built compactly from the messages data.
+    const Q = {
+      plumbing:{ probes:[
+        {id:"issue_type", ar:{label:"ما نوع مشكلة السباكة؟",opt:{leak:"تسرّب / تنقيط",blockage:"انسداد",installation:"تركيب جديد",replacement:"استبدال",repair:"إصلاح"}}, en:{label:"What type of plumbing issue?",opt:{leak:"Leak / Dripping",blockage:"Blockage / Clog",installation:"New Installation",replacement:"Replacement",repair:"Repair"}}},
+        {id:"location", ar:{label:"أين تقع المشكلة؟",opt:{kitchen:"المطبخ",bathroom:"الحمّام",laundry:"غرفة الغسيل",basement:"القبو",outdoor:"الخارج / الحديقة"}}, en:{label:"Where is the issue located?",opt:{kitchen:"Kitchen",bathroom:"Bathroom",laundry:"Laundry Room",basement:"Basement",outdoor:"Outdoor / Garden"}}},
+        {id:"urgency_reason", free:true, ar:{label:"تفاصيل إضافية حول مدى الإلحاح (اختياري)",ph:"مثال: المياه تغمر الأرض…"}, en:{label:"Additional details about urgency (optional)",ph:"e.g. Water is flooding the floor…"}},
+      ]},
+      electrical:{ probes:[
+        {id:"issue_type", ar:{label:"ما نوع العمل الكهربائي؟",opt:{outlet:"مشكلة مقبس / فيشة",lighting:"إضاءة / تجهيزات",switch:"مشكلة مفتاح",circuit:"قاطع كهربائي",wiring:"أسلاك / إعادة تمديد",installation:"تركيب جديد"}}, en:{label:"What type of electrical work?",opt:{outlet:"Outlet / Socket Issue",lighting:"Lighting / Fixture",switch:"Switch Issue",circuit:"Circuit Breaker",wiring:"Wiring / Rewiring",installation:"New Installation"}}},
+        {id:"location", ar:{label:"أين يلزم العمل؟",opt:{kitchen:"المطبخ",bathroom:"الحمّام",living_room:"غرفة المعيشة",bedroom:"غرفة النوم",outdoor:"الخارج / الحديقة"}}, en:{label:"Where is the work needed?",opt:{kitchen:"Kitchen",bathroom:"Bathroom",living_room:"Living Room",bedroom:"Bedroom",outdoor:"Outdoor / Garden"}}},
+        {id:"safety_concern", ar:{label:"هل هذه مشكلة سلامة؟ (شرر، رائحة احتراق، إلخ)",opt:{yes:"نعم — مشكلة سلامة",no:"لا — فقط لا يعمل"}}, en:{label:"Is this a safety concern? (sparks, burning smell, etc.)",opt:{yes:"Yes — safety issue",no:"No — just not working"}}},
+      ]},
+      painting:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال الدهان؟",opt:{interior_full:"داخلي — غرفة/غرف كاملة",exterior_full:"خارجي — واجهة كاملة",touch_up:"تحسينات / إصلاح موضعي",decorative:"زخرفي / جدار مميّز"}}, en:{label:"What type of painting work?",opt:{interior_full:"Interior — Full Room(s)",exterior_full:"Exterior — Full Facade",touch_up:"Touch-up / Spot Repair",decorative:"Decorative / Feature Wall"}}},
+        {id:"rooms", ar:{label:"أي غرف/مناطق؟",opt:{living_room:"غرفة المعيشة",bedroom:"غرفة/غرف النوم",kitchen:"المطبخ",bathroom:"الحمّام/الحمّامات",hallway:"الممر / الدرج",exterior:"الجدران الخارجية"}}, en:{label:"Which rooms/areas?",opt:{living_room:"Living Room",bedroom:"Bedroom(s)",kitchen:"Kitchen",bathroom:"Bathroom(s)",hallway:"Hallway / Stairs",exterior:"Exterior Walls"}}},
+        {id:"surface_condition", ar:{label:"حالة السطح الحالية؟",opt:{good:"جيدة — تحتاج دهانًا فقط",cracks:"بها شقوق — تحتاج إصلاحًا",peeling:"الدهان متقشّر — يحتاج تحضيرًا"}}, en:{label:"Current surface condition?",opt:{good:"Good — just needs paint",cracks:"Has cracks — needs repair",peeling:"Paint peeling — needs prep"}}},
+      ]},
+      hvac:{ probes:[
+        {id:"system_type", ar:{label:"ما نوع النظام؟",opt:{ac:"تكييف",heating:"نظام تدفئة",both:"كلاهما (تدفئة وتكييف)"}}, en:{label:"What type of system?",opt:{ac:"Air Conditioning",heating:"Heating System",both:"Both (HVAC)"}}},
+        {id:"work_needed", ar:{label:"ما العمل المطلوب؟",opt:{maintenance:"صيانة / تنظيف",repair:"إصلاح (لا يعمل)",installation:"تركيب جديد",replacement:"استبدال كامل"}}, en:{label:"What work is needed?",opt:{maintenance:"Maintenance / Cleaning",repair:"Repair (not working)",installation:"New Installation",replacement:"Full Replacement"}}},
+      ]},
+      carpentry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال النجارة؟",opt:{doors:"أبواب (تركيب/إصلاح)",windows:"نوافذ (تركيب/إصلاح)",cabinets:"خزائن / رفوف",furniture:"أثاث مخصّص",flooring:"أرضيات خشبية"}}, en:{label:"What type of carpentry work?",opt:{doors:"Doors (install/repair)",windows:"Windows (install/repair)",cabinets:"Cabinets / Shelving",furniture:"Custom Furniture",flooring:"Wood Flooring"}}},
+        {id:"location", ar:{label:"أين يلزم العمل؟",opt:{kitchen:"المطبخ",bedroom:"غرفة/غرف النوم",living_room:"غرفة المعيشة",bathroom:"الحمّام/الحمّامات",outdoor:"الخارج"}}, en:{label:"Where is the work needed?",opt:{kitchen:"Kitchen",bedroom:"Bedroom(s)",living_room:"Living Room",bathroom:"Bathroom(s)",outdoor:"Outdoor"}}},
+      ]},
+      landscaping:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال تنسيق الحدائق؟",opt:{lawn:"العناية بالعشب / القص",garden:"تصميم حديقة / زراعة",trees:"تقليم / إزالة الأشجار",hardscape:"تنسيق صلب (ممرات، جدران)"}}, en:{label:"What type of landscaping work?",opt:{lawn:"Lawn Care / Mowing",garden:"Garden Design / Planting",trees:"Tree Trimming / Removal",hardscape:"Hardscaping (paths, walls)"}}},
+        {id:"area", ar:{label:"أي منطقة/مناطق؟",opt:{front_yard:"الفناء الأمامي",back_yard:"الفناء الخلفي",side_yard:"الفناء الجانبي",rooftop:"حديقة سطح"}}, en:{label:"Which area(s)?",opt:{front_yard:"Front Yard",back_yard:"Back Yard",side_yard:"Side Yard",rooftop:"Rooftop Garden"}}},
+      ]},
+      roofing:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال الأسقف؟",opt:{leak_repair:"إصلاح تسرّب",maintenance:"صيانة / فحص",partial_replacement:"استبدال جزئي",full_replacement:"استبدال السقف بالكامل"}}, en:{label:"What type of roofing work?",opt:{leak_repair:"Leak Repair",maintenance:"Maintenance / Inspection",partial_replacement:"Partial Replacement",full_replacement:"Full Roof Replacement"}}},
+        {id:"issue_description", free:true, ar:{label:"صف المشكلة (إن وُجدت)",ph:"مثال: تسرّب المياه إلى غرفة المعيشة عند هطول المطر…"}, en:{label:"Describe the issue (if any)",ph:"e.g. Water leaking in living room when it rains…"}},
+      ]},
+      masonry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال البناء؟",opt:{wall_construction:"بناء حائط",crack_repair:"إصلاح شقوق / أضرار",plastering:"قصارة / تلييس",stone_cladding:"تلبيس حجر",concrete_work:"أعمال باطون"}}, en:{label:"What type of masonry work?",opt:{wall_construction:"Building a Wall",crack_repair:"Crack / Damage Repair",plastering:"Plastering",stone_cladding:"Stone Cladding",concrete_work:"Concrete Work"}}},
+        {id:"location", ar:{label:"داخلي أم خارجي؟",opt:{interior:"داخلي",exterior:"خارجي",both:"كلاهما"}}, en:{label:"Interior or exterior?",opt:{interior:"Interior",exterior:"Exterior",both:"Both"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{small_repair:"إصلاح صغير",single_wall:"حائط / منطقة واحدة",room:"غرفة كاملة",whole_property:"العقار كله"}}, en:{label:"How big is the job?",opt:{small_repair:"Small repair",single_wall:"One wall / area",room:"A full room",whole_property:"Whole property"}}},
+      ]},
+      flooring:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال الأرضيات المطلوبة؟",opt:{new_installation:"تركيب جديد",replacement:"استبدال الموجود",repair:"إصلاح"}}, en:{label:"What flooring work do you need?",opt:{new_installation:"New Installation",replacement:"Replace Existing",repair:"Repair"}}},
+        {id:"material", ar:{label:"أي مادة؟",opt:{ceramic:"سيراميك / بورسلان",marble:"رخام / حجر",parquet:"باركيه / خشب",vinyl:"فينيل / لامينيت",undecided:"لم أقرر بعد"}}, en:{label:"Which material?",opt:{ceramic:"Ceramic / Porcelain",marble:"Marble / Stone",parquet:"Parquet / Wood",vinyl:"Vinyl / Laminate",undecided:"Not decided yet"}}},
+        {id:"area_size", ar:{label:"ما حجم المساحة؟",opt:{small_area:"مساحة صغيرة / رقعة",one_room:"غرفة واحدة",two_three_rooms:"غرفتان–3 غرف",whole_floor:"شقة / طابق كامل"}}, en:{label:"How much area?",opt:{small_area:"Small area / patch",one_room:"One room",two_three_rooms:"2–3 rooms",whole_floor:"Whole apartment / floor"}}},
+      ]},
+      tiling:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال التبليط المطلوبة؟",opt:{new_tiling:"تبليط جديد",retiling:"إعادة تبليط (إزالة القديم)",repair_broken:"استبدال بلاط مكسور",grouting:"ترويب / عزل"}}, en:{label:"What tiling work do you need?",opt:{new_tiling:"New Tiling",retiling:"Re-tiling (remove old)",repair_broken:"Replace Broken Tiles",grouting:"Grouting / Sealing"}}},
+        {id:"location", ar:{label:"أين؟",opt:{bathroom:"الحمّام",kitchen:"المطبخ",floors:"الأرضيات",walls:"الجدران",balcony:"البلكون / التراس"}}, en:{label:"Where?",opt:{bathroom:"Bathroom",kitchen:"Kitchen",floors:"Floors",walls:"Walls",balcony:"Balcony / Terrace"}}},
+        {id:"size", ar:{label:"ما حجم المنطقة؟",opt:{small:"صغيرة (بضعة أمتار)",medium:"متوسطة (غرفة واحدة)",large:"كبيرة (عدة غرف)"}}, en:{label:"How big is the area?",opt:{small:"Small (a few m²)",medium:"Medium (one room)",large:"Large (multiple rooms)"}}},
+      ]},
+      pest_control:{ probes:[
+        {id:"pest_type", ar:{label:"ما الآفات الموجودة؟",opt:{cockroaches:"صراصير",rodents:"فئران / جرذان",termites:"نمل أبيض / سوس الخشب",bedbugs:"بقّ الفراش",ants:"نمل",wasps:"دبابير",other_pest:"أخرى"}}, en:{label:"What pests are you dealing with?",opt:{cockroaches:"Cockroaches",rodents:"Mice / Rats",termites:"Termites / Wood Worm",bedbugs:"Bed Bugs",ants:"Ants",wasps:"Wasps / Hornets",other_pest:"Other"}}},
+        {id:"severity", ar:{label:"ما مدى سوء الوضع؟",opt:{occasional:"أراها أحيانًا",frequent:"أراها يوميًا",infestation:"انتشار خطير"}}, en:{label:"How bad is it?",opt:{occasional:"See them occasionally",frequent:"See them daily",infestation:"Serious infestation"}}},
+        {id:"treatment", ar:{label:"أي نوع من المعالجة؟",opt:{one_time:"معالجة لمرة واحدة",recurring:"متكررة / عقد"}}, en:{label:"What kind of treatment?",opt:{one_time:"One-time treatment",recurring:"Recurring / Contract"}}},
+      ]},
+      cleaning:{ probes:[
+        {id:"cleaning_type", ar:{label:"ما نوع التنظيف؟",opt:{regular:"تنظيف عادي",deep:"تنظيف عميق",post_construction:"بعد أعمال البناء",move_in_out:"عند الانتقال (دخول/خروج)"}}, en:{label:"What type of cleaning?",opt:{regular:"Regular Cleaning",deep:"Deep Cleaning",post_construction:"Post-Construction",move_in_out:"Move-in / Move-out"}}},
+        {id:"property_size", ar:{label:"ما حجم المكان؟",opt:{studio:"ستوديو / صغير",apartment_1_2:"شقة (غرفة–غرفتان)",apartment_3_plus:"شقة (3 غرف أو أكثر)",villa:"فيلا / منزل",office:"مكتب / محل"}}, en:{label:"How big is the place?",opt:{studio:"Studio / Small",apartment_1_2:"Apartment (1–2 bedrooms)",apartment_3_plus:"Apartment (3+ bedrooms)",villa:"Villa / House",office:"Office / Shop"}}},
+        {id:"frequency", ar:{label:"كم مرة؟",opt:{one_time:"مرة واحدة",weekly:"أسبوعيًا",biweekly:"كل أسبوعين",monthly:"شهريًا"}}, en:{label:"How often?",opt:{one_time:"One time",weekly:"Weekly",biweekly:"Every two weeks",monthly:"Monthly"}}},
+      ]},
+      appliance_repair:{ probes:[
+        {id:"appliance", ar:{label:"أي جهاز؟",opt:{washing_machine:"غسالة",refrigerator:"برّاد / فريزر",oven_stove:"فرن / غاز",dishwasher:"جلاية صحون",dryer:"نشافة",water_heater:"سخّان مياه",small_appliance:"جهاز صغير"}}, en:{label:"Which appliance?",opt:{washing_machine:"Washing Machine",refrigerator:"Refrigerator / Freezer",oven_stove:"Oven / Stove",dishwasher:"Dishwasher",dryer:"Dryer",water_heater:"Water Heater",small_appliance:"Small Appliance"}}},
+        {id:"problem", ar:{label:"ما المشكلة؟",opt:{not_turning_on:"لا يعمل إطلاقًا",not_working_properly:"يعمل لكن بشكل سيئ",leaking:"تسريب",noisy:"صوت غريب",error_code:"يعرض رمز خطأ"}}, en:{label:"What's the problem?",opt:{not_turning_on:"Won't turn on",not_working_properly:"Works but not properly",leaking:"Leaking",noisy:"Strange noise",error_code:"Showing error code"}}},
+        {id:"brand_age", free:true, ar:{label:"الماركة والعمر (إن عرفت)",ph:"مثال: LG، عمره حوالي 5 سنوات…"}, en:{label:"Brand and age (if known)",ph:"e.g. LG, about 5 years old…"}},
+      ]},
+      security_systems:{ probes:[
+        {id:"system_type", ar:{label:"ما النظام المطلوب؟",opt:{cameras:"كاميرات مراقبة",alarm:"نظام إنذار",intercom:"إنتركم / جرس فيديو",smart_locks:"أقفال ذكية",full_system:"نظام متكامل"}}, en:{label:"What system do you need?",opt:{cameras:"Cameras (CCTV)",alarm:"Alarm System",intercom:"Intercom / Video Door",smart_locks:"Smart Locks",full_system:"Complete System"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",upgrade:"ترقية / توسيع",maintenance:"صيانة"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",upgrade:"Upgrade / Expand",maintenance:"Maintenance"}}},
+        {id:"property_type", ar:{label:"ما نوع العقار؟",opt:{apartment:"شقة",house_villa:"منزل / فيلا",shop_office:"محل / مكتب",building:"مبنى كامل"}}, en:{label:"What kind of property?",opt:{apartment:"Apartment",house_villa:"House / Villa",shop_office:"Shop / Office",building:"Whole Building"}}},
+      ]},
+      solar_installation:{ probes:[
+        {id:"system_type", ar:{label:"ما نظام الطاقة الشمسية؟",opt:{water_heater:"سخّان مياه شمسي",pv_panels:"ألواح شمسية (كهرباء)",full_system:"نظام كامل + بطاريات",batteries_only:"بطاريات / إنفرتر فقط"}}, en:{label:"What solar system?",opt:{water_heater:"Solar Water Heater",pv_panels:"Solar Panels (electricity)",full_system:"Full System + Batteries",batteries_only:"Batteries / Inverter Only"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",maintenance:"صيانة / تنظيف",expansion:"توسيع النظام الحالي"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",maintenance:"Maintenance / Cleaning",expansion:"Expand Existing System"}}},
+        {id:"current_setup", ar:{label:"ماذا لديك اليوم؟",opt:{nothing_yet:"لا شيء بعد",existing_solar:"نظام شمسي موجود",generator_only:"مولّد / UPS فقط"}}, en:{label:"What do you have today?",opt:{nothing_yet:"Nothing yet",existing_solar:"Existing solar setup",generator_only:"Generator / UPS only"}}},
+      ]},
+      general_maintenance:{ probes:[
+        {id:"work_needed", ar:{label:"ما المطلوب إنجازه؟",opt:{plumbing_small:"أعمال سباكة صغيرة",electrical_small:"أعمال كهرباء صغيرة",painting_small:"رتوش دهان",fixtures:"تثبيت / تركيب",assembly:"تجميع",other_tasks:"مهام صغيرة أخرى"}}, en:{label:"What needs doing?",opt:{plumbing_small:"Small Plumbing Jobs",electrical_small:"Small Electrical Jobs",painting_small:"Touch-up Painting",fixtures:"Fixtures / Mounting",assembly:"Assembly",other_tasks:"Other Small Tasks"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{single_task:"مهمة واحدة",few_tasks:"بضع مهام",full_day:"يوم عمل كامل",ongoing:"ترتيب مستمر"}}, en:{label:"How much work is it?",opt:{single_task:"One task",few_tasks:"A few tasks",full_day:"A full day's work",ongoing:"Ongoing arrangement"}}},
+      ]},
+      renovation:{ probes:[
+        {id:"scope", ar:{label:"ماذا تجدّد؟",opt:{single_room:"غرفة واحدة",kitchen:"المطبخ",bathroom:"الحمّام",full_apartment:"شقة / منزل كامل",exterior:"الواجهة الخارجية"}}, en:{label:"What are you renovating?",opt:{single_room:"One Room",kitchen:"Kitchen",bathroom:"Bathroom",full_apartment:"Full Apartment / House",exterior:"Exterior / Facade"}}},
+        {id:"depth", ar:{label:"ما عمق التجديد؟",opt:{cosmetic:"تجميلي (دهان وتشطيبات)",partial:"جزئي (بعض الهدم)",complete:"كامل (تجديد جذري)"}}, en:{label:"How deep does it go?",opt:{cosmetic:"Cosmetic (paint, finishes)",partial:"Partial (some demolition)",complete:"Complete (gut renovation)"}}},
+        {id:"design_status", ar:{label:"هل لديك تصميم؟",opt:{have_design:"نعم — لديّ مخططات/تصميم",need_design:"لا — أحتاج مساعدة بالتصميم",open_to_ideas:"منفتح على الأفكار"}}, en:{label:"Do you have a design?",opt:{have_design:"Yes — have plans/design",need_design:"No — need design help",open_to_ideas:"Open to ideas"}}},
+      ]},
+      construction:{ probes:[
+        {id:"project_type", ar:{label:"ما نوع المشروع؟",opt:{new_building:"بناء جديد",extension:"توسعة / إضافة",structural_work:"أعمال إنشائية",finishing_works:"أعمال تشطيب"}}, en:{label:"What type of project?",opt:{new_building:"New Construction",extension:"Extension / Addition",structural_work:"Structural Work",finishing_works:"Finishing Works"}}},
+        {id:"stage", ar:{label:"في أي مرحلة أنت؟",opt:{planning:"ما زلت أخطط",have_permits:"لديّ تراخيص / مخططات",ready_to_start:"جاهز للبدء",in_progress:"العمل جارٍ"}}, en:{label:"What stage are you at?",opt:{planning:"Still planning",have_permits:"Have permits / plans",ready_to_start:"Ready to start",in_progress:"Work in progress"}}},
+        {id:"size", ar:{label:"ما الحجم تقريبًا؟",opt:{under_100:"أقل من 100 م²",from_100_300:"100–300 م²",over_300:"أكثر من 300 م²"}}, en:{label:"Roughly how big?",opt:{under_100:"Under 100 m²",from_100_300:"100–300 m²",over_300:"Over 300 m²"}}},
+      ]},
+      smart_home:{ probes:[
+        {id:"system", ar:{label:"ماذا تريد أن تؤتمت؟",opt:{lighting:"الإضاءة",security:"الأمان / الكاميرات",climate:"التكييف / المناخ",entertainment:"التلفزيون / الصوت",full_automation:"أتمتة المنزل بالكامل"}}, en:{label:"What do you want to automate?",opt:{lighting:"Lighting",security:"Security / Cameras",climate:"AC / Climate",entertainment:"TV / Audio",full_automation:"Whole-home Automation"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",expand_existing:"توسيع الموجود",repair_configure:"إصلاح / إعادة ضبط"}}, en:{label:"What service?",opt:{new_installation:"New Installation",expand_existing:"Expand Existing Setup",repair_configure:"Fix / Reconfigure"}}},
+        {id:"ecosystem", ar:{label:"النظام المفضّل؟",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"لا تفضيل"}}, en:{label:"Preferred ecosystem?",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"No preference"}}},
+      ]},
+      moving:{ probes:[
+        {id:"move_size", ar:{label:"كم تنقل من أغراض؟",opt:{few_items:"بضعة أغراض",studio:"ستوديو / غرفة نوم واحدة",apartment_2_3:"منزل بغرفتين–3 غرف",large_home:"منزل كبير / فيلا"}}, en:{label:"How much are you moving?",opt:{few_items:"A few items",studio:"Studio / 1 bedroom",apartment_2_3:"2–3 bedroom home",large_home:"Large home / Villa"}}},
+        {id:"floors", ar:{label:"درج أم مصعد؟",opt:{ground:"طابق أرضي",elevator:"يوجد مصعد",stairs_1_3:"درج — حتى الطابق الثالث",stairs_4_plus:"درج — الطابق الرابع أو أعلى"}}, en:{label:"Stairs or elevator?",opt:{ground:"Ground floor(s)",elevator:"Elevator available",stairs_1_3:"Stairs — up to 3rd floor",stairs_4_plus:"Stairs — 4th floor or higher"}}},
+        {id:"services", ar:{label:"خدمات إضافية؟",opt:{packing:"تغليف",disassembly:"فكّ الأثاث",storage:"تخزين مؤقت",just_transport:"نقل فقط"}}, en:{label:"Extra services needed?",opt:{packing:"Packing",disassembly:"Furniture Disassembly",storage:"Temporary Storage",just_transport:"Just Transport"}}},
+        {id:"distance", ar:{label:"ما مسافة النقل؟",opt:{same_area:"نفس المنطقة",same_governorate:"نفس المحافظة",cross_governorate:"محافظة أخرى"}}, en:{label:"How far is the move?",opt:{same_area:"Same area",same_governorate:"Same governorate",cross_governorate:"Another governorate"}}},
+      ]},
+      furniture:{ probes:[
+        {id:"service", ar:{label:"ما خدمة الأثاث المطلوبة؟",opt:{assembly:"تجميع",repair_restoration:"إصلاح / ترميم",custom_made:"أثاث حسب الطلب",upholstery:"تنجيد / أقمشة"}}, en:{label:"What furniture service?",opt:{assembly:"Assembly",repair_restoration:"Repair / Restoration",custom_made:"Custom-made Furniture",upholstery:"Upholstery / Fabric"}}},
+        {id:"items", ar:{label:"كم قطعة؟",opt:{single_item:"قطعة واحدة",few_items:"بضع قطع",full_room:"غرفة كاملة",full_home:"المنزل كله"}}, en:{label:"How many pieces?",opt:{single_item:"One piece",few_items:"A few pieces",full_room:"A full room",full_home:"Whole home"}}},
+      ]},
+      aluminum_and_glass:{ probes:[
+        {id:"work_type", ar:{label:"ماذا تحتاج؟",opt:{windows:"نوافذ",doors:"أبواب",balcony_enclosure:"تسكير بلكون",shower_glass:"زجاج دوش",storefront:"واجهة محل",mosquito_nets:"ناموسيات"}}, en:{label:"What do you need?",opt:{windows:"Windows",doors:"Doors",balcony_enclosure:"Balcony Enclosure",shower_glass:"Shower Glass",storefront:"Storefront / Facade",mosquito_nets:"Mosquito Nets"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",replacement:"استبدال",repair:"إصلاح"}}, en:{label:"What service?",opt:{new_installation:"New Installation",replacement:"Replacement",repair:"Repair"}}},
+        {id:"measurements", ar:{label:"هل لديك القياسات؟",opt:{have_measurements:"نعم — القياسات جاهزة",need_measuring:"لا — يلزم زيارة قياس"}}, en:{label:"Do you have measurements?",opt:{have_measurements:"Yes — have measurements",need_measuring:"No — needs measuring visit"}}},
+      ]},
+      other:{ probes:[
+        {id:"work_nature", ar:{label:"ما طبيعة العمل؟",opt:{repair_fix:"إصلاح شيء ما",install_new:"تركيب شيء جديد",maintain_service:"صيانة / خدمة",build_create:"بناء / إنشاء شيء"}}, en:{label:"What kind of work is it?",opt:{repair_fix:"Repair / Fix something",install_new:"Install something new",maintain_service:"Maintenance / Service",build_create:"Build / Create something"}}},
+        {id:"extra_info", free:true, ar:{label:"هل من شيء آخر يجب أن يعرفه المزوّدون؟",ph:"الوصول، التوقيت، متطلبات خاصة…"}, en:{label:"Anything else providers should know?",ph:"Access, timing, special requirements…"}},
+      ]},
+    };
+    const NOT_SURE = { ar:"مش متأكد", en:"I'm not sure" };  // messages.service_questions.not_sure (Levantine spelling)
+
+    // ── Visit-needed services (🟡 cap → inspect-then-quote) ──
+    const VISIT_NEEDED = new Set(["renovation","construction"]);
+    // plumbing & electrical become visit-capped only when the user pivots to "not sure" (handled at runtime).
+
+    // ── MEDIA OVERLAYS — interleaved, tied to SPECIFIC probes (the heart of D) ──
+    // Each overlay: {after: probeId, kind:'photo'|'video'|'audio', ar:{ask, transcript}, en:{...}}
+    // 5 FEATURED services have DEEP overlays; the other 18 get a default photo+audio offer.
+    const OVERLAYS = {
+      plumbing:[
+        {after:"location", kind:"photo", ar:{ask:"صوّرلي وصلة الأنبوب تحت المغسلة — هيك المحترف بيعرف القطع بالضبط ويسعّر صح. 📷", thumb:"صورة — تحت المغسلة", tx:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل والخشب تحت بلّش يتفشّخ."}, en:{ask:"Snap the fitting under the sink — that lets the pro see the exact parts and price it right. 📷", thumb:"Photo — under-sink", tx:"[Photo] The under-sink fitting; the trap is wet and the cabinet wood below has started to swell."}},
+        {after:"issue_type", kind:"video", ar:{ask:"إذا في تسريب شغّال، صوّرلي 5 ثواني فيديو وهو عم يقطّر — بيوضّح أديش الوضع مستعجل. 🎥", thumb:"فيديو — التسريب شغّال 0:05", tx:"[فيديو] المياه عم تقطّر نقطة نقطة من الوصلة، ومع كل دقيقة في بركة صغيرة عالأرض."}, en:{ask:"If it's leaking now, take a 5-sec video of it running — it shows how urgent it is. 🎥", thumb:"Video — leak running 0:05", tx:"[Video] Water dripping steadily from the fitting; a small puddle forms on the floor each minute."}},
+      ],
+      hvac:[
+        {after:"system_type", kind:"photo", ar:{ask:"صوّرلي الوحدة وملصق الموديل/الرقم التسلسلي عليها — بيساعد المحترف يجيب القطعة الصح. 📷", thumb:"صورة — الوحدة + الموديل", tx:"[صورة] وحدة سبليت، الملصق مكتوب عليه الموديل والرقم التسلسلي بوضوح."}, en:{ask:"Snap the unit and its model/serial label — helps the pro bring the right part. 📷", thumb:"Photo — unit + model", tx:"[Photo] A split unit; the label clearly shows the model and serial number."}},
+        {after:"work_needed", kind:"audio", ar:{ask:"احكيلي الصوت الغريب بدل ما تكتبه — سجّل رسالة صوتية وصِف شو عم تسمع. 🎤", thumb:"رسالة صوتية — الصوت 0:14", tx:"[تفريغ صوتي] «المكيّف عم يطلّع صوت طقطقة لما يشتغل، وريحة محروقة خفيفة بأول 5 دقايق.»"}, en:{ask:"Describe the noise instead of typing it — record a quick voice note. 🎤", thumb:"Voice note — the noise 0:14", tx:"[Voice transcript] \"The AC makes a rattling sound when it starts, and there's a faint burning smell in the first 5 minutes.\""}},
+      ],
+      painting:[
+        {after:"work_type", kind:"video", ar:{ask:"لِفّ 5 ثواني فيديو بالغرفة وفرجينا الحيطان — بيخلّي العرض أدق من أي وصف. 🎥", thumb:"فيديو — جولة بالغرفة 0:06", tx:"[فيديو] جولة بغرفة الجلوس؛ حيطان فاتحة، تشقّق خفيف عند الشباك، سقف نظيف."}, en:{ask:"Pan a 5-sec video around the room and show the walls — makes the quote far tighter than any description. 🎥", thumb:"Video — room pan 0:06", tx:"[Video] A pan of the living room; light walls, minor cracking by the window, clean ceiling."}},
+        {after:"rooms", kind:"photo", ar:{ask:"صورة وحدة للحائط اللي بدّك تشتغل عليه + قدّيش مساحته تقريبًا بتفيد كتير. 📷", thumb:"صورة — الحائط", tx:"[صورة] حائط غرفة الجلوس، تقريبًا 4×3 م، دهان قديم متقشّر بمكانين."}, en:{ask:"One photo of the wall you want done + a rough size really helps. 📷", thumb:"Photo — the wall", tx:"[Photo] Living-room wall, roughly 4×3 m, old paint peeling in two spots."}},
+      ],
+      cleaning:[
+        {after:"cleaning_type", kind:"photo", ar:{ask:"صوّرلي المكان وقدّيش الوسخ — بيساعد المحترف يقدّر الوقت والسعر صح. 📷", thumb:"صورة — المكان", tx:"[صورة] مطبخ + صالون، أرضيات تحتاج جلي، شباك مغبّر، الوضع متوسّط."}, en:{ask:"Snap the space and how dirty it is — helps the pro judge the time and price. 📷", thumb:"Photo — the space", tx:"[Photo] Kitchen + living room; floors need scrubbing, dusty windows, moderate condition."}},
+        {after:"property_size", kind:"audio", ar:{ask:"إذا في تفاصيل (غرف، حمّامات، شي خاص) احكيها صوتيًا أسهل من ما تكتبها. 🎤", thumb:"رسالة صوتية — التفاصيل 0:11", tx:"[تفريغ صوتي] «شقة 3 غرف وحمّامين، بدّي جلي عميق قبل ما فل من البيت آخر الشهر.»"}, en:{ask:"If there are details (rooms, bathrooms, anything special) it's easier to say than type. 🎤", thumb:"Voice note — details 0:11", tx:"[Voice transcript] \"3-bedroom apartment, two bathrooms, I want a deep clean before I move out at month-end.\""}},
+      ],
+      electrical:[
+        {after:"issue_type", kind:"photo", ar:{ask:"صوّرلي اللوحة الكهربائية أو الفيشة/التجهيز اللي فيه المشكلة — بيساعد المحترف يجهّز الأدوات الصح. 📷", thumb:"صورة — اللوحة/الفيشة", tx:"[صورة] لوحة القواطع، قاطع واحد عم يفصل، وفيشة المطبخ محروقة من طرفها."}, en:{ask:"Snap the panel or the outlet/fixture with the issue — helps the pro bring the right tools. 📷", thumb:"Photo — panel/outlet", tx:"[Photo] Breaker panel; one breaker keeps tripping, and the kitchen outlet is scorched on one edge."}},
+        {after:"safety_concern", kind:"audio", ar:{ask:"إذا في شرر أو ريحة احتراق، احكي شو صار صوتيًا — أوضح من الكتابة وبيبيّن خطورة الوضع. 🎤", thumb:"رسالة صوتية — الوصف 0:09", tx:"[تفريغ صوتي] «طلع شرر من الفيشة لما شبكت الغسالة، وفصلت الكهربا عن نص البيت.»"}, en:{ask:"If there are sparks or a burning smell, say what happened in a voice note — clearer than typing and shows the risk. 🎤", thumb:"Voice note — the issue 0:09", tx:"[Voice transcript] \"There were sparks from the outlet when I plugged in the washer, and power cut to half the house.\""}},
+      ],
+    };
+    // default overlay for the other 18 — one contextual photo + an audio offer (both skippable)
+    function defaultOverlay(svc){
+      return [
+        {after:"__first__", kind:"photo", ar:{ask:"صوّرلي المشكلة أو المكان — صورة وحدة بتخلّي العرض أدق بكتير من الكتابة. 📷", thumb:"صورة — المكان/المشكلة", tx:"[صورة] لقطة عامة للمكان والمشكلة، بتعطي المحترف فكرة واضحة عن الشغل."}, en:{ask:"Snap the issue or the area — one photo makes the quote far tighter than text. 📷", thumb:"Photo — area/issue", tx:"[Photo] A general shot of the area and the issue, giving the pro a clear sense of the work."}},
+        {after:"__last__", kind:"audio", ar:{ask:"إذا بدّك تزيد تفاصيل، احكيها صوتيًا بدل ما تكتب — أسرع وأوضح. 🎤", thumb:"رسالة صوتية — تفاصيل 0:10", tx:"[تفريغ صوتي] وصف صوتي قصير للشغل المطلوب وأي تفاصيل دخول أو توقيت."}, en:{ask:"If you want to add details, record them instead of typing — faster and clearer. 🎤", thumb:"Voice note — details 0:10", tx:"[Voice transcript] A short spoken description of the work and any access or timing details."}},
+      ];
+    }
+
+    // ── STATIC i18n dictionary (chrome + non-chat strings) ──
+    const I18N = {
+      ar:{
+        brand_mark:"د", brand:"دبّرها", signin_secondary:"عندك حساب؟ سجّل الدخول",
+        tagline:"احكِ معنا — ونحنا منكمّل السؤال حسب حالتك.",
+        hero_title:"قلّنا شو في…<br/>ونحنا مندبّرها.",
+        hero_sub:"حكي بسيط — منسألك بس اللي بيلزم لحالتك، وبتقدر تفرجينا بصورة أو صوت بدل ما تكتب. كل ما تعطينا أكتر، العروض بتجي أدقّ.",
+        start_chat:"ابدأ الحكي", free_note:"ببلاش · بلا حساب لتبلّش · بتفرجينا بدل ما تكتب",
+        how_it_works:"كيف بتمشي؟",
+        preview_q1:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟", preview_a1:"لبيت", preview_q2:"تمام. شو بدّك مساعدة فيه؟",
+        preview_note:"منسأل سؤال سؤال — والأسئلة بتتغيّر حسب نوع الشغلة، مش فورم ثابت.",
+        trust_t:"محترفين مقيَّمين", trust_d:"تقييمات حقيقية من ناس وظّفوهم قبلك.",
+        show_us_title:"فرجينا", add_media_aria:"أضف صورة أو صوت أو فيديو",
+        composer_ph:"اكتب جوابك… أو دوس على خيار فوق", send_aria:"ابعت",
+        be_media_capture:"[BE] — التقاط/تفريغ الوسائط (واجهة فقط)",
+        confirm_banner:"جمّعنا طلبك من الحكي. راجِع، عدّل أي شي، وبعدها ابعتو.",
+        confirm_title:"راجِع طلبك", confirm_sub:"هيدا اللي فهمناه — دوس «عدّل» جنب أي سطر لتغيّرو.",
+        summary_label:"ملخّص الطلب", confirm_send:"تمام — تابِع لإرسال الطلب", confirm_back:"رجوع للحكي",
+        gate_title:"طلبك جاهز ✅", gate_sub:"اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.",
+        gate_meter_help:"طلبك كامل — المحترفين بيقدروا يسعّروا بدقّة.",
+        name_label:"اسمك", name_ph:"متلاً: سامر", phone_label:"رقم تلفونك", otp_note:"منبعتلك رمز تأكيد عالرسائل.",
+        gate_send:"اعمل حساب وابعت", be_otp:"[BE] — تسجيل/تأكيد عبر OTP",
+        done_title:"صار جاهز طلبك!", whats_next_heading:"شو بيصير بعدين؟",
+        open_for_offers:"مفتوح للعروض",
+        whats_next_off:"طلبك صار منشور! المحترفون بمنطقتك رح يشوفوه ويبعتولك عروض — كتير منها خلال ساعة.",
+        in_review:"بمراجعة سريعة",
+        whats_next_on:"وصلنا طلبك! منراجعو مراجعة سريعة، وبعدها بصير المحترفون يشوفوه ويبعتولك عروض.",
+        page_note:"أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.",
+        view_request:"شوف طلبك", another_request:"اعمل طلب تاني", back_to_list:"رجوع للقائمة ↩",
+        status_published:"منشور · مفتوح للعروض", your_request:"طلبك",
+        gathered_from_chat:"مجموعة من الحكي المتكيّف", req_details:"تفاصيل الطلب",
+        media_shown:"اللي فرجيتنا ياه", be_media_show:"[BE] — عرض/تشغيل الوسائط",
+        offers_now_help:"المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.",
+        edit_request:"عدّل الطلب", share_whatsapp:"شارك عبر واتساب", be_whatsapp:"[BE] — مشاركة عبر واتساب",
+        // meter
+        meter_start:"جهوزية العرض", meter_review:"راجع وابعت ↩",
+        meter_help_start:"جاوب شوي وبتوصل لـ «المحترفين بيعطوك سعر تقريبي».",
+        meter_floor:"المحترفون بيعطوك سعر تقريبي 🟠", meter_ceil:"المحترفون بيسعّروا بدقّة 🟢",
+        meter_visit:"المحترفون بيسعّروا — بعد زيارة سريعة 🟡",
+        meter_help_floor:"وصلت! بتقدر تبعت هلّق — أو زيد صورة/تفصيل لتجي العروض أدقّ.",
+        meter_help_ceil:"ممتاز — طلبك كامل والمحترفين بيقدروا يسعّروا بدقّة.",
+        meter_help_visit:"هالشغلة بدها معاينة عالأرض ليطلع سعر نهائي — منرتّبلك زيارة سريعة.",
+        // FRAME copy
+        q_sector:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟",
+        chip_residential:"🏠 لبيت", chip_commercial:"🏢 لشغل / محل",
+        q_subtype_res:"تمام. أي نوع بيت؟", q_subtype_com:"تمام. أي نوع محل/شغل؟",
+        sub_apartment:"شقة", sub_condo:"كومباوند", sub_villa:"فيلا / منزل",
+        sub_shop:"محل", sub_restaurant:"مطعم", sub_office:"مكتب", sub_warehouse:"مستودع",
+        q_domain:"شو بدّك مساعدة فيه؟", q_servicetype:"تمام. أي نوع بالضبط؟",
+        q_area:"وين العقار؟ (وين بدّك المحترف يجي)",
+        region_beirut:"بيروت — الأشرفية", region_mtleb:"جبل لبنان — جونية", region_north:"الشمال — طرابلس", region_south:"الجنوب — صيدا",
+        q_urgency:"أديش مستعجل؟",
+        urg_emergency:"طوارئ — اليوم", urg_week:"خلال الأسبوع", urg_flexible:"مرن / ما في استعجال",
+        q_offers:"كم عرض بتحب تقارن؟",
+        offers_23:"<bdi>2–3</bdi> عروض", offers_35:"<bdi>3–5</bdi> عروض", offers_max:"أكبر عدد ممكن",
+        q_budget:"عندك فكرة عن الميزانية؟ (تقريبي بالدولار)",
+        budget_lt100:"أقل من ‎$100", budget_100_300:"‎$100–300", budget_300_1000:"‎$300–1000", budget_1000:"‎$1000+",
+        q_timewindow:"أي وقت بيناسبك للزيارة؟",
+        tw_morning:"صباحًا بأيام الأسبوع", tw_afternoon:"بعد الظهر", tw_evening:"مساءً", tw_weekend:"عطلة نهاية الأسبوع", tw_flexible:"مرن",
+        not_sure:"مش متأكد", show_instead:"فرجينا بدل ما تكتب", record_instead:"سجّل بدل ما تكتب", skip_step:"تخطّى",
+        // pivot
+        pivot_bot:"ما في مشكلة — أسهل تفرجينا بدل ما تحزر. صوّر أو سجّل ونحنا منفهم. 📷🎥",
+        pivot_logged:"سجّلنا إنك مش متأكد — المحترف بيعتمد على اللي فرجيتنا، وغالبًا منرتّب زيارة سريعة ليأكّد.",
+        // media chip prompt labels (built dynamically with kind)
+        media_skip:"كمّل بلا ما أفرجي", media_added_more:"فرجينا شي تاني",
+        // done chat
+        chat_ready:"تمام، صار عندي كل شي اللازم! 🙌 جمّعتلك الطلب — راجعو وابعتو.",
+        cta_review:"راجِع طلبك وابعت",
+        // dynamic helpers
+        rec_label:"عم يسجّل…", rec_stop:"إيقاف ⏹",
+        sim_tag:"محاكاة", added_word:"انضافت",
+        // summary labels
+        sum_what:"الشغلة", sum_property:"العقار", sum_where:"الموقع", sum_urgency:"الاستعجال",
+        sum_media:"اللي فرجيتنا", sum_offers:"عروض للمقارنة", sum_budget:"الميزانية", sum_timewindow:"وقت الزيارة",
+        edit_word:"عدّل", none_word:"—",
+        offers_word_2_3:"حتى <bdi>3</bdi> عروض", offers_word_3_5:"حتى <bdi>5</bdi> عروض", offers_word_max:"أكبر عدد ممكن",
+        media_count_photos:"صور", media_count_videos:"فيديو", media_count_audio:"رسالة صوتية",
+      },
+      en:{
+        brand_mark:"D", brand:"Dabbira", signin_secondary:"Have an account? Sign in",
+        tagline:"Talk to us — we adapt the questions to your case.",
+        hero_title:"Tell us what's up…<br/>and we'll handle it.",
+        hero_sub:"A simple chat — we only ask what your case needs, and you can show us with a photo or voice instead of typing. The more you give, the tighter the offers.",
+        start_chat:"Start chatting", free_note:"Free · No account to start · Show us instead of typing",
+        how_it_works:"How it works",
+        preview_q1:"Hi! 👋 Is this for a home or a business?", preview_a1:"A home", preview_q2:"Got it. What do you need help with?",
+        preview_note:"We ask one question at a time — and they adapt to the type of job, not a fixed form.",
+        trust_t:"Rated pros", trust_d:"Real reviews from people who hired them before you.",
+        show_us_title:"Show us", add_media_aria:"Add a photo, voice, or video",
+        composer_ph:"Type your answer… or tap an option above", send_aria:"Send",
+        be_media_capture:"[BE] — Media capture / transcription (UI only)",
+        confirm_banner:"We put your request together from the chat. Review, edit anything, then send it.",
+        confirm_title:"Review your request", confirm_sub:"Here's what we understood — tap \"Edit\" next to any line to change it.",
+        summary_label:"Request summary", confirm_send:"Looks good — continue to send", confirm_back:"Back to chat",
+        gate_title:"Your request is ready ✅", gate_sub:"Make a quick account to send it — pros review it, send you offers, and you choose.",
+        gate_meter_help:"Your request is complete — pros can quote accurately.",
+        name_label:"Your name", name_ph:"e.g. Samer", phone_label:"Your phone number", otp_note:"We'll text you a confirmation code.",
+        gate_send:"Create account & send", be_otp:"[BE] — Sign-up / verify via OTP",
+        done_title:"Your request is ready!", whats_next_heading:"What happens next?",
+        open_for_offers:"Open for offers",
+        whats_next_off:"Your request is live! Pros in your area will see it and send offers — often within an hour.",
+        in_review:"In quick review",
+        whats_next_on:"Got your request! We'll do a quick review, then pros can see it and send you offers.",
+        page_note:"Most requests go live right away — flagged content gets a quick review first.",
+        view_request:"View my request", another_request:"Make another request", back_to_list:"Back to list ↩",
+        status_published:"Live · Open for offers", your_request:"Your request",
+        gathered_from_chat:"Gathered from the adaptive chat", req_details:"Request details",
+        media_shown:"What you showed us", be_media_show:"[BE] — Show / play media",
+        offers_now_help:"Pros in your area are seeing your request; many reply within an hour.",
+        edit_request:"Edit request", share_whatsapp:"Share via WhatsApp", be_whatsapp:"[BE] — Share via WhatsApp",
+        meter_start:"Offer readiness", meter_review:"Review & send ↩",
+        meter_help_start:"Answer a little and you'll reach \"Pros can give a rough range\".",
+        meter_floor:"Pros can give a rough range 🟠", meter_ceil:"Pros can quote accurately 🟢",
+        meter_visit:"Pros can quote — with a quick visit 🟡",
+        meter_help_floor:"You're there! You can send now — or add a photo/detail so offers come tighter.",
+        meter_help_ceil:"Great — your request is complete and pros can quote accurately.",
+        meter_help_visit:"This job needs an on-site look for a firm price — we'll set up a quick visit.",
+        q_sector:"Hi! 👋 Is this for a home or a business?",
+        chip_residential:"🏠 A home", chip_commercial:"🏢 A business / shop",
+        q_subtype_res:"Got it. What kind of home?", q_subtype_com:"Got it. What kind of place?",
+        sub_apartment:"Apartment", sub_condo:"Condo", sub_villa:"Villa / House",
+        sub_shop:"Shop", sub_restaurant:"Restaurant", sub_office:"Office", sub_warehouse:"Warehouse",
+        q_domain:"What do you need help with?", q_servicetype:"Got it. Which one exactly?",
+        q_area:"Where's the place? (where should the pro come)",
+        region_beirut:"Beirut — Achrafieh", region_mtleb:"Mount Lebanon — Jounieh", region_north:"North — Tripoli", region_south:"South — Saida",
+        q_urgency:"How urgent is it?",
+        urg_emergency:"Emergency — today", urg_week:"This week", urg_flexible:"Flexible / no rush",
+        q_offers:"How many offers do you want to compare?",
+        offers_23:"2–3 offers", offers_35:"3–5 offers", offers_max:"As many as I can get",
+        q_budget:"Any idea on budget? (rough, in USD)",
+        budget_lt100:"Under $100", budget_100_300:"$100–300", budget_300_1000:"$300–1000", budget_1000:"$1000+",
+        q_timewindow:"What time window works for a visit?",
+        tw_morning:"Weekday mornings", tw_afternoon:"Afternoons", tw_evening:"Evenings", tw_weekend:"Weekends", tw_flexible:"Flexible",
+        not_sure:"I'm not sure", show_instead:"Show us instead of typing", record_instead:"Record instead of typing", skip_step:"Skip",
+        pivot_bot:"No problem — easier to just show me than guess. Snap or record and we'll figure it out. 📷🎥",
+        pivot_logged:"We logged that you're unsure — the pro will rely on what you showed, and we'll likely set up a quick visit to confirm.",
+        media_skip:"Continue without showing", media_added_more:"Show something else",
+        chat_ready:"Done — I've got everything I need! 🙌 I put your request together — review it and send.",
+        cta_review:"Review your request & send",
+        rec_label:"Recording…", rec_stop:"Stop ⏹",
+        sim_tag:"Simulated", added_word:"added",
+        sum_what:"The job", sum_property:"Property", sum_where:"Location", sum_urgency:"Urgency",
+        sum_media:"What you showed", sum_offers:"Offers to compare", sum_budget:"Budget", sum_timewindow:"Visit time",
+        edit_word:"Edit", none_word:"—",
+        offers_word_2_3:"up to 3 offers", offers_word_3_5:"up to 5 offers", offers_word_max:"as many as possible",
+        media_count_photos:"photos", media_count_videos:"video", media_count_audio:"voice note",
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-i18n-title]").forEach(node=>{ const k=node.getAttribute("data-i18n-title"); if(d[k]!=null) node.setAttribute("title",d[k]); });
+    }
+
+    // re-localize already-rendered chat bubbles + chips + meter + dynamic request fields.
+    // data-tkey → dictionary key; data-tar/data-ten → literal pair; data-tdyn → custom rebuild
+    function relocalizeChat(){
+      document.querySelectorAll("[data-tkey]").forEach(node=>{ node.innerHTML = t(node.getAttribute("data-tkey")); });
+      document.querySelectorAll("[data-tar]").forEach(node=>{
+        node.innerHTML = (LANG==="en") ? node.getAttribute("data-ten") : node.getAttribute("data-tar");
+      });
+      // dynamic strings that need a rebuild (meter help/label, request fields)
+      renderMeter(); rebuildDynamic();
+    }
+
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      const arrow=document.getElementById("send-arrow");
+      if(arrow) arrow.style.transform = (LANG==="en") ? "none" : "scaleX(-1)";
+      applyStaticI18n();
+      relocalizeChat();
+      buildDevSvc();
+    }
+
+    // ════════════════════ NAV ════════════════════
+    const screens={ landing:"screen-landing", chat:"screen-chat", confirm:"screen-confirm", signup:"screen-signup", done:"screen-done", request:"screen-request" };
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      document.getElementById("pub-header").style.display=(name==="landing"||name==="done")?"none":"flex";
+      if(name==="confirm") renderSummary();
+      if(name==="request") renderRequestPage();
+      window.scrollTo(0,0);
+    }
+
+    // ════════════════════ STATE ════════════════════
+    // captured request state, language-independent (keys/ids)
+    let S = {};
+    function resetState(){
+      S = { sector:null, subtype:null, domain:null, service:null, area:null, urgency:null,
+            probes:{}, /* probeId -> {value:'optKey'|'free'|'not_sure', kind} */
+            media:[], /* {kind, thumbKey, txKey, svc, overlayIdx} simulated */
+            notSure:false, offers:null, budget:null, timewindow:null,
+            mediaAsks:0 };
+    }
+
+    // ════════════════════ CHAT ENGINE ════════════════════
+    function el(html){ const tpl=document.createElement("template"); tpl.innerHTML=html.trim(); return tpl.content.firstChild; }
+    function scrollChat(){ const log=document.getElementById("chat-log"); if(log) log.scrollIntoView({block:"end"}); window.scrollTo(0, document.body.scrollHeight); }
+    function clearZone(){ document.getElementById("quick-zone").innerHTML=""; }
+
+    // bot bubble — literal AR/EN pair (so it relocalizes in place). cb after typing.
+    function botSay(arHtml, enHtml, cb){
+      const log=document.getElementById("chat-log");
+      const typing=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" style="margin-inline-start:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(typing); scrollChat();
+      setTimeout(()=>{
+        typing.remove();
+        const cur = (LANG==="en") ? enHtml : arHtml;
+        const bubble=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}" style="margin-inline-start:8px;">${cur}</div></div>`);
+        log.appendChild(bubble); scrollChat(); if(cb) cb();
+      }, 600);
+    }
+    // bot bubble keyed by dictionary key
+    function botSayKey(key, cb){ botSay(I18N.ar[key], I18N.en[key], cb); }
+    // user bubble — literal AR/EN pair
+    function userSay(arHtml, enHtml){
+      const log=document.getElementById("chat-log");
+      const cur=(LANG==="en")?enHtml:arHtml;
+      log.appendChild(el(`<div class="row user"><div class="bubble-user" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}">${cur}</div></div>`)); scrollChat();
+    }
+    function userSayRaw(html){ // free-typed; shown as typed in both langs
+      const log=document.getElementById("chat-log");
+      document.getElementById("chat-log").appendChild(el(`<div class="row user"><div class="bubble-user">${html}</div></div>`)); scrollChat();
+    }
+    function esc(s){ return String(s).replace(/"/g,"&quot;"); }
+
+    // chip helper — builds a keyed-pair chip; onclick provided
+    function chip(arLabel, enLabel, onClick, cls){
+      const b=el(`<button class="qchip ${cls||""}" data-tar="${esc(arLabel)}" data-ten="${esc(enLabel)}">${LANG==="en"?enLabel:arLabel}</button>`);
+      b.onclick=onClick; return b;
+    }
+
+    // ── the adaptive script is a STEP MACHINE; STEP holds current phase ──
+    let STEP = null;
+
+    function startChat(){ resetState(); document.getElementById("chat-log").innerHTML=""; clearZone(); goto("chat"); renderMeter(); askSector(); }
+    function restartChat(){ startChat(); }
+
+    // FRAME 1 — sector
+    function askSector(){
+      STEP="sector"; clearZone();
+      botSayKey("q_sector", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.appendChild(chip(I18N.ar.chip_residential,I18N.en.chip_residential, ()=>chooseSector("residential")));
+        z.appendChild(chip(I18N.ar.chip_commercial,I18N.en.chip_commercial, ()=>chooseSector("commercial")));
+      });
+    }
+    function chooseSector(sec){
+      S.sector=sec; clearZone();
+      userSay(sec==="residential"?I18N.ar.chip_residential:I18N.ar.chip_commercial, sec==="residential"?I18N.en.chip_residential:I18N.en.chip_commercial);
+      renderMeter(); askSubtype();
+    }
+    // FRAME 2 — subtype
+    function askSubtype(){
+      STEP="subtype"; clearZone();
+      const isRes=S.sector==="residential";
+      const subs = isRes ? ["apartment","condo","villa"] : ["shop","restaurant","office","warehouse"];
+      botSayKey(isRes?"q_subtype_res":"q_subtype_com", ()=>{
+        const z=document.getElementById("quick-zone");
+        subs.forEach(s=> z.appendChild(chip(I18N.ar["sub_"+s],I18N.en["sub_"+s], ()=>chooseSubtype(s))));
+      });
+    }
+    function chooseSubtype(sub){
+      S.subtype=sub; clearZone();
+      userSay(I18N.ar["sub_"+sub],I18N.en["sub_"+sub]); renderMeter(); askDomain();
+    }
+    // FRAME 3 — domain
+    function askDomain(){
+      STEP="domain"; clearZone();
+      botSayKey("q_domain", ()=>{
+        const z=document.getElementById("quick-zone"); z.style.flexDirection="column";
+        z.className="px-4 pb-2 grid grid-cols-2 gap-2"; // domain chips in a grid
+        DOMAINS.forEach(d=>{
+          const b=el(`<button class="dchip" data-dom="${d.id}"><span>${d.emoji}</span><span data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
+          b.onclick=()=>chooseDomain(d.id); z.appendChild(b);
+        });
+      });
+    }
+    function chooseDomain(domId){
+      const d=DOMAINS.find(x=>x.id===domId); S.domain=domId; resetZoneClass();
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en);
+      renderMeter();
+      // single-service domains skip straight to the service
+      if(d.services.length===1){ chooseService(d.services[0], true); }
+      else askServiceType(d);
+    }
+    function resetZoneClass(){ const z=document.getElementById("quick-zone"); z.className="px-4 pb-2 flex flex-wrap gap-2"; z.style.flexDirection=""; }
+    // FRAME 4 — service type within the domain
+    function askServiceType(d){
+      STEP="service"; clearZone();
+      botSayKey("q_servicetype", ()=>{
+        const z=document.getElementById("quick-zone");
+        d.services.forEach(svc=> z.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
+      });
+    }
+    function chooseService(svc, echoed){
+      S.service=svc; clearZone();
+      if(!echoed) userSay(CAT.ar[svc],CAT.en[svc]);
+      renderMeter();
+      // begin DRILL on this service's probes
+      startDrill();
+    }
+
+    // ── DRILL — ask probes, BATCHING is via one-bubble-per-probe but quick; interleave overlays ──
+    let probeIdx=0;
+    function startDrill(){ probeIdx=0; askProbe(); }
+    function askProbe(){
+      STEP="drill"; clearZone();
+      const probes=Q[S.service].probes;
+      if(probeIdx>=probes.length){ afterDrill(); return; }
+      const p=probes[probeIdx];
+      const ar=p.ar, en=p.en;
+      botSay(ar.label, en.label, ()=>{
+        const z=document.getElementById("quick-zone");
+        if(p.free){
+          // free probe → prompt to type OR record audio OR not-sure; offer is skippable
+          z.appendChild(chip("🎤 "+I18N.ar.record_instead, "🎤 "+I18N.en.record_instead,
+            ()=>recordAudioForProbe(p), "is-media"));
+          z.appendChild(chip(I18N.ar.skip_step,I18N.en.skip_step, ()=>{ answerProbeSkip(p); }));
+          z.appendChild(notSureChip());
+          // (free text via the composer always available)
+        } else {
+          Object.keys(p.ar.opt).forEach(k=>{
+            z.appendChild(chip(p.ar.opt[k], p.en.opt[k], ()=>answerProbeOpt(p,k)));
+          });
+          z.appendChild(notSureChip());
+        }
+        // an overlay tied to THIS probe?
+        maybeOfferOverlayChip(p);
+      });
+    }
+    function notSureChip(){ return chip(NOT_SURE.ar, NOT_SURE.en, ()=>pivotToMedia(), "is-notsure"); }
+
+    function answerProbeOpt(p, optKey){
+      S.probes[p.id]={ value:optKey, type:"opt" };
+      userSay(p.ar.opt[optKey], p.en.opt[optKey]);
+      clearZone(); renderMeter(); probeIdx++; askProbe();
+    }
+    function answerProbeSkip(p){ S.probes[p.id]={ value:null, type:"skip" }; clearZone(); probeIdx++; renderMeter(); askProbe(); }
+    function answerProbeFree(p, txt){
+      S.probes[p.id]={ value:txt, type:"free" };
+      userSayRaw(txt); clearZone(); renderMeter(); probeIdx++; askProbe();
+    }
+
+    // record-audio sim for a FREE probe (narrative/long → AUDIO modality)
+    function recordAudioForProbe(p){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:06</bdi></div></div>`);
+      log.appendChild(rec); scrollChat();
+      setTimeout(()=>{
+        rec.remove();
+        // canned transcript as the user's turn (audio bubble) + log answer
+        const arTx = `<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.ar.media_count_audio} <bdi>0:06</bdi></span>`;
+        const enTx = `<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.en.media_count_audio} <bdi>0:06</bdi></span>`;
+        userSay(arTx, enTx);
+        S.probes[p.id]={ value:"__audio__", type:"audio" };
+        S.media.push({kind:"audio", thumbAr:I18N.ar.media_count_audio+" 0:06", thumbEn:I18N.en.media_count_audio+" 0:06"});
+        clearZone(); renderMeter(); probeIdx++; askProbe();
+      }, 1100);
+    }
+
+    // overlay chip tied to current probe (show/tell modality switch)
+    function kindEmoji(kind){ return kind==="video"?"🎥 ":kind==="audio"?"🎤 ":"📷 "; }
+    function maybeOfferOverlayChip(p){
+      if(S.mediaAsks>=2) return; // cap targeted asks at ~2 unless user keeps adding
+      const ov=overlayForProbe(S.service, p.id, probeIdx);
+      if(!ov) return;
+      const em=kindEmoji(ov.kind);
+      // present the overlay ASK as a bot follow-up bubble + a media chip prepended to the answer zone
+      botSay(ov.ar.ask, ov.en.ask, ()=>{
+        const z=document.getElementById("quick-zone");
+        const mc=chip(em+ov.ar.thumb, em+ov.en.thumb, ()=>captureOverlay(ov), "is-media");
+        z.prepend(mc);
+      });
+    }
+    function overlayForProbe(svc, probeId, idx){
+      const list = OVERLAYS[svc] || defaultOverlay(svc);
+      const probes=Q[svc].probes;
+      return list.find(o=>{
+        if(o.after===probeId) return true;
+        if(o.after==="__first__" && idx===0) return true;
+        if(o.after==="__last__" && idx===probes.length-1) return true;
+        return false;
+      });
+    }
+    const CAM_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+    const VID_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+    const MIC_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg>`;
+    function kindIcon(kind){ return kind==="video"?VID_ICON:kind==="audio"?MIC_ICON:CAM_ICON; }
+
+    // capture an overlay (simulated): record/snap → thumbnail bubble → canned transcript bubble
+    function captureOverlay(ov){
+      S.mediaAsks++;
+      clearZone();
+      const log=document.getElementById("chat-log");
+      if(ov.kind==="audio"){
+        const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:09</bdi></div></div>`);
+        log.appendChild(rec); scrollChat();
+        setTimeout(()=>{ rec.remove(); placeMediaBubble(ov); }, 1100);
+      } else {
+        // photo/video → a brief "capturing" then the thumbnail
+        const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+        log.appendChild(cap); scrollChat();
+        setTimeout(()=>{ cap.remove(); placeMediaBubble(ov); }, 800);
+      }
+    }
+    function placeMediaBubble(ov){
+      const log=document.getElementById("chat-log");
+      const icon=kindIcon(ov.kind);
+      const arBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${ov.ar.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.ar.sim_tag}</span></span></span>`;
+      const enBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${ov.en.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.en.sim_tag}</span></span></span>`;
+      userSay(arBody, enBody);
+      // canned transcript / read-back as a bot bubble
+      botSay(ov.ar.tx, ov.en.tx, ()=>{
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx});
+        renderMeter();
+        // continue drill where we were
+        clearZone(); probeIdx++; askProbe();
+      });
+    }
+
+    // ── NOT-SURE pivot — modality switch + log + nudge to visit ──
+    function pivotToMedia(){
+      S.notSure=true; clearZone();
+      userSay(NOT_SURE.ar, NOT_SURE.en);
+      botSayKey("pivot_bot", ()=>{
+        const z=document.getElementById("quick-zone");
+        // offer photo + video capture, both routed through a generic "unsure" overlay
+        const ovPhoto={kind:"photo", ar:{thumb:"صورة — المشكلة", tx:"[صورة] لقطة للمشكلة متل ما هي — المحترف بيحدّد منها."}, en:{thumb:"Photo — the issue", tx:"[Photo] A shot of the issue as-is — the pro will assess from it."}};
+        const ovVideo={kind:"video", ar:{thumb:"فيديو — جولة 0:08", tx:"[فيديو] جولة قصيرة بتفرجي المكان والمشكلة من كل الجهات."}, en:{thumb:"Video — walkthrough 0:08", tx:"[Video] A short walk-around showing the place and the issue from all sides."}};
+        z.appendChild(chip("📷 "+ovPhoto.ar.thumb,"📷 "+ovPhoto.en.thumb, ()=>{ captureUnsureMedia(ovPhoto); }, "is-media"));
+        z.appendChild(chip("🎥 "+ovVideo.ar.thumb,"🎥 "+ovVideo.en.thumb, ()=>{ captureUnsureMedia(ovVideo); }, "is-media"));
+      });
+    }
+    function captureUnsureMedia(ov){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(cap); scrollChat();
+      setTimeout(()=>{
+        cap.remove();
+        const icon=kindIcon(ov.kind);
+        userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.ar.thumb}</span></span>`,
+                `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.en.thumb}</span></span>`);
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx, unsure:true});
+        botSayKey("pivot_logged", ()=>{ renderMeter(); finishDrillSkippingRest(); });
+      }, 900);
+    }
+    // after a pivot, we have enough (media stands in for probes) → wrap remaining FRAME meta then confirm
+    function finishDrillSkippingRest(){ probeIdx = Q[S.service].probes.length; afterDrill(); }
+
+    // ── after DRILL → capture remaining routing metadata (area, urgency), then SOFT extras ──
+    function afterDrill(){
+      if(!S.area){ askArea(); return; }
+      if(!S.urgency){ askUrgency(); return; }
+      if(!S.offers){ askOffers(); return; }
+      if(!S.budget){ askBudget(); return; }
+      if(!S.timewindow){ askTimeWindow(); return; }
+      finishChat();
+    }
+    function askArea(){
+      STEP="area"; clearZone();
+      botSayKey("q_area", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["region_beirut","region_mtleb","region_north","region_south"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.area=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderMeter(); afterDrill(); })));
+      });
+    }
+    function askUrgency(){
+      STEP="urgency"; clearZone();
+      botSayKey("q_urgency", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["urg_emergency","urg_week","urg_flexible"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.urgency=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderMeter(); afterDrill(); })));
+      });
+    }
+    function askOffers(){
+      STEP="offers"; clearZone();
+      botSayKey("q_offers", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["offers_23","offers_35","offers_max"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.offers=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); afterDrill(); })));
+      });
+    }
+    function askBudget(){
+      STEP="budget"; clearZone();
+      botSayKey("q_budget", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["budget_lt100","budget_100_300","budget_300_1000","budget_1000"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.budget=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); afterDrill(); })));
+        z.appendChild(chip(NOT_SURE.ar,NOT_SURE.en, ()=>{ S.budget="not_sure"; userSay(NOT_SURE.ar,NOT_SURE.en); clearZone(); afterDrill(); }, "is-notsure"));
+      });
+    }
+    function askTimeWindow(){
+      STEP="timewindow"; clearZone();
+      botSayKey("q_timewindow", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["tw_morning","tw_afternoon","tw_evening","tw_weekend","tw_flexible"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.timewindow=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); afterDrill(); })));
+      });
+    }
+
+    function finishChat(){
+      STEP="ready"; clearZone();
+      botSayKey("chat_ready", ()=>{
+        const log=document.getElementById("chat-log");
+        const btn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('confirm')">${t("cta_review")}</button></div>`);
+        log.appendChild(btn); scrollChat();
+        // surface the review link in the meter too
+        document.getElementById("meter-review").style.display="inline";
+        renderMeter();
+      });
+    }
+    function reviewNow(){ goto("confirm"); } // meter "review & send" — submit at floor anytime
+
+    // free-text composer
+    function sendFree(){
+      const inp=document.getElementById("chat-input"); const v=(inp.value||"").trim();
+      if(!v) return; inp.value="";
+      const clean=v.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      // route a free answer into the active free probe if we're on one, else just echo and keep going
+      if(STEP==="drill"){
+        const p=Q[S.service].probes[probeIdx];
+        if(p && p.free){ answerProbeFree(p, clean); return; }
+      }
+      userSayRaw(clean);
+    }
+    function mediaTap(kind){
+      // composer media button → a generic show overlay (always available, like B/C)
+      const ov={kind:kind||"photo", ar:{thumb:"صورة — المشكلة", tx:"[صورة] لقطة للمشكلة متل ما هي."}, en:{thumb:"Photo — the issue", tx:"[Photo] A shot of the issue as-is."}};
+      captureUnsureMedia(ov);
+    }
+
+    // ════════════════════ OFFER-READINESS METER ════════════════════
+    // Floor 🟠 = required_meta complete (service + subtype + area + urgency)
+    // Ceiling 🟢 = probes answered + targeted media captured
+    // 🟡 visit cap = inherently visit-needed services OR pivot-to-unsure
+    function meterState(){
+      const requiredMeta = S.service && S.subtype && S.area && S.urgency;
+      const probes = S.service ? Q[S.service].probes : [];
+      const answered = probes.filter(p=> S.probes[p.id] && S.probes[p.id].type!=="skip" ).length;
+      const probeFull = probes.length>0 && answered>=Math.max(1, probes.length-1); // tolerate 1 skip
+      const mediaCaptured = S.media.length>0;
+      const visitCap = VISIT_NEEDED.has(S.service) || S.notSure;
+      if(!requiredMeta){
+        // before floor: subtle progressive fill as frame metadata accrues
+        const meta=[S.sector,S.subtype,S.service,S.area,S.urgency].filter(Boolean).length;
+        return { level: meta>=1 ? "warming":"start", fillFloor: Math.min(meta,4), fillCeil:0, visitCap, requiredMeta:false };
+      }
+      if(visitCap){ return { level:"visit", fillFloor:4, fillCeil:0, visitCap:true, requiredMeta:true }; }
+      if(probeFull && mediaCaptured){ return { level:"ceil", fillFloor:4, fillCeil:1, visitCap:false, requiredMeta:true }; }
+      if(probeFull || mediaCaptured){ return { level:"floor", fillFloor:4, fillCeil:0, partialCeil:true, visitCap:false, requiredMeta:true }; }
+      return { level:"floor", fillFloor:4, fillCeil:0, visitCap:false, requiredMeta:true };
+    }
+    function renderMeter(){
+      const st=meterState();
+      const segs=document.querySelectorAll("#meter-track .meter-seg");
+      // segments 0..3 = floor (orange), segment 4 = ceiling (green). visit recolors to 🟡.
+      segs.forEach((seg,i)=>{
+        seg.classList.remove("on-floor","on-ceil","on-visit","just-on");
+        const meta=[S.sector,S.subtype,S.service,S.area,S.urgency].filter(Boolean).length;
+        if(i<4){
+          // floor fill proportional to frame metadata (but full only at floor)
+          const fill = st.requiredMeta ? 4 : Math.min(meta,3);
+          if(i<fill){ seg.classList.add(st.visitCap?"on-visit":"on-floor"); }
+        } else {
+          if(st.fillCeil>0){ seg.classList.add(st.visitCap?"on-visit":"on-ceil"); }
+        }
+      });
+      // label + help
+      const label=document.getElementById("meter-label"), help=document.getElementById("meter-help"), review=document.getElementById("meter-review");
+      let lk, hk;
+      if(st.level==="ceil"){ lk="meter_ceil"; hk="meter_help_ceil"; }
+      else if(st.level==="visit"){ lk="meter_visit"; hk="meter_help_visit"; }
+      else if(st.level==="floor"){ lk="meter_floor"; hk="meter_help_floor"; }
+      else { lk="meter_start"; hk="meter_help_start"; }
+      if(label){ label.setAttribute("data-tkey",lk); label.innerHTML=t(lk); }
+      if(help){ help.setAttribute("data-tkey",hk); help.innerHTML=t(hk); }
+      if(review){ review.style.display = (st.requiredMeta) ? "inline" : (review.style.display==="inline"?"inline":"none"); }
+    }
+
+    // ════════════════════ CONFIRM — editable summary ════════════════════
+    function probeAnswerLabel(svc, p){
+      const a=S.probes[p.id];
+      if(!a || a.type==="skip") return null;
+      if(a.type==="opt") return { ar:p.ar.opt[a.value], en:p.en.opt[a.value] };
+      if(a.type==="free") return { ar:a.value, en:a.value };
+      if(a.type==="audio") return { ar:I18N.ar.media_count_audio, en:I18N.en.media_count_audio };
+      return null;
+    }
+    function summaryRows(){
+      const rows=[];
+      // the job (service)
+      if(S.service) rows.push({ lblKey:"sum_what", ar:CAT.ar[S.service], en:CAT.en[S.service], edit:"chat" });
+      // property
+      if(S.sector){
+        const subAr=S.subtype?I18N.ar["sub_"+S.subtype]:"", subEn=S.subtype?I18N.en["sub_"+S.subtype]:"";
+        const secAr=S.sector==="residential"?"بيت":"شغل/محل", secEn=S.sector==="residential"?"Home":"Business";
+        rows.push({ lblKey:"sum_property", ar:`${secAr} · ${subAr}`, en:`${secEn} · ${subEn}`, edit:"chat" });
+      }
+      // probe answers
+      if(S.service) Q[S.service].probes.forEach(p=>{
+        const lab=probeAnswerLabel(S.service,p);
+        if(lab) rows.push({ lblAr:p.ar.label, lblEn:p.en.label, ar:lab.ar, en:lab.en, edit:"chat", isProbe:true });
+      });
+      // media
+      if(S.media.length){
+        const arList=S.media.map(m=>m.thumbAr).join("، "); const enList=S.media.map(m=>m.thumbEn).join(", ");
+        rows.push({ lblKey:"sum_media", ar:arList, en:enList, edit:"chat" });
+      }
+      // where + urgency
+      if(S.area) rows.push({ lblKey:"sum_where", ar:I18N.ar[S.area], en:I18N.en[S.area], edit:"chat" });
+      if(S.urgency) rows.push({ lblKey:"sum_urgency", ar:I18N.ar[S.urgency], en:I18N.en[S.urgency], edit:"chat" });
+      // offers/budget/timewindow
+      if(S.offers) rows.push({ lblKey:"sum_offers", ar:I18N.ar[S.offers], en:I18N.en[S.offers], edit:"chat" });
+      if(S.budget) rows.push({ lblKey:"sum_budget", ar:(S.budget==="not_sure"?NOT_SURE.ar:I18N.ar[S.budget]), en:(S.budget==="not_sure"?NOT_SURE.en:I18N.en[S.budget]), edit:"chat" });
+      if(S.timewindow) rows.push({ lblKey:"sum_timewindow", ar:I18N.ar[S.timewindow], en:I18N.en[S.timewindow], edit:"chat" });
+      return rows;
+    }
+    function renderSummary(){
+      const host=document.getElementById("summary-list"); if(!host) return;
+      host.innerHTML="";
+      summaryRows().forEach(r=>{
+        const lbl = r.lblKey ? t(r.lblKey) : (LANG==="en"?r.lblEn:r.lblAr);
+        const val = LANG==="en"?r.en:r.ar;
+        const row=el(`<div class="sumrow">
+          <div style="flex:1;min-width:0;">
+            <p class="t-caption text-faint" data-sumlbl="${r.lblKey?('k:'+r.lblKey):('p')}" data-pa="${esc(r.lblAr||'')}" data-pe="${esc(r.lblEn||'')}">${lbl}</p>
+            <p class="t-small text-ink" data-sumval data-va="${esc(r.ar)}" data-ve="${esc(r.en)}">${val}</p>
+          </div>
+          <button class="editlink" data-tkey="edit_word" onclick="goto('chat')">${t("edit_word")}</button>
+        </div>`);
+        host.appendChild(row);
+      });
+      // confirm meter label + track sync to current state
+      const st=meterState();
+      const cl=document.getElementById("confirm-meter-label");
+      if(cl){ const lk = st.level==="visit"?"meter_visit":st.level==="ceil"?"meter_ceil":"meter_floor"; cl.setAttribute("data-tkey",lk); cl.innerHTML=t(lk); }
+      paintTrack(document.getElementById("confirm-meter-track"), st);
+    }
+    // paint any meter track to a given state (used by the static confirm-track)
+    function paintTrack(track, st){
+      if(!track) return;
+      track.querySelectorAll(".meter-seg").forEach((seg,i)=>{
+        seg.classList.remove("on-floor","on-ceil","on-visit");
+        if(i<4){ seg.classList.add(st.visitCap?"on-visit":"on-floor"); }
+        else if(st.fillCeil>0){ seg.classList.add(st.visitCap?"on-visit":"on-ceil"); }
+      });
+    }
+
+    // ════════════════════ POST-SUBMIT REQUEST PAGE ════════════════════
+    function reqTitle(){
+      // build a human title AR/EN from service + first probe answer (or media)
+      if(!S.service) return {ar:"طلب خدمة", en:"Service request"};
+      const cat={ar:CAT.ar[S.service], en:CAT.en[S.service]};
+      const probes=Q[S.service].probes;
+      const first=probes.find(p=>S.probes[p.id]&&S.probes[p.id].type==="opt");
+      if(first){ const a=S.probes[first.id]; return {ar:`${first.ar.opt[a.value]} — ${cat.ar}`, en:`${first.en.opt[a.value]} — ${cat.en}`}; }
+      return cat;
+    }
+    function offersTargetText(){
+      const m={offers_23:"offers_word_2_3", offers_35:"offers_word_3_5", offers_max:"offers_word_max"};
+      const k=m[S.offers]||"offers_word_3_5";
+      if(LANG==="en") return `You want ${t(k)} to compare`;
+      return `بدّك ${t(k)} لتقارن`;
+    }
+    function renderRequestPage(){
+      const ti=reqTitle();
+      const title=document.getElementById("req-title");
+      title.setAttribute("data-tar",esc(ti.ar)); title.setAttribute("data-ten",esc(ti.en)); title.removeAttribute("data-tkey");
+      title.innerHTML = LANG==="en"?ti.en:ti.ar;
+      // chips
+      const chipsHost=document.getElementById("req-chips"); chipsHost.innerHTML="";
+      const chipsData=[];
+      if(S.service) chipsData.push({ar:CAT.ar[S.service],en:CAT.en[S.service]});
+      if(S.area) chipsData.push({ar:I18N.ar[S.area],en:I18N.en[S.area]});
+      if(S.urgency) chipsData.push({ar:I18N.ar[S.urgency],en:I18N.en[S.urgency]});
+      const st=meterState();
+      if(st.level==="visit") chipsData.push({ar:"بحاجة لزيارة 🟡",en:"Needs a visit 🟡"});
+      chipsData.forEach(c=>{
+        chipsHost.appendChild(el(`<span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-tealink ps-3 pe-3 py-1 t-caption" data-tar="${esc(c.ar)}" data-ten="${esc(c.en)}">${LANG==="en"?c.en:c.ar}</span>`));
+      });
+      // media
+      const mediaCard=document.getElementById("req-media-card"), mediaHost=document.getElementById("req-media");
+      if(S.media.length===0){ mediaCard.style.display="none"; }
+      else{
+        mediaCard.style.display="block"; mediaHost.innerHTML="";
+        S.media.forEach(m=>{
+          const icon=kindIcon(m.kind);
+          const playish = m.kind==="audio";
+          mediaHost.appendChild(el(`<div class="rounded-xl bg-bg border border-line p-3 mb-2 flex items-center gap-3">
+            <span class="grid place-items-center size-10 rounded-full bg-teal text-white shrink-0">${icon}</span>
+            <div class="min-w-0 flex-1"><p class="t-small text-ink" style="font-weight:600;" data-tar="${esc(m.thumbAr)}" data-ten="${esc(m.thumbEn)}">${LANG==="en"?m.thumbEn:m.thumbAr}</p>
+            ${m.txAr?`<p class="t-caption text-soft mt-0.5" data-tar="${esc(m.txAr)}" data-ten="${esc(m.txEn)}">${LANG==="en"?m.txEn:m.txAr}</p>`:""}</div>
+          </div>`));
+        });
+      }
+      // details (probe answers)
+      const det=document.getElementById("req-details"); det.innerHTML="";
+      if(S.service) Q[S.service].probes.forEach(p=>{
+        const lab=probeAnswerLabel(S.service,p); if(!lab) return;
+        det.appendChild(el(`<div class="flex items-start gap-2">
+          <dt class="t-small text-faint shrink-0" style="min-inline-size:96px;" data-tar="${esc(p.ar.label)}" data-ten="${esc(p.en.label)}">${LANG==="en"?p.en.label:p.ar.label}</dt>
+          <dd class="t-small text-ink" data-tar="${esc(lab.ar)}" data-ten="${esc(lab.en)}">${LANG==="en"?lab.en:lab.ar}</dd></div>`));
+      });
+      if(!det.children.length){
+        det.appendChild(el(`<p class="t-small text-soft" data-tar="حسب اللي فرجيتنا ياه فوق — المحترف بيقيّم من الوسائط." data-ten="Based on what you showed above — the pro will assess from the media.">${LANG==="en"?"Based on what you showed above — the pro will assess from the media.":"حسب اللي فرجيتنا ياه فوق — المحترف بيقيّم من الوسائط."}</p>`));
+      }
+      // offers target
+      const ot=document.getElementById("req-offers-target");
+      ot.removeAttribute("data-tkey");
+      ot.setAttribute("data-tdyn","offers");
+      ot.innerHTML = offersTargetText();
+    }
+
+    // rebuild dynamic strings on language switch (request page + meter help already handled)
+    function rebuildDynamic(){
+      // request page open? rebuild it
+      if(document.getElementById("screen-request").classList.contains("is-active")) renderRequestPage();
+      // confirm open? rebuild summary (and keep edited values via data-va/ve)
+      if(document.getElementById("screen-confirm").classList.contains("is-active")) renderSummary();
+      // offers target tdyn
+      const ot=document.getElementById("req-offers-target");
+      if(ot && ot.getAttribute("data-tdyn")==="offers") ot.innerHTML=offersTargetText();
+    }
+
+    function setVariant(v){
+      document.getElementById("var-off").classList.toggle("hidden", v!=="off");
+      document.getElementById("var-on").classList.toggle("hidden", v!=="on");
+      document.getElementById("btn-off").classList.toggle("is-sel", v==="off");
+      document.getElementById("btn-on").classList.toggle("is-sel", v==="on");
+    }
+
+    // ════════════════════ DEV: jump to any service (verifies all 23 reachable) ════════════════════
+    function buildDevSvc(){
+      const sel=document.getElementById("dev-svc"); if(!sel) return;
+      const cur=sel.value;
+      sel.innerHTML="";
+      const blank=document.createElement("option"); blank.value=""; blank.textContent="— service —"; sel.appendChild(blank);
+      DOMAINS.forEach(d=>{
+        const og=document.createElement("optgroup"); og.label=domLabel(d);
+        d.services.forEach(svc=>{ const o=document.createElement("option"); o.value=svc; o.textContent=catLabel(svc); og.appendChild(o); });
+        sel.appendChild(og);
+      });
+      sel.value=cur;
+    }
+    function devJumpService(svc){
+      if(!svc) return;
+      resetState();
+      const d=DOMAINS.find(x=>x.services.includes(svc));
+      S.sector="residential"; S.subtype="apartment"; S.domain=d.id; S.service=svc;
+      document.getElementById("chat-log").innerHTML=""; clearZone(); goto("chat"); renderMeter();
+      // seed a couple of frame bubbles so context is visible
+      userSay(I18N.ar.chip_residential,I18N.en.chip_residential);
+      userSay(I18N.ar.sub_apartment,I18N.en.sub_apartment);
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en);
+      userSay(CAT.ar[svc],CAT.en[svc]);
+      startDrill();
+    }
+
+    // ════════════════════ INIT ════════════════════
+    resetState();
+    buildDevSvc();
+    setLang("ar");
+    goto("landing");
+
+    // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      var back=document.getElementById("back-to-dash"); if(back) back.style.display="block";
+      var backReq=document.getElementById("back-to-dash-req"); if(backReq) backReq.style.display="block";
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ JOURNEY D — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Full journey present in order: landing → adaptive chat core (FRAME→DRILL→SHOW/TELL inside ONE chat)
+      → confirm (editable summary) → register-late gate → W4 completion → request detail. Six screens via the
+      picker; the chat advances adaptively; the done-screen «شوف طلبك» opens the request-detail (goto('request')).
+   2. FRAME: one forking question (home/business → subtype), then domain-first chips (10 domains), then service-type
+      chips → loads that service's REAL service_questions probes. Routing meta (area, urgency) captured AFTER investment.
+   3. DRILL: probes from messages/service_questions verbatim, as chip clusters; every probe carries «مش متأكد / Not sure»
+      + free-text composer + 🎤 record. «مش متأكد» triggers the modality switch (photo/video) + logs unsure + nudges to visit.
+   4. SHOW/TELL: media asks are tied to SPECIFIC probes (never generic). 5 featured services (plumbing, hvac, painting,
+      cleaning, electrical) have DEEP overlays; the other 18 get a default photo+audio offer. Media+audio SIMULATED
+      (placeholder thumb / "recording…⏹" → canned transcript bubble). Targeted asks capped ~2; all skippable, no dead-ends.
+   5. CONFIRM: editable summary card (chips, media thumbs, audio clips, probe answers); «عدّل» per line; then submit.
+   6. METER: 🟠 floor (required_meta) → 🟢 ceiling (probes + media) → 🟡 visit cap (renovation/construction or unsure).
+      Never gates — «راجع وابعت» available once floor is reached; each step frames WHY it helps.
+   7. REGISTER-LATE gate only at submit: «طلبك جاهز ✅» + value line + meter state + name/phone (mock) → done.
+   8. POST-SUBMIT request page: status chip, dynamic title, chips, attached media shown prominently, probe answers,
+      offers target ("up to N"), prominent «عدّل الطلب» → confirm. Clean mode reveals «رجوع للقائمة ↩» here too.
+   9. COLOR = CYAN/TEAL (#0e7490) — Journey D's own identity, distinct from A-green/B-orange/C-indigo.
+  10. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17).
+  11. All 23 ServiceCategory reachable from their domain; each loads its probes; dev «jump svc» verifies.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl default; chat reads right→left: BOT bubbles anchor inline-START (right) tail on
+     border-start-start, USER bubbles inline-END (left) tail on border-end-end; avatar margin uses margin-inline-start;
+     the SEND arrow is directional and FLIPS in RTL (scaleX(-1)), un-flips in LTR via setLang; the completion check +
+     shield are non-directional and do NOT flip; meter/chips/composer use logical properties (ps/pe/ms/me/min-inline-size,
+     text-align:start). No physical ml/mr/pl/pr/left/right anywhere.
+   • Real-Arabic-content pass — every probe + label is REAL copy from messages/service_questions (no Lorem Ipsum); the
+     5 featured overlays use real Levantine asks/transcripts; «مش متأكد», «طلبك جاهز ✅», «المحترفون بيسعّروا بدقّة».
+     Holds at 390px; long transcripts wrap, don't clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0 on every bubble, chip, prompt, meter;
+     h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont
+     (400/500/600/700); Western numerals; durations/counts/budgets <bdi>-isolated.
+
+  NOTE: English column is DERIVED (messages + brief) and has NOT yet passed the native-Lebanese review bar.
+  -->
+</body>
+</html>

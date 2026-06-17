@@ -80,6 +80,14 @@
     .a .badge{background:#0f7c6c;} .a .run{background:#0f7c6c;} .a .accent{color:#0a5a4e;}
     .b .badge{background:#e8590c;} .b .run{background:#e8590c;} .b .accent{color:#b8430a;}
     .c .badge{background:#4338ca;} .c .run{background:#4338ca;} .c .accent{color:#312a9c;}
+    .d .badge{background:#0e7490;} .d .run{background:#0e7490;} .d .accent{color:#0a586e;}
+
+    /* featured "lead direction" card — D */
+    .card.lead{border:2px solid #0e7490;box-shadow:0 10px 30px -16px rgba(14,116,144,.5);position:relative;}
+    .leadtag{
+      display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;
+      background:#0e7490;border-radius:999px;padding:4px 11px;
+    }
 
     /* "done" toggle (pure client-side, no storage) */
     .donebtn{
@@ -117,10 +125,10 @@
   <main class="wrap py-7">
 
     <!-- intro -->
-    <h1 class="t-display mb-2">جلسة تجربة الرحلات (A/B/C)</h1>
+    <h1 class="t-display mb-2">جلسة تجربة الرحلات (D · A/B/C)</h1>
     <p class="t-body text-[#5b554d] mb-6">
       هاي لوحة لإدارة جلسة التجربة. اختار رحلة، اضغط «شغّل من البداية»، وسلّم التلفون لصاحب العقار يجرّبها لحالو.
-      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. شغّل الرحلات حسب ترتيب صاحب العقار (تحت ↓).
+      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. <strong>D هي الاتجاه الرئيسي المقترَح</strong> — توليفة من A وB وC؛ A/B/C تحتها للمقارنة.
     </p>
 
     <!-- cross-link to the PROVIDER session launcher (one shared link covers both sessions) -->
@@ -130,7 +138,29 @@
       جلسة أصحاب العقارات ↔ جلسة المحترفين
     </a>
 
-    <!-- ════════════════ JOURNEY CARDS ════════════════ -->
+    <!-- ════════════════ FEATURED LEAD DIRECTION — D ════════════════ -->
+    <section class="mb-4">
+      <div class="card lead d">
+        <div class="mb-3"><span class="leadtag">★ الاتجاه الرئيسي للتحقّق · Lead direction</span></div>
+        <div class="flex items-start gap-3.5 mb-3">
+          <span class="badge">D</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="t-h3">حكي متكيّف <span class="t-caption text-[#8a857c]">· Adaptive chat</span></h2>
+              <button class="donebtn" data-j="D" onclick="toggleDone(this)" aria-pressed="false">
+                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span class="lbl">تمّت</span>
+              </button>
+            </div>
+            <p class="t-small text-[#5b554d] mt-1">توليفة A+B+C: حكي بيتكيّف حسب الخدمة، بيسأل التفاصيل الصح، وبيطلب صورة/صوت بالمكان المناسب — مع مؤشّر «جهوزية العرض».</p>
+          </div>
+        </div>
+        <a class="run" href="journey-d-adaptive.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="journey-d-adaptive.html">معاينة (مع المبدّل) · Preview with switcher</a>
+      </div>
+    </section>
+
+    <!-- ════════════════ JOURNEY CARDS (A/B/C — for comparison) ════════════════ -->
     <section class="space-y-4">
 
       <!-- A — Guided -->
@@ -235,9 +265,11 @@
   ════════════════════════ ACCEPTANCE CRITERIA (this launcher) ════════════════════════
    1. Opens by double-clicking from disk (file://): all links are plain <a href> file→file.
       No iframes, no fetch, no JS module imports. Needs internet only for fonts + Tailwind CDN.
-   2. Three clearly distinct journey cards — A موجَّهة/Guided (green), B فرجينا/Media-first (orange),
-      C حكي/Conversational (indigo) — each with a one-line description and a big «شغّل من البداية ▶
-      Run from start» link to journey-x.html?clean (clean mode).
+   2. A FEATURED lead-direction card — D حكي متكيّف/Adaptive chat (cyan/teal), marked «★ الاتجاه الرئيسي
+      للتحقّق · Lead direction», at the TOP, linking «شغّل من البداية ▶» → journey-d-adaptive.html?clean
+      + a smaller «معاينة (مع المبدّل)» dev link. Then three comparison cards below — A موجَّهة/Guided (green),
+      B فرجينا/Media-first (orange), C حكي/Conversational (indigo) — each with a one-line description and a big
+      «شغّل من البداية ▶ Run from start» link to journey-x.html?clean (clean mode).
    3. A secondary, smaller «معاينة (مع المبدّل) · Preview with switcher» link per journey → the
       journey WITHOUT ?clean (dev mode, screen-switcher visible) for the moderator to rehearse.
    4. A counterbalanced-order reference (O1: A,B,C · O2: B,C,A · O3: C,A,B) so the moderator runs
