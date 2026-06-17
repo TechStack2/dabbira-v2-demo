@@ -373,12 +373,92 @@
       <p class="t-caption text-soft mb-6">أغلب الطلبات بتُنشر على طول — المحتوى المُعلَّم بيخضع لمراجعة سريعة أول.</p>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('landing')">شوف طلبك</button>
+        <button class="cta-primary" onclick="goto('request')">شوف طلبك</button>
         <button class="cta-ghost" onclick="goto('show')">اعمل طلب تاني</button>
       </div>
 
       <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
       <a id="back-to-dash" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 5 — REQUEST DETAIL «طلبك» (post-submit, as the owner sees it) ════════════════════════════ -->
+    <!-- B = MEDIA-FIRST: the attached media is shown PROMINENTLY — this is B's whole point. -->
+    <section id="screen-request" class="screen px-4 pb-28 pt-4">
+      <!-- status chip -->
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-orangeink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-orange"></span> منشور · مفتوح للعروض
+        </span>
+        <span class="t-caption text-faint">طلبك</span>
+      </div>
+
+      <!-- title + key chips -->
+      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-orangeink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-orangeink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-orangeink ps-3 pe-3 py-1 t-caption">عادي</span>
+      </div>
+
+      <!-- B's signature: the attached media leads, shown PROMINENTLY -->
+      <div class="rounded-xl2 border border-sage/40 bg-sagewash p-4 mb-4">
+        <p class="t-small mb-3" style="font-weight:600;color:#3f5436;">اللي فرجيتنا ياه</p>
+        <!-- voice note: a playable-looking row -->
+        <div class="rounded-xl bg-white border border-sage/40 p-3 mb-2 flex items-center gap-3">
+          <span class="grid place-items-center size-10 rounded-full bg-orange text-white shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg></span>
+          <div class="min-w-0 flex-1">
+            <p class="t-small text-ink" style="font-weight:600;">رسالة صوتية</p>
+            <div class="mt-1.5 flex items-center gap-2">
+              <span class="h-1 flex-1 rounded-full bg-orangeln"></span>
+              <span class="t-caption text-soft"><bdi>0:24</bdi></span>
+            </div>
+          </div>
+        </div>
+        <!-- 2 photo thumbnails -->
+        <div class="flex gap-2">
+          <span class="grid place-items-center size-20 rounded-xl bg-white border border-sage/40 text-faint"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+          <span class="grid place-items-center size-20 rounded-xl bg-white border border-sage/40 text-faint"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+          <span class="grid place-items-center size-20 rounded-xl bg-white border border-dashed border-sage/40 t-caption text-soft text-center px-1"><bdi>2</bdi> صور</span>
+        </div>
+        <p class="t-caption text-amber mt-2" dir="ltr" style="text-align:start;">[BE] — عرض/تشغيل الوسائط</p>
+      </div>
+
+      <!-- captured details / quick-answers -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <dl class="space-y-2.5">
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
+            <dd class="t-small text-ink">تحت المغسلة</dd>
+          </div>
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
+            <dd class="t-small text-ink">نقطة نقطة</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- what happens next -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="grid place-items-center size-6 rounded-full bg-wash text-orangeink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <p class="t-strong"><bdi>0</bdi> عروض لهلّق</p>
+        </div>
+        <p class="t-small text-soft">المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.</p>
+      </div>
+
+      <!-- actions: prominent Edit (→ confirm/review) + secondary WhatsApp share -->
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('confirm')">عدّل الطلب</button>
+        <button class="cta-ghost flex items-center justify-center gap-2" onclick="return false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          شارك عبر واتساب
+        </button>
+      </div>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;">[BE] — مشاركة عبر واتساب</p>
+
+      <!-- clean-mode (moderator demo) — back to the launcher; hidden unless ?clean -->
+      <a id="back-to-dash-req" href="demo-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
@@ -451,17 +531,20 @@
       <button class="picker"        data-s="confirm" onclick="goto('confirm')">2·confirm</button>
       <button class="picker"        data-s="signup"  onclick="goto('signup')">3·signup</button>
       <button class="picker"        data-s="done"    onclick="goto('done')">4·done</button>
+      <button class="picker"        data-s="request" onclick="goto('request')">5·request</button>
     </nav>
   </div>
 
   <script>
-    const screens={ landing:"screen-landing", show:"screen-show", confirm:"screen-confirm", signup:"screen-signup", done:"screen-done" };
+    const screens={ landing:"screen-landing", show:"screen-show", confirm:"screen-confirm", signup:"screen-signup", done:"screen-done", request:"screen-request" };
     function goto(name){
       Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
       document.getElementById(screens[name]).classList.add("is-active");
       document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      // header: shown in the funnel + the post-submit request detail; hidden on landing + done (full-screen moments)
       document.getElementById("pub-header").style.display=(name==="landing"||name==="done")?"none":"flex";
-      const footer=document.getElementById("footer"); footer.style.display=(name==="landing"||name==="done")?"none":"block";
+      // footer (wizard CTA): hidden on landing, done, AND request (detail page has its own buttons)
+      const footer=document.getElementById("footer"); footer.style.display=(name==="landing"||name==="done"||name==="request")?"none":"block";
       closeSheet(); configureFooter(name); window.scrollTo(0,0);
     }
 
@@ -550,20 +633,25 @@
 
     // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
     // ?clean → hide the artifact banner + the dev screen-switcher so the owner
-    // sees ONLY the product, and reveal the «رجوع للقائمة» button on the done screen.
+    // sees ONLY the product, and reveal the «رجوع للقائمة» button on BOTH the
+    // done screen and the post-submit request-detail screen, so the moderator
+    // can always return to demo-dashboard.html.
     // Plain DOM only — works on file:// (no fetch / no modules).
     (function(){
       if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
       var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
       var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
       var back=document.getElementById("back-to-dash"); if(back) back.style.display="block";
+      var backReq=document.getElementById("back-to-dash-req"); if(backReq) backReq.style.display="block";
     })();
   </script>
 
   <!--
   ════════════════════════ JOURNEY B — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
    1. Full journey present in order: landing (leads with «فرجينا») → media-first entry → minimal confirm (W3 gate)
-      → register-late signup → W4 completion. Five screens switchable via the picker; the sticky CTA walks forward.
+      → register-late signup → W4 completion → request detail. Six screens switchable via the picker; the sticky CTA walks the
+      funnel forward (show→signup); the done-screen «شوف طلبك» opens the request-detail screen (goto('request')), NOT the landing.
+   8. POST-SUBMIT REQUEST PAGE present (screen-request, MEDIA-FIRST treatment): status chip «منشور · مفتوح للعروض»; title «تسريب مياه تحت مغسلة الحمام» + chips سباكة · بيروت — الأشرفية · عادي; the ATTACHED MEDIA shown PROMINENTLY (this is B's whole point) — a playable «رسالة صوتية 0:24» row + photo thumbnails labelled «2 صور» under «اللي فرجيتنا ياه» ([BE]); captured quick-answers (وين التسريب: تحت المغسلة · المياه: نقطة نقطة); a light "what happens next" «0 عروض لهلّق — المحترفون بمنطقتك عم يشوفوا طلبك؛ كتير منهم بيردّوا خلال ساعة.»; a PROMINENT «عدّل الطلب» that returns to `confirm` (B's review screen); a secondary non-functional «شارك عبر واتساب» [BE]. Detail-page chrome: brand header shown, wizard footer CTA hidden. Clean mode hides the banner + switcher and reveals «رجوع للقائمة ↩» on this screen too. Numerals (0:24, 2) are <bdi>-isolated.
    2. MEDIA-FIRST direction: the FIRST thing in the funnel is «فرجينا المشكلة» + three big media cards (voice/photo/video) — NOT a list.
       Category triage is the SECONDARY «ولا اختار من القائمة» bottom-sheet (search + same 6 groups, auto-suggested category).
       Adding media flips a card to a sage done-state + «أخدنا … المشكلة» + arms «التالي». Media capture is a UI shell tagged [BE].
