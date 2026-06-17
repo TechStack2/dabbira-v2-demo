@@ -37,9 +37,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <!-- Latin face for EN/LTR: IBM Plex Sans (same superfamily, so the scripts feel unified) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
@@ -68,6 +69,13 @@
       font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
       letter-spacing:0 !important; -webkit-text-size-adjust:100%;
     }
+    /* EN/LTR swaps the Latin face in; line-height tightens to Latin defaults */
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    /* compact AR|EN language switcher — visible in normal AND clean mode */
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #f3cdb3;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#5b554d;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#e8590c;color:#fff;}
     .t-display{font-size:32px;line-height:1.4;font-weight:700;}
     .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
     .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
@@ -138,39 +146,45 @@
       DESIGN ARTIFACT — not production · PROVIDER JOB B (Chat · orange) · font LOCKED: IBM Plex Sans Arabic
     </div>
 
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode), default Arabic/RTL. -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
     <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
       <div class="flex items-center gap-2">
-        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
-        <span class="t-h3">دبّرها</span>
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
       </div>
-      <span class="t-caption text-soft">محترف · سباكة</span>
+      <span class="t-caption text-soft" data-i18n="provider_chip">محترف · سباكة</span>
     </header>
 
     <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (accepted job · IDENTICAL meaning across A/B/C) ════════════════════════════ -->
     <section id="screen-entry" class="screen px-4 pb-28 pt-5">
-      <h1 class="t-h1 mb-1">شغل جديد إلك</h1>
-      <p class="t-body text-soft mb-5">صاحب العقار قبِل عرضك — صار عندك شغل. افتحو وابدأ.</p>
+      <h1 class="t-h1 mb-1" data-i18n="entry_title">شغل جديد إلك</h1>
+      <p class="t-body text-soft mb-5" data-i18n="entry_sub">صاحب العقار قبِل عرضك — صار عندك شغل. افتحو وابدأ.</p>
 
       <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('job')" style="cursor:pointer;">
         <div class="flex items-center justify-between gap-2 mb-2">
           <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-            <span class="size-1.5 rounded-full bg-brand"></span> مقبول · صار شغل
+            <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="accepted_chip">مقبول · صار شغل</span>
           </span>
-          <span class="t-caption text-faint">من <bdi>2</bdi> دقيقة</span>
+          <span class="t-caption text-faint"><span data-i18n="ago_prefix">من</span> <bdi>2</bdi> <span data-i18n="minute">دقيقة</span></span>
         </div>
-        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <p class="t-h3 mb-2" data-i18n="job_title">تسريب مياه تحت مغسلة الحمام</p>
         <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">السعر <bdi>$150</bdi></span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption"><span data-i18n="price_label">السعر</span> <bdi>$150</bdi></span>
         </div>
         <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
-          افتح الشغل
+          <span data-i18n="open_job">افتح الشغل</span>
           <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </span>
       </button>
 
-      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على إدارة الشغل من البداية للنهاية.</p>
+      <p class="t-caption text-soft" data-i18n="entry_note">هاد نموذج تجربة — منركّز على إدارة الشغل من البداية للنهاية.</p>
     </section>
 
     <!-- ════════════════════════════ SCREEN 1 — JOB AS A CONVERSATION (the management surface) ════════════════════════════ -->
@@ -178,13 +192,13 @@
       <!-- thread header: the job context, compact -->
       <div class="bg-card border-b border-line px-4 py-3">
         <div class="flex items-center justify-between gap-2 mb-1.5">
-          <span class="t-h3" style="line-height:1.4;">تسريب مياه تحت مغسلة الحمام</span>
+          <span class="t-h3" style="line-height:1.4;" data-i18n="job_title">تسريب مياه تحت مغسلة الحمام</span>
           <span id="b-chip" class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-2.5 py-1 t-caption shrink-0">
             <span class="size-1.5 rounded-full bg-brand"></span> <span id="b-chip-label">بانتظار البدء</span>
           </span>
         </div>
         <div class="flex items-center gap-2 t-caption text-soft">
-          <span>سباكة</span><span class="text-faint">·</span><span>بيروت — الأشرفية</span><span class="text-faint">·</span><span style="font-weight:700;">السعر <bdi>$150</bdi> كاش</span>
+          <span data-leaf="سباكة">سباكة</span><span class="text-faint">·</span><span data-i18n="region_beirut">بيروت — الأشرفية</span><span class="text-faint">·</span><span style="font-weight:700;"><span data-i18n="price_label">السعر</span> <bdi>$150</bdi> <span data-i18n="cash">كاش</span></span>
         </div>
       </div>
 
@@ -199,17 +213,17 @@
 
       <!-- composer (post a text update as a bubble) -->
       <div id="b-composer" class="bg-card border-t border-line px-3 py-3 flex items-center gap-2" style="padding-bottom:calc(10px + env(safe-area-inset-bottom));">
-        <button aria-label="أضف صورة" class="grid place-items-center size-10 rounded-full" style="background:#fdeee3;color:#b8430a;" onclick="addPhotoBubble()">
+        <button data-i18n-aria="add_photo_aria" aria-label="أضف صورة" class="grid place-items-center size-10 rounded-full" style="background:#fdeee3;color:#b8430a;" onclick="addPhotoBubble()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
         </button>
-        <input id="b-input" class="composer-input" dir="auto" placeholder="اكتب تحديث لصاحب العقار…" />
-        <button aria-label="ابعت" class="grid place-items-center size-10 rounded-full bg-brand text-white shrink-0" onclick="sendText()">
+        <input id="b-input" class="composer-input" dir="auto" placeholder="اكتب تحديث لصاحب العقار…" data-i18n-ph="composer_ph" />
+        <button data-i18n-aria="send_aria" aria-label="ابعت" class="grid place-items-center size-10 rounded-full bg-brand text-white shrink-0" onclick="sendText()">
           <svg class="chev" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
 
       <!-- clean-mode back-link (shown on completed) -->
-      <a id="back-to-dash-job" href="provider-job-dashboard.html" class="block mx-4 my-3 cta-ghost text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-job" href="provider-job-dashboard.html" class="block mx-4 my-3 cta-ghost text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 2 — COMPLETED (job done + the rating the owner left) ════════════════════════════ -->
@@ -218,23 +232,23 @@
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         </span>
-        <h1 class="t-h1 mb-1">خلّصت — واستلمت أجرتك!</h1>
-        <p class="t-h3 text-soft">صاحب العقار وافق على الشغل.</p>
+        <h1 class="t-h1 mb-1" data-i18n="done_title">خلّصت — واستلمت أجرتك!</h1>
+        <p class="t-h3 text-soft" data-i18n="done_sub">صاحب العقار وافق على الشغل.</p>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <span class="t-caption text-faint">أجرتك</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> خلصان</span>
+          <span class="t-caption text-faint" data-i18n="your_payout">أجرتك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="st_completed">خلصان</span></span>
         </div>
         <p class="t-display text-ink mb-1"><bdi>$150</bdi></p>
-        <p class="t-small text-soft">كاش · يد بيد — خارج التطبيق</p>
+        <p class="t-small text-soft" data-i18n="cash_offplatform">كاش · يد بيد — خارج التطبيق</p>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <span class="t-caption text-faint">تقييم صاحب العقار</span>
-          <span class="stars" aria-label="5 من 5 نجوم">
+          <span class="t-caption text-faint" data-i18n="owner_rating">تقييم صاحب العقار</span>
+          <span class="stars" data-i18n-aria="rating_aria" aria-label="5 من 5 نجوم">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -242,16 +256,16 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#c79200" stroke="#c79200" stroke-width="1.5"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </span>
         </div>
-        <p class="t-strong mb-1"><bdi>5</bdi> من <bdi>5</bdi></p>
-        <p class="t-small text-ink">«شغل نظيف وسريع، صلّح التسريب بنص ساعة وفهّمني شو كانت المشكلة. منصح فيه.»</p>
+        <p class="t-strong mb-1"><bdi>5</bdi> <span data-i18n="out_of">من</span> <bdi>5</bdi></p>
+        <p class="t-small text-ink" data-i18n="review_comment">«شغل نظيف وسريع، صلّح التسريب بنص ساعة وفهّمني شو كانت المشكلة. منصح فيه.»</p>
       </div>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('job')">شوف المحادثة</button>
-        <button class="cta-ghost" onclick="goto('entry')">رجوع للأشغال</button>
+        <button class="cta-primary" onclick="goto('job')" data-i18n="view_conversation">شوف المحادثة</button>
+        <button class="cta-ghost" onclick="goto('entry')" data-i18n="back_to_jobs">رجوع للأشغال</button>
       </div>
 
-      <a id="back-to-dash-done" href="provider-job-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-done" href="provider-job-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
@@ -266,10 +280,118 @@
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived from copy-deck.md §7/§8 (NOT yet
+    //  through the Arabic review bar). Numerals stay Western in both languages.
+    //  This is the WhatsApp-style variant: the message THREAD is dynamic — every
+    //  system/photo/quick-update bubble stores a dictionary KEY (re-localizes),
+    //  free-typed bubbles store a raw string (shown verbatim in both langs); the
+    //  per-state quick-action chips + the completed note are JS-set via t(). An
+    //  in-flight transcript re-translates in place when the language flips
+    //  (renderJob() rebuilds the thread from keys; called from setLang).
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar"; // in-memory only (no storage)
+
+    const LEAF = {
+      "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتدفئة":"Heating & cooling",
+      "إصلاح أجهزة كهربائية":"Appliance repair","صيانة عامة":"General maintenance",
+      "بناء وتشييد":"Construction","تجديد وترميم":"Renovation","أعمال حجر وبناء":"Stone & masonry","أسقف وعزل":"Roofing & insulation",
+      "دهان":"Painting","أرضيات":"Flooring","بلاط وسيراميك":"Tiling","نجارة":"Carpentry","ألمنيوم وزجاج":"Aluminium & glass",
+      "تنظيف":"Cleaning","مكافحة حشرات":"Pest control","تنسيق حدائق":"Landscaping",
+      "تركيب وصيانة طاقة شمسية":"Solar install & service","أنظمة أمان ومراقبة":"Security & surveillance","منزل ذكي":"Smart home",
+      "خدمات نقل":"Moving services","خدمات أثاث":"Furniture services"
+    };
+    function tLeaf(arLabel){ return LANG==="ar" ? arLabel : (LEAF[arLabel] || arLabel); }
+
+    const I18N = {
+      ar: {
+        brand_mark:"د", brand:"دبّرها", provider_chip:"محترف · سباكة",
+        // entry
+        entry_title:"شغل جديد إلك", entry_sub:"صاحب العقار قبِل عرضك — صار عندك شغل. افتحو وابدأ.",
+        accepted_chip:"مقبول · صار شغل", ago_prefix:"من", minute:"دقيقة",
+        open_job:"افتح الشغل", entry_note:"هاد نموذج تجربة — منركّز على إدارة الشغل من البداية للنهاية.",
+        // shared job
+        job_title:"تسريب مياه تحت مغسلة الحمام", region_beirut:"بيروت — الأشرفية", price_label:"السعر", cash:"كاش",
+        // status labels (chip)
+        st_awaiting:"بانتظار البدء", st_inprogress:"عَ الشغل", st_approval:"بانتظار الموافقة", st_completed:"خلصان",
+        // composer
+        composer_ph:"اكتب تحديث لصاحب العقار…", add_photo_aria:"أضف صورة", send_aria:"ابعت",
+        // quick-action chips
+        chip_started:"بلّشت الشغل ▶", chip_add_photo:"أضف صورة", chip_quick_update:"تحديث سريع", chip_submit:"خلّصت — سلّم ✓",
+        completed_note:"خلص الشغل ✓ — استلمت أجرتك.",
+        // moderator sims
+        sim_owner_short:"MODERATOR SIM — owner", sim_owner_stands:"MODERATOR SIM — stands in for the owner",
+        sim_approve:"صاحب العقار وافق ✓", sim_revision:"صاحب العقار طلب تعديل ↩",
+        // thread bubbles (keyed → re-localize)
+        msg_seed:'صاحب العقار قبِل عرضك — صار شغل. السعر <bdi>$150</bdi> كاش.',
+        msg_started:"بلّشت الشغل",
+        msg_submitted:"سلّمت الشغل — بانتظار موافقة صاحب العقار",
+        msg_approved:"صاحب العقار وافق — خلص الشغل!",
+        msg_revision:"صاحب العقار طلب تعديل — رجعت عالشغل",
+        msg_quick_update:"عم اشتغل — بدّلت السيفون وعم حكم الوصلة.",
+        photo_caption:"صورة من الشغل",
+        // done
+        done_title:"خلّصت — واستلمت أجرتك!", done_sub:"صاحب العقار وافق على الشغل.",
+        your_payout:"أجرتك", cash_offplatform:"كاش · يد بيد — خارج التطبيق",
+        owner_rating:"تقييم صاحب العقار", rating_aria:"5 من 5 نجوم", out_of:"من",
+        review_comment:"«شغل نظيف وسريع، صلّح التسريب بنص ساعة وفهّمني شو كانت المشكلة. منصح فيه.»",
+        view_conversation:"شوف المحادثة", back_to_jobs:"رجوع للأشغال", back_to_list:"رجوع للقائمة ↩"
+      },
+      en: {
+        brand_mark:"D", brand:"Dabbira", provider_chip:"Pro · Plumbing",
+        entry_title:"A new job for you", entry_sub:"The owner accepted your offer — you've got a job. Open it and start.",
+        accepted_chip:"Accepted · now a job", ago_prefix:"", minute:"min ago",
+        open_job:"Open the job", entry_note:"This is a test prototype — we focus on running the job end to end.",
+        job_title:"Water leak under the bathroom sink", region_beirut:"Beirut — Achrafieh", price_label:"Price", cash:"cash",
+        st_awaiting:"Awaiting start", st_inprogress:"In progress", st_approval:"Awaiting approval", st_completed:"Completed",
+        composer_ph:"Write an update for the owner…", add_photo_aria:"Add a photo", send_aria:"Send",
+        chip_started:"Started the work ▶", chip_add_photo:"Add a photo", chip_quick_update:"Quick update", chip_submit:"Done — submit ✓",
+        completed_note:"Job done ✓ — you've been paid.",
+        sim_owner_short:"MODERATOR SIM — owner", sim_owner_stands:"MODERATOR SIM — stands in for the owner",
+        sim_approve:"Owner approved ✓", sim_revision:"Owner requested a change ↩",
+        msg_seed:'The owner accepted your offer — it\'s now a job. Price <bdi>$150</bdi> cash.',
+        msg_started:"Started the work",
+        msg_submitted:"Submitted the work — awaiting the owner's approval",
+        msg_approved:"The owner approved — job done!",
+        msg_revision:"The owner requested a change — back to work",
+        msg_quick_update:"Working on it — replaced the siphon and tightening the joint.",
+        photo_caption:"A photo from the job",
+        done_title:"Done — and you've been paid!", done_sub:"The owner approved the work.",
+        your_payout:"Your fee", cash_offplatform:"Cash · in person — off-platform",
+        owner_rating:"The owner's review", rating_aria:"5 out of 5 stars", out_of:"of",
+        review_comment:"“Clean, fast work — fixed the leak in half an hour and explained the problem. Recommended.”",
+        view_conversation:"View the conversation", back_to_jobs:"Back to jobs", back_to_list:"Back to list ↩"
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-leaf]").forEach(node=>{ node.textContent=tLeaf(node.getAttribute("data-leaf")); });
+    }
+
+    // THE switcher — defined + wired to both AR and EN buttons
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      applyStaticI18n();
+      // re-render the conversation (thread bubbles + chips + sims) so an in-flight
+      // transcript re-translates in place. (out/raw free-typed bubbles stay verbatim.)
+      if(document.getElementById("screen-job").classList.contains("is-active")) renderJob();
+    }
+
     // ── job lifecycle state (the management variable for set 3) ──────────────
-    const LABELS = { awaiting:"بانتظار البدء", inprogress:"عَ الشغل", approval:"بانتظار الموافقة", completed:"خلصان" };
+    const STATE_LABEL_KEY = { awaiting:"st_awaiting", inprogress:"st_inprogress", approval:"st_approval", completed:"st_completed" };
     let jobState = "awaiting";
-    let thread = []; // {kind:'out'|'sys'|'photo', text, when}
+    let thread = []; // {kind:'out'|'sys'|'photo', key?|raw?, capKey?, h, m}
 
     // ── screen switching ─────────────────────────────────────────────────
     const screens = { entry:"screen-entry", job:"screen-job", done:"screen-done" };
@@ -288,36 +410,37 @@
     }
     function setState(s){ jobState = s; goto("job"); }
 
-    function t(h,m){ return '<bdi>'+String(h).padStart(2,"0")+':'+String(m).padStart(2,"0")+'</bdi>'; }
+    function clk(h,m){ return '<bdi>'+String(h).padStart(2,"0")+':'+String(m).padStart(2,"0")+'</bdi>'; }
     function seedThread(){
-      thread = [
-        {kind:"sys",  text:"صاحب العقار قبِل عرضك — صار شغل. السعر <bdi>$150</bdi> كاش.", when:t(9,12)},
-      ];
+      thread = [ {kind:"sys", key:"msg_seed", h:9, m:12} ];
     }
 
     // ── render the conversation ────────────────────────────────────────────
     function renderJob(){
-      document.getElementById("b-chip-label").textContent = LABELS[jobState];
+      document.getElementById("b-chip-label").textContent = t(STATE_LABEL_KEY[jobState]);
       const chip = document.getElementById("b-chip");
       chip.className = (jobState==="inprogress"||jobState==="approval")
         ? "inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-2.5 py-1 t-caption shrink-0"
         : "inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-2.5 py-1 t-caption shrink-0";
 
-      // thread
+      // thread — bubbles localize from their KEY; raw free-typed bubbles stay verbatim
       const th = document.getElementById("b-thread");
       th.innerHTML = thread.map(m=>{
+        const when = clk(m.h, m.m);
+        const text = (m.key!=null) ? t(m.key) : (m.raw||"");
         if(m.kind==="sys"){
-          return '<div class="text-center"><span class="bub-sys">'+m.text+'</span></div>';
+          return '<div class="text-center"><span class="bub-sys">'+text+'</span></div>';
         }
         if(m.kind==="photo"){
+          const cap = (m.capKey!=null) ? t(m.capKey) : (m.raw||"");
           return '<div class="flex flex-col items-end gap-0.5">'
             + '<div class="bub-out" style="padding:6px;"><div class="grid place-items-center" style="inline-size:150px;aspect-ratio:4/3;background:#f6d8c2;border-radius:11px;color:#b8430a;">'
             +   '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>'
-            +   '</div>'+ (m.text ? '<p class="t-small mt-1" style="padding-inline:4px;">'+m.text+'</p>' : '') +'</div>'
-            + '<span class="t-caption text-faint">'+m.when+'</span></div>';
+            +   '</div>'+ (cap ? '<p class="t-small mt-1" style="padding-inline:4px;">'+cap+'</p>' : '') +'</div>'
+            + '<span class="t-caption text-faint">'+when+'</span></div>';
         }
-        return '<div class="flex flex-col items-end gap-0.5"><div class="bub-out"><p class="t-body" style="line-height:1.55;">'+m.text+'</p></div>'
-          + '<span class="t-caption text-faint">'+m.when+'</span></div>';
+        return '<div class="flex flex-col items-end gap-0.5"><div class="bub-out"><p class="t-body" style="line-height:1.55;">'+text+'</p></div>'
+          + '<span class="t-caption text-faint">'+when+'</span></div>';
       }).join("");
       th.scrollTop = th.scrollHeight;
 
@@ -330,57 +453,59 @@
 
       if(jobState==="awaiting"){
         chips.innerHTML =
-          '<button class="chip is-primary" onclick="startWork()">بلّشت الشغل ▶</button>'
-          + '<button class="chip" onclick="addPhotoBubble()">أضف صورة</button>';
+          '<button class="chip is-primary" onclick="startWork()">'+t("chip_started")+'</button>'
+          + '<button class="chip" onclick="addPhotoBubble()">'+t("chip_add_photo")+'</button>';
       }
       else if(jobState==="inprogress"){
         chips.innerHTML =
-          '<button class="chip" onclick="addPhotoBubble()">أضف صورة</button>'
-          + '<button class="chip" onclick="quickUpdate()">تحديث سريع</button>'
-          + '<button class="chip is-primary" onclick="submitForApproval()">خلّصت — سلّم ✓</button>';
+          '<button class="chip" onclick="addPhotoBubble()">'+t("chip_add_photo")+'</button>'
+          + '<button class="chip" onclick="quickUpdate()">'+t("chip_quick_update")+'</button>'
+          + '<button class="chip is-primary" onclick="submitForApproval()">'+t("chip_submit")+'</button>';
         // revision sim available while working
         sim.style.display = "block";
         sim.innerHTML =
-          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — owner</p>'
-          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button></div>';
+          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">'+t("sim_owner_short")+'</p>'
+          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">'+t("sim_revision")+'</button></div>';
       }
       else if(jobState==="approval"){
-        chips.innerHTML = '<button class="chip" onclick="addPhotoBubble()">أضف صورة</button>';
+        chips.innerHTML = '<button class="chip" onclick="addPhotoBubble()">'+t("chip_add_photo")+'</button>';
         composer.style.display = "flex";
         // owner approve / revise sims
         sim.style.display = "block";
         sim.innerHTML =
-          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>'
-          + '<button class="cta-ghost mb-2" style="border-color:#efe2bd;color:#8a6d00;" onclick="ownerApprove()">صاحب العقار وافق ✓</button>'
-          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">صاحب العقار طلب تعديل ↩</button></div>';
+          '<div class="moderator-sim"><p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">'+t("sim_owner_stands")+'</p>'
+          + '<button class="cta-ghost mb-2" style="border-color:#efe2bd;color:#8a6d00;" onclick="ownerApprove()">'+t("sim_approve")+'</button>'
+          + '<button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="requestRevision()">'+t("sim_revision")+'</button></div>';
       }
       else { // completed
-        chips.innerHTML = '<span class="t-small text-soft" style="padding-block:8px;">خلص الشغل ✓ — استلمت أجرتك.</span>';
+        chips.innerHTML = '<span class="t-small text-soft" style="padding-block:8px;">'+t("completed_note")+'</span>';
         composer.style.display = "none";
       }
     }
 
     // ── message + state actions (the advance controls) ──────────────────────
-    function pushSys(text){ thread.push({kind:"sys", text, when:t(10,30)}); }
-    function pushOut(text){ thread.push({kind:"out", text, when:t(10,30)}); }
-    function pushPhoto(text){ thread.push({kind:"photo", text, when:t(10,30)}); }
+    function pushSysKey(key){ thread.push({kind:"sys", key, h:10, m:30}); }
+    function pushOutRaw(raw){ thread.push({kind:"out", raw, h:10, m:30}); }
+    function pushOutKey(key){ thread.push({kind:"out", key, h:10, m:30}); }
+    function pushPhotoKey(capKey){ thread.push({kind:"photo", capKey, h:10, m:30}); }
 
-    function startWork(){ pushSys("بلّشت الشغل"); jobState="inprogress"; renderJob(); }
-    function submitForApproval(){ pushSys("سلّمت الشغل — بانتظار موافقة صاحب العقار"); jobState="approval"; renderJob(); }
-    function ownerApprove(){ pushSys("صاحب العقار وافق — خلص الشغل!"); jobState="completed"; goto("done"); }
-    function requestRevision(){ pushSys("صاحب العقار طلب تعديل — رجعت عالشغل"); jobState="inprogress"; renderJob(); }
+    function startWork(){ pushSysKey("msg_started"); jobState="inprogress"; renderJob(); }
+    function submitForApproval(){ pushSysKey("msg_submitted"); jobState="approval"; renderJob(); }
+    function ownerApprove(){ pushSysKey("msg_approved"); jobState="completed"; goto("done"); }
+    function requestRevision(){ pushSysKey("msg_revision"); jobState="inprogress"; renderJob(); }
 
     function sendText(){
       const inp=document.getElementById("b-input");
       const v=(inp&&inp.value||"").trim();
       if(!v) return;
-      pushOut(v); inp.value=""; renderJob();
+      pushOutRaw(v.replace(/</g,"&lt;").replace(/>/g,"&gt;")); inp.value=""; renderJob();
     }
-    function quickUpdate(){ pushOut("عم اشتغل — بدّلت السيفون وعم حكم الوصلة."); renderJob(); }
-    function addPhotoBubble(){ pushPhoto("صورة من الشغل"); renderJob(); }
+    function quickUpdate(){ pushOutKey("msg_quick_update"); renderJob(); }
+    function addPhotoBubble(){ pushPhotoKey("photo_caption"); renderJob(); }
 
-    // init
+    // init — render Arabic from the dictionary (source of truth), then show entry
     seedThread();
+    setLang("ar");
     goto("entry");
 
     // ── CLEAN MODE (moderator demo) ──────────────────────────────────────
