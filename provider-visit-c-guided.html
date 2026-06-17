@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — PROVIDER «Request Visit» VARIANT C · «Guided / smart» (DEEP INDIGO)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Set:    Provider Request-Visit A/B/C — SET 2 of 3 (Submit Offer → Request Visit → Job Management)
+  Kit:    design/research/provider-visit-session-kit.md
+  Copy:   design/content/copy-deck.md §5 (offer-choice «اطلب زيارة أول») + §6 (site-visit rail + actions) — no Lorem Ipsum
+  Type:   design/system/tokens.json   (per-script Arabic scale: 16px / lh 1.7 / weight 500 / letter-spacing 0)
+  RTL:    design/system/rtl-arabic.md (logical properties; bidi/number isolation; directional-icon flips)
+  Real:   design/audit/dynamic-loop-verification.md (fee ~$50 refundable; 5-step rail; no in-app payment).
+
+  ── WHAT THIS IS ────────────────────────────────────────────────────────────
+  ONE of THREE provider INSPECT-THEN-QUOTE prototypes. The three differ ONLY on the PROPOSE-VISIT STEP.
+  The lead-in (entry + the request "quote brief", primary CTA «اطلب زيارة أولًا») is IDENTICAL across A/B/C,
+  and the DOWNSTREAM PIPELINE (proposed → owner picks slot → scheduled → «خلّصت الزيارة» report → final quote
+  → done → «my visit» + «عدّل») is SHARED/IDENTICAL too. So the A/B test isolates HOW the visit is proposed.
+  FONT is LOCKED to IBM Plex Sans Arabic (validated 2026-06-17) and held CONSTANT across A/B/C.
+
+  VARIANT C = GUIDED / SMART · DEEP INDIGO (#4338ca).
+    Step-by-step, with smart prefills + owner-trust framing. A SMART FEE suggestion for this job type
+    (pre-filled mid-range, refundable pre-checked), a RECOMMENDED assessment scope (pre-filled, editable),
+    smart-proposed slots, with trust framing copy («الزيارة بتطمّن صاحب العقار وبتأكّد السعر») → propose.
+    Bet: guided + smart + trust-framing → fast AND high acceptance.
+
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — طلب زيارة C (ذكي مُوجَّه) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#1c1a17", soft:"#5b554d", faint:"#8a857c", line:"#e6e2db",
+            bg:"#f6f5f3", card:"#ffffff",
+            /* DEEP INDIGO — Variant C's identity */
+            brand:"#4338ca", brandink:"#312a9c", wash:"#eceafb",
+            amber:"#b08400", amberbg:"#fff8e8", amberln:"#efe2bd",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#f6f5f3);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #ece8e1, 0 24px 60px -28px rgba(0,0,0,.25); position:relative; overflow:hidden;
+    }
+    .screen{display:none;}
+    .screen.is-active{display:block;}
+
+    .chev{transition:transform .18s ease;}
+    [dir="rtl"] .chev{transform:scaleX(-1);}
+
+    /* guided step panels (one at a time within the propose screen) */
+    .step{display:none;}
+    .step.is-active{display:block;}
+
+    /* ── components ── */
+    .opt{
+      font-size:15px;line-height:1.3;font-weight:500;border:1px solid #e6e2db;border-radius:999px;
+      background:#fff;color:#1c1a17;padding:9px 15px;cursor:pointer;min-height:42px;
+      transition:background .15s ease,border-color .15s ease,color .15s ease;
+    }
+    .opt:active{transform:translateY(1px);}
+    .opt.is-sel{background:#4338ca;border-color:#4338ca;color:#fff;font-weight:600;}
+    /* smart-proposed slot chips — MULTI-select, smart-prefilled */
+    .slotchip{
+      width:100%;text-align:start;display:flex;align-items:center;justify-content:space-between;gap:10px;
+      font-size:15px;line-height:1.35;font-weight:500;border:1px solid #e6e2db;border-radius:12px;
+      background:#fff;color:#1c1a17;padding:11px 14px;cursor:pointer;min-height:48px;
+      transition:background .15s ease,border-color .15s ease,color .15s ease;
+    }
+    .slotchip .tick{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;border:1.5px solid #cfcbe8;color:transparent;flex-shrink:0;}
+    .slotchip.is-on{background:#eceafb;border-color:#4338ca;color:#312a9c;}
+    .slotchip.is-on .tick{background:#4338ca;border-color:#4338ca;color:#fff;}
+    .switch{position:relative;width:46px;height:27px;border-radius:999px;background:#d8d3ca;transition:background .18s ease;cursor:pointer;flex-shrink:0;}
+    .switch .knob{position:absolute;top:3px;inset-inline-start:3px;width:21px;height:21px;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:inset-inline-start .18s ease;}
+    .switch.is-on{background:#4338ca;}
+    .switch.is-on .knob{inset-inline-start:22px;}
+    .cta-primary{
+      font-size:16px;line-height:1.3;font-weight:600;background:#4338ca;color:#fff;border:none;
+      border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;
+      transition:transform .12s ease,box-shadow .15s ease,background .15s ease;
+    }
+    .cta-primary:disabled{background:#bdb9e6;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(67,56,202,.5);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{
+      font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#312a9c;border:1px solid #d6d2f2;
+      border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;
+    }
+    .field{
+      font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #e6e2db;border-radius:12px;
+      background:#fff;padding:12px 14px;outline:none;
+    }
+    .field:focus{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.18);}
+    .feefield{
+      font-size:36px;line-height:1.15;font-weight:700;width:100%;border:1px solid #e6e2db;border-radius:14px;
+      background:#fff;padding:14px 16px 14px 52px;outline:none;direction:ltr;text-align:start;
+    }
+    .feefield:focus{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.18);}
+    .choice{
+      width:100%;text-align:start;border:1px solid #e6e2db;border-radius:16px;background:#fff;padding:15px;cursor:pointer;
+      transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+    }
+    .choice.is-primary{border-color:#4338ca;box-shadow:0 0 0 3px rgba(67,56,202,.14);background:#f4f3fd;}
+    .moderator-sim{ border:1px dashed #b08400;background:#fff8e8;border-radius:14px;padding:12px 14px; }
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#1c1a17;opacity:1;}
+    @media (prefers-reduced-motion:reduce){
+      .cta-primary.is-ready{animation:none;} .opt,.cta-primary,.slotchip,.switch,.switch .knob{transition:none;}
+    }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · PROVIDER VISIT C (Guided/smart · indigo) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
+        <span class="t-h3">دبّرها</span>
+      </div>
+      <span class="t-caption text-soft">محترف · سباكة</span>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (lead-in · IDENTICAL across A/B/C) ════════════════════════════ -->
+    <section id="screen-entry" class="screen px-4 pb-28 pt-5">
+      <h1 class="t-h1 mb-1">طلب جديد إلك</h1>
+      <p class="t-body text-soft mb-5">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك أو تطلب زيارة.</p>
+
+      <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('brief')" style="cursor:pointer;">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+            <span class="size-1.5 rounded-full bg-brand"></span> جديد · بمجالك بمنطقتك
+          </span>
+          <span class="t-caption text-faint">من <bdi>5</bdi> دقايق</span>
+        </div>
+        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+        </div>
+        <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
+          افتح الطلب
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      </button>
+
+      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على خطوة طلب الزيارة.</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — REQUEST «QUOTE BRIEF» (IDENTICAL across A/B/C; primary CTA = اطلب زيارة أولًا) ════════════════════════════ -->
+    <section id="screen-brief" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> مفتوح للعروض
+        </span>
+        <span class="t-caption text-faint">طلب صاحب العقار</span>
+      </div>
+
+      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <dl class="space-y-2.5">
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
+            <dd class="t-small text-ink">تحت المغسلة</dd>
+          </div>
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
+            <dd class="t-small text-ink">نقطة نقطة</dd>
+          </div>
+          <div class="flex items-start gap-2">
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
+            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <p class="t-h3 mb-3">شو بتحب تعمل؟</p>
+      <div class="space-y-3 mb-1">
+        <button class="choice is-primary" onclick="goto('propose')">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="t-strong text-brandink">اطلب زيارة أولًا</span>
+            <span class="inline-flex items-center justify-center size-7 rounded-full bg-brand text-white">
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </span>
+          </div>
+          <p class="t-small text-soft">روح عايِن، وبعدها سعّر سعر مضبوط.</p>
+        </button>
+        <button class="choice" onclick="document.getElementById('c-offernow-note').style.display='block';">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="t-strong text-ink">قدّم عرضك</span>
+            <span class="inline-flex items-center justify-center size-7 rounded-full bg-bg text-faint">
+              <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </span>
+          </div>
+          <p class="t-small text-soft">سعّر على طول لو المشكلة واضحة.</p>
+        </button>
+      </div>
+      <p id="c-offernow-note" class="t-caption text-soft mt-3" style="display:none;">
+        (هاي الجلسة منجرّب فيها «اطلب زيارة أولًا» — اختار النيلي فوق.)
+      </p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — VARIANT C · GUIDED / SMART PROPOSE-VISIT (one step at a time) ════════════════════════════ -->
+    <section id="screen-propose" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="t-caption text-faint">عَ طلب:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">تسريب مياه تحت مغسلة الحمام</span>
+      </div>
+
+      <!-- progress (3 guided steps) -->
+      <p id="c-progress-label" class="t-caption text-faint mb-2">خطوة <bdi>1</bdi> من <bdi>3</bdi></p>
+      <div class="flex gap-1.5 mb-5" aria-hidden="true">
+        <span class="c-bar h-1.5 flex-1 rounded-full bg-brand"></span>
+        <span class="c-bar h-1.5 flex-1 rounded-full bg-line"></span>
+        <span class="c-bar h-1.5 flex-1 rounded-full bg-line"></span>
+      </div>
+
+      <!-- STEP 1 — smart fee suggestion + refundable pre-checked + trust framing -->
+      <div id="c-step-1" class="step is-active">
+        <h1 class="t-h1 mb-1">رسوم الزيارة</h1>
+
+        <!-- owner-trust framing -->
+        <div class="rounded-xl2 border border-brand/40 bg-wash p-4 mb-4">
+          <div class="flex items-start gap-3">
+            <span class="grid place-items-center size-9 rounded-xl bg-brand text-white shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <p class="t-small text-ink">الزيارة بتطمّن صاحب العقار وبتأكّد السعر — مبلغ بسيط بترجعو لو وظّفك.</p>
+          </div>
+        </div>
+
+        <!-- smart fee suggestion (pre-filled mid-range) -->
+        <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+          <div class="flex items-start gap-3">
+            <span class="grid place-items-center size-9 rounded-xl bg-wash text-brandink shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
+            </span>
+            <div class="min-w-0">
+              <p class="t-strong text-brandink mb-0.5">اقتراح ذكي</p>
+              <p class="t-small text-ink">لهيك معاينة سباكة، المعتاد بحدود <bdi>$40</bdi>–<bdi>$60</bdi>. عبّيناها بالوسط.</p>
+            </div>
+          </div>
+        </div>
+
+        <label class="block mb-3">
+          <span class="t-small text-ink">رسوم الزيارة <span class="text-brand">*</span></span>
+          <div class="relative mt-1.5">
+            <span class="absolute inset-y-0 start-4 grid place-items-center text-soft pointer-events-none" style="font-size:26px;font-weight:700;">$</span>
+            <input id="c-fee" inputmode="numeric" class="feefield" value="50" oninput="armStep()" />
+          </div>
+        </label>
+
+        <div class="flex items-center justify-between gap-3 rounded-xl2 border border-line bg-card p-4">
+          <div class="min-w-0">
+            <p class="t-strong">بترجع لو وظّفتني</p>
+            <p class="t-caption text-soft">الرسوم بتنحسم من سعر الشغل لو اتفقنا.</p>
+          </div>
+          <button id="c-refund" class="switch is-on" role="switch" aria-checked="true" aria-label="بترجع لو وظّفتني" onclick="toggleSwitch(this)"><span class="knob"></span></button>
+        </div>
+      </div>
+
+      <!-- STEP 2 — recommended assessment scope (pre-filled, editable) + duration -->
+      <div id="c-step-2" class="step">
+        <h1 class="t-h1 mb-1">شو رح تعايِن؟</h1>
+        <p class="t-body text-soft mb-4">عبّينالك المعتاد لهيك شغل — عدّل لو بدّك.</p>
+        <textarea id="c-scope" dir="auto" rows="4" class="field resize-none mb-5">بفحص مصدر التسريب، حالة السيفون والمواسير، والخزانة المتضرّرة لأعطيك سعر مضبوط.</textarea>
+
+        <label class="block">
+          <span class="t-small text-ink">مدّة الزيارة التقديرية</span>
+          <div class="mt-1.5 flex flex-wrap gap-2">
+            <button class="opt" onclick="pickOne(this)"><bdi>30</bdi> دقيقة</button>
+            <button class="opt is-sel" onclick="pickOne(this)">ساعة</button>
+            <button class="opt" onclick="pickOne(this)">ساعة ونص</button>
+            <button class="opt" onclick="pickOne(this)">ساعتين</button>
+          </div>
+        </label>
+      </div>
+
+      <!-- STEP 3 — smart-proposed slots (multi-select, pre-filled) + live preview -->
+      <div id="c-step-3" class="step">
+        <h1 class="t-h1 mb-1">إيمتى بتمرّ؟</h1>
+        <p class="t-body text-soft mb-4">اقترحنالك مواعيد قريبة — اختار اللي بيناسبك، أو ضيف غيرهن.</p>
+        <div id="c-slots" class="space-y-2.5">
+          <button class="slotchip is-on" onclick="toggleSlot(this)">اليوم بعد الضهر <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip is-on" onclick="toggleSlot(this)">بكرا صباحًا <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip" onclick="toggleSlot(this)">بكرا بعد الضهر <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip" onclick="toggleSlot(this)">بعد بكرا صباحًا <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+        </div>
+
+        <!-- live preview of the assembled proposal -->
+        <div class="rounded-xl2 border border-line bg-card p-4 mt-5">
+          <p class="t-caption text-faint mb-2">معاينة اقتراحك</p>
+          <div class="flex items-end justify-between">
+            <p class="t-h2 text-ink">كلفة <bdi>$50</bdi></p>
+            <p class="t-small text-soft"><bdi id="c-slotpreview">2</bdi> مواعيد · ساعة</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — VISIT PROPOSED (SHARED downstream) ════════════════════════════ -->
+    <section id="screen-proposed" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m9 16 2 2 4-4"/></svg>
+        </span>
+        <h1 class="t-h1 mb-1">اقترحت الزيارة!</h1>
+        <p class="t-h3 text-soft">بانتظار صاحب العقار يختار موعد.</p>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <div class="rail flex items-center justify-between"></div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">اقتراحك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> مقترَحة</span>
+        </div>
+        <p class="t-strong mb-1">كلفة الزيارة <bdi>$50</bdi> · بترجع لو وظّفك</p>
+        <p class="t-small text-soft">اقترحت <bdi id="c-slotcount">2</bdi> مواعيد — بانتظار صاحب العقار يختار واحد.</p>
+      </div>
+
+      <div class="moderator-sim mb-5">
+        <p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>
+        <button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="goto('scheduled')">صاحب العقار اختار موعد ✓</button>
+      </div>
+
+      <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+
+      <a id="back-to-dash-proposed" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 4 — VISIT SCHEDULED (SHARED) ════════════════════════════ -->
+    <section id="screen-scheduled" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> مواعَدة
+        </span>
+        <span class="t-caption text-faint">زيارتك</span>
+      </div>
+
+      <h1 class="t-h1 mb-1">تواعدنا!</h1>
+      <p class="t-body text-soft mb-5">صاحب العقار اختار موعد — روح عايِن، وبعدها سعّر سعر مضبوط.</p>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <div class="rail flex items-center justify-between"></div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-h3 mb-3">الموعد المختار</p>
+        <div class="flex items-center gap-3">
+          <span class="grid place-items-center size-11 rounded-xl bg-wash text-brandink shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+          </span>
+          <div>
+            <p class="t-strong">بكرا صباحًا</p>
+            <p class="t-small text-soft">مدّة تقديرية: ساعة · كلفة <bdi>$50</bdi> (بترجع لو وظّفك)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <p class="t-small text-soft">بعد ما تخلّص الزيارة، دوس الزر تحت وسجّل شو لقيت.</p>
+        </div>
+      </div>
+
+      <!-- primary advance: provider has done the visit → log findings (owns its button; footer stays hidden) -->
+      <button class="cta-primary" onclick="goto('report')">خلّصت الزيارة — سجّل شو لقيت</button>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 5 — VISIT REPORT («خلّصت الزيارة») (SHARED) ════════════════════════════ -->
+    <section id="screen-report" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-brand"></span> تمّت الزيارة
+        </span>
+        <span class="t-caption text-faint">تقرير الزيارة</span>
+      </div>
+
+      <h1 class="t-h1 mb-1">خلّصت الزيارة؟</h1>
+      <p class="t-body text-soft mb-5">سجّل شو لقيت — بيساعد صاحب العقار يفهم سعرك النهائي.</p>
+
+      <div class="mb-5">
+        <span class="t-small text-ink">شو لقيت <span class="text-brand">*</span></span>
+        <textarea id="c-found" dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="متلاً: السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام…" oninput="armReport()"></textarea>
+      </div>
+
+      <label class="block mb-5">
+        <span class="t-small text-ink">ملاحظات إضافية</span>
+        <textarea dir="auto" rows="2" class="field mt-1.5 resize-none" placeholder="أي شي تاني لازم صاحب العقار يعرفو (اختياري)."></textarea>
+      </label>
+
+      <div class="rounded-xl2 border border-dashed border-line bg-card p-4 mb-2">
+        <div class="flex items-center gap-3">
+          <span class="grid place-items-center size-11 rounded-xl bg-wash text-brandink shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </span>
+          <div class="min-w-0">
+            <p class="t-strong">صوّر اللي لقيته</p>
+            <p class="t-caption text-amber" dir="ltr" style="text-align:start;">[BE] — رفع صور الزيارة</p>
+          </div>
+        </div>
+      </div>
+
+      <p id="c-report-msg" class="t-caption text-brandink mt-3 flex items-center gap-1.5" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        اكتب شو لقيت لتكمّل.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 6 — SUBMIT FINAL QUOTE (SHARED) ════════════════════════════ -->
+    <section id="screen-finalquote" class="screen px-4 pb-40 pt-4">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="t-caption text-faint">بعد المعاينة:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">سعر نهائي مضبوط</span>
+      </div>
+
+      <h1 class="t-h1 mb-1">ابعت السعر النهائي</h1>
+      <p class="t-body text-soft mb-5">بعد ما عايَنت — حُط السعر النهائي والمدّة وسطر شرح.</p>
+
+      <label class="block mb-5">
+        <span class="t-small text-ink">السعر النهائي <span class="text-brand">*</span></span>
+        <div class="relative mt-1.5">
+          <span class="absolute inset-y-0 start-4 grid place-items-center text-soft pointer-events-none" style="font-size:26px;font-weight:700;">$</span>
+          <input id="c-final" inputmode="numeric" class="feefield" placeholder="180" oninput="armFinal()" />
+        </div>
+        <span class="t-caption text-soft mt-1 block">رسوم الزيارة <bdi>$50</bdi> بتنحسم لو وظّفك.</span>
+      </label>
+
+      <label class="block mb-5">
+        <span class="t-small text-ink">مدّة الشغل</span>
+        <div class="mt-1.5 flex flex-wrap gap-2">
+          <button class="opt" onclick="pickOne(this)">بنفس اليوم</button>
+          <button class="opt is-sel" onclick="pickOne(this)">خلال يوم – يومين</button>
+          <button class="opt" onclick="pickOne(this)">خلال أسبوع</button>
+        </div>
+      </label>
+
+      <div class="mb-5">
+        <span class="t-small text-ink">سطر شرح <span class="text-brand">*</span></span>
+        <textarea id="c-finalnote" dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="شو رح تعمل بالسعر النهائي… (٢٠ حرف على الأقل)" oninput="armFinal()"></textarea>
+      </div>
+
+      <p id="c-final-msg" class="t-caption text-brandink mt-1 flex items-center gap-1.5" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        لازم سعر نهائي وسطر شرح لتبعت.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 7 — DONE (SHARED) ════════════════════════════ -->
+    <section id="screen-done" class="screen px-4 pb-28 pt-8">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h1 class="t-h1 mb-1">انبعت سعرك النهائي!</h1>
+        <p class="t-h3 text-soft">صاحب العقار رح يشوفه ويردّ.</p>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <div class="rail flex items-center justify-between"></div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="t-caption text-faint">سعرك النهائي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار</span>
+        </div>
+        <p class="t-display text-ink mb-1"><bdi>$180</bdi></p>
+        <p class="t-small text-soft">خلال يوم – يومين · بعد معاينة</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="goto('myvisit')">شوف زيارتك</button>
+        <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+      </div>
+
+      <a id="back-to-dash-done" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 8 — «MY VISIT» VIEW (SHARED · + Edit) ════════════════════════════ -->
+    <section id="screen-myvisit" class="screen px-4 pb-28 pt-4">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption">
+          <span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار
+        </span>
+        <span class="t-caption text-faint">زيارتك</span>
+      </div>
+
+      <h1 class="t-h1 mb-2">زيارتك عَ: تسريب مياه تحت مغسلة الحمام</h1>
+      <div class="flex flex-wrap gap-2 mb-5">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <div class="rail flex items-center justify-between"></div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
+        <div class="flex items-end justify-between mb-3">
+          <div>
+            <p class="t-caption text-faint mb-0.5">السعر النهائي</p>
+            <p class="t-display text-ink leading-none"><bdi>$180</bdi></p>
+          </div>
+          <div class="text-end">
+            <p class="t-caption text-faint mb-0.5">المدّة</p>
+            <p class="t-strong">خلال يوم – يومين</p>
+          </div>
+        </div>
+        <hr class="border-line mb-3" />
+        <p class="t-h3 mb-2">شو لقيت بالمعاينة</p>
+        <p class="t-small text-ink">السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام. الخزانة تحت مبلّلة بس سليمة.</p>
+        <hr class="border-line my-3" />
+        <div class="flex items-center justify-between t-small">
+          <span class="text-faint">كلفة الزيارة</span>
+          <span class="text-ink"><bdi>$50</bdi> · بتنحسم لو وظّفك</span>
+        </div>
+      </div>
+
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <p class="t-small text-soft">بانتظار رد صاحب العقار. فيك تعدّل سعرك النهائي طول ما هو مفتوح.</p>
+        </div>
+      </div>
+
+      <div class="space-y-2.5">
+        <button class="cta-primary" onclick="editVisit()">عدّل السعر النهائي</button>
+        <button class="cta-ghost" onclick="goto('brief')">شوف الطلب من جديد</button>
+      </div>
+
+      <a id="back-to-dash-myvisit" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
+    <div id="footer" class="sticky bottom-0 z-20 bg-card/95 backdrop-blur border-t border-line px-4 pt-3" style="padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+      <div class="flex items-center gap-2">
+        <button id="cta-back" class="cta-ghost" onclick="stepBack()" style="display:none;width:auto;padding-inline:18px;">رجوع</button>
+        <button id="cta" class="cta-primary" onclick="onCta()">التالي</button>
+      </div>
+    </div>
+
+    <!-- ════════════════ SCREEN PICKER (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:11px;">
+      <span class="opacity-60">C·guided:</span>
+      <button class="picker is-sel" data-s="entry"      onclick="goto('entry')">0·entry</button>
+      <button class="picker"        data-s="brief"      onclick="goto('brief')">1·brief</button>
+      <button class="picker"        data-s="propose"    onclick="goto('propose')">2·propose</button>
+      <button class="picker"        data-s="proposed"   onclick="goto('proposed')">3·proposed</button>
+      <button class="picker"        data-s="scheduled"  onclick="goto('scheduled')">4·scheduled</button>
+      <button class="picker"        data-s="report"     onclick="goto('report')">5·report</button>
+      <button class="picker"        data-s="finalquote" onclick="goto('finalquote')">6·final quote</button>
+      <button class="picker"        data-s="done"       onclick="goto('done')">7·done</button>
+      <button class="picker"        data-s="myvisit"    onclick="goto('myvisit')">8·my visit</button>
+    </nav>
+  </div>
+
+  <script>
+    // ── 5-step rail renderer (shared; right→left in RTL) ──────────────────
+    const RAIL = ["مقترَحة","مواعَدة","تمّت الزيارة","سعر نهائي","تمّ الاتفاق"];
+    function renderRail(currentIdx){
+      document.querySelectorAll(".rail").forEach(rail=>{
+        rail.innerHTML = RAIL.map((label,i)=>{
+          const done = i < currentIdx, cur = i === currentIdx;
+          const dotBg = (done||cur) ? "#4338ca" : "#e6e2db";
+          const dotColor = (done||cur) ? "#fff" : "#8a857c";
+          const ring = cur ? "box-shadow:0 0 0 3px rgba(67,56,202,.20);" : "";
+          const txt = cur ? "#312a9c" : (done ? "#4338ca" : "#8a857c");
+          const weight = cur ? 700 : 500;
+          const inner = done
+            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+            : String(i+1);
+          const connector = i < RAIL.length-1
+            ? '<span style="flex:1;height:2px;background:'+(i < currentIdx ? "#4338ca" : "#e6e2db")+';margin-block-start:13px;"></span>'
+            : '';
+          return ''
+            + '<span style="display:flex;flex-direction:column;align-items:center;gap:5px;min-inline-size:54px;">'
+            +   '<span style="display:grid;place-items:center;width:26px;height:26px;border-radius:999px;background:'+dotBg+';color:'+dotColor+';font-weight:700;font-size:12px;direction:ltr;'+ring+'">'+inner+'</span>'
+            +   '<span style="font-size:11px;line-height:1.3;text-align:center;color:'+txt+';font-weight:'+weight+';">'+label+'</span>'
+            + '</span>'
+            + connector;
+        }).join("");
+      });
+    }
+
+    const screens = {
+      entry:"screen-entry", brief:"screen-brief", propose:"screen-propose", proposed:"screen-proposed",
+      scheduled:"screen-scheduled", report:"screen-report", finalquote:"screen-finalquote",
+      done:"screen-done", myvisit:"screen-myvisit"
+    };
+    const railIdx = { proposed:0, scheduled:1, report:2, finalquote:2, done:3, myvisit:3 };
+    let cStep=1; const C_TOTAL=3;
+    function goto(name){
+      Object.values(screens).forEach(id=>document.getElementById(id).classList.remove("is-active"));
+      document.getElementById(screens[name]).classList.add("is-active");
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      document.getElementById("pub-header").style.display = (name==="proposed"||name==="done") ? "none" : "flex";
+      const noFooter = ["proposed","scheduled","done","myvisit"].includes(name);
+      document.getElementById("footer").style.display = noFooter ? "none" : "block";
+      if(name in railIdx) renderRail(railIdx[name]);
+      if(name==="propose"){ setStep(cStep); }
+      configureFooter(name);
+      window.scrollTo(0,0);
+    }
+    function configureFooter(name){
+      const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
+      cta.classList.remove("is-ready"); cta.disabled=false; back.style.display="none";
+      if(name==="entry"){ cta.textContent="افتح الطلب"; cta.style.display="block"; }
+      else if(name==="brief"){ cta.style.display="none"; return; }
+      else if(name==="propose"){ updateProposeFooter(); cta.style.display="block"; }
+      else if(name==="report"){ cta.textContent="تابِع — حدّد السعر"; cta.style.display="block"; armReport(); }
+      else if(name==="finalquote"){ cta.textContent="ابعت السعر النهائي"; cta.style.display="block"; armFinal(); }
+    }
+    function onCta(){
+      const active=document.querySelector(".screen.is-active").id;
+      if(active==="screen-entry"){ goto("brief"); return; }
+      if(active==="screen-propose"){
+        if(cStep<C_TOTAL){ setStep(cStep+1); return; }
+        document.getElementById("c-slotcount").textContent = String(document.querySelectorAll("#c-slots .slotchip.is-on").length || 1);
+        goto("proposed"); return;
+      }
+      if(active==="screen-report"){
+        if(document.getElementById("cta").disabled){ flash("c-report-msg"); return; }
+        goto("finalquote"); return;
+      }
+      if(active==="screen-finalquote"){
+        if(document.getElementById("cta").disabled){ flash("c-final-msg"); return; }
+        goto("done"); return;
+      }
+    }
+    function flash(id){ const m=document.getElementById(id); m.style.display="flex"; m.scrollIntoView({behavior:"smooth",block:"center"}); }
+
+    // ── guided step controller (the C propose-visit step) ─────────────────
+    function setStep(n){
+      cStep=n;
+      for(let i=1;i<=C_TOTAL;i++) document.getElementById("c-step-"+i).classList.toggle("is-active", i===n);
+      document.getElementById("c-progress-label").innerHTML = 'خطوة <bdi>'+n+'</bdi> من <bdi>'+C_TOTAL+'</bdi>';
+      document.querySelectorAll(".c-bar").forEach((b,i)=>{ b.classList.toggle("bg-brand", i<n); b.classList.toggle("bg-line", i>=n); });
+      updateProposeFooter();
+      window.scrollTo(0,0);
+    }
+    function stepBack(){ if(cStep>1) setStep(cStep-1); else goto("brief"); }
+    function updateProposeFooter(){
+      const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
+      back.style.display="inline-flex";
+      if(cStep<C_TOTAL){ cta.textContent="التالي"; armStep(); }
+      else { cta.textContent="اقترِح الزيارة"; cta.disabled=false; void cta.offsetWidth; cta.classList.add("is-ready"); }
+    }
+    // step 1 needs a fee (pre-filled); steps 2/3 have smart defaults so they're ready
+    function armStep(){
+      if(document.querySelector(".screen.is-active").id!=="screen-propose") return;
+      const cta=document.getElementById("cta");
+      if(cStep===1){
+        const ok=(document.getElementById("c-fee").value||"").trim().length>0;
+        cta.disabled=!ok; if(ok){ void cta.offsetWidth; cta.classList.add("is-ready"); }
+      }
+    }
+    function pickOne(btn){
+      btn.parentElement.querySelectorAll(".opt").forEach(o=>o.classList.remove("is-sel"));
+      btn.classList.add("is-sel");
+    }
+    function toggleSwitch(el){
+      const on=el.classList.toggle("is-on");
+      el.setAttribute("aria-checked", on ? "true" : "false");
+    }
+    function toggleSlot(btn){
+      btn.classList.toggle("is-on");
+      document.getElementById("c-slotpreview").textContent = String(document.querySelectorAll("#c-slots .slotchip.is-on").length);
+    }
+    // report + final gates (shared shape with A & B)
+    function armReport(){
+      const active=document.querySelector(".screen.is-active");
+      if(!active || active.id!=="screen-report") return;
+      const found=(document.getElementById("c-found").value||"").trim();
+      const ok=found.length>=10;
+      const cta=document.getElementById("cta");
+      cta.disabled=!ok;
+      if(ok){ document.getElementById("c-report-msg").style.display="none"; void cta.offsetWidth; cta.classList.add("is-ready"); }
+    }
+    function armFinal(){
+      const active=document.querySelector(".screen.is-active");
+      if(!active || active.id!=="screen-finalquote") return;
+      const price=(document.getElementById("c-final").value||"").trim();
+      const note=(document.getElementById("c-finalnote").value||"").trim();
+      const ok = price.length>0 && note.length>=20;
+      const cta=document.getElementById("cta");
+      cta.disabled=!ok;
+      if(ok){ document.getElementById("c-final-msg").style.display="none"; void cta.offsetWidth; cta.classList.add("is-ready"); }
+    }
+    // Edit from "my visit" → re-enter the final-quote step (the editable submitted quote)
+    function editVisit(){ goto("finalquote"); }
+
+    goto("entry");
+
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      ["back-to-dash-proposed","back-to-dash-done","back-to-dash-myvisit"].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.style.display="block";
+      });
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ VARIANT C — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. Shared flow present in order: provider entry → request «quote brief» (CTA «اطلب زيارة أولًا» = PRIMARY) → C guided propose-visit → visit proposed → (moderator-sim «صاحب العقار اختار موعد») → scheduled → «خلّصت الزيارة» visit report → submit final quote → done → «my visit» view. All nine switchable via the moderator picker.
+   2. LEAD-IN + REQUEST IDENTICAL to A & B: entry card + the «quote brief» (title «تسريب مياه تحت مغسلة الحمام» · سباكة · بيروت — الأشرفية · عادي · answers وين التسريب=تحت المغسلة / المياه=نقطة نقطة + الوصف) are byte-parallel across A/B/C. Only screen-propose differs.
+   3. DOWNSTREAM PIPELINE SHARED/IDENTICAL across A/B/C: visit-proposed (مقترَحة) → moderator-sim → scheduled (مواعَدة, «تواعدنا!») → report (تمّت الزيارة, «خلّصت الزيارة») → submit final quote → done → «my visit» + «عدّل». Same screens/copy/rail as A & B; only color differs.
+   4. C = GUIDED / SMART, one step at a time (3 steps + 3-dot progress + back/next): STEP 1 smart FEE suggestion (pre-filled mid-range $50, «المعتاد بحدود $40–$60») + refundable toggle PRE-CHECKED + owner-trust framing «الزيارة بتطمّن صاحب العقار وبتأكّد السعر» · STEP 2 recommended assessment scope PRE-FILLED + editable + duration · STEP 3 smart-proposed slot chips (two pre-selected) + live preview → «اقترِح الزيارة».
+   5. COLOR = DEEP INDIGO (#4338ca) throughout — the only accent for CTAs, selected chips/slots, the fee prefix, progress, the toggle, the rail, the suggestion + trust cards.
+   6. PROPOSE GATE: step 1 needs a fee (pre-filled, usually already armed); steps 2 & 3 are always ready (smart defaults). The final step's CTA is «اقترِح الزيارة». Back button present from step 1 (→ brief) onward. Final-quote gate = price + ≥20-char note; report gate = «شو لقيت».
+   7. MODERATOR-SIM: the visit-proposed screen carries an amber-dashed «صاحب العقار اختار موعد ✓» button that advances to scheduled, standing in for the owner picking a slot.
+   8. «MY VISIT» VIEW (deeper state): the submitted final quote (price <bdi>$180</bdi>, timeline, شو لقيت, fee line) + rail (سعر نهائي) + status «بانتظار رد صاحب العقار» + a PROMINENT «عدّل السعر النهائي» → returns to screen-finalquote.
+   9. FONT held CONSTANT: IBM Plex Sans Arabic (locked 2026-06-17). A/B/C differ ONLY on the propose-visit step (flow/layout/color).
+  10. CLEAN MODE (`?clean`): hides the banner + switcher and reveals «رجوع للقائمة ↩» → provider-visit-dashboard.html on the proposed + done + my-visit screens; runs entry→done via in-page CTAs + the moderator-sim.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl; reading flow + the 3-dot progress + the 5-step rail run right→left (rail step 1 «مقترَحة» at the inline-START/rightmost); smart-slot ticks sit on inline-END; the fee/final $ prefix + numeric fields are LTR-isolated but on inline-START; the toggle knob slides on inset-inline-start; the entry/brief + choice chevrons flip in RTL; the lightbulb/shield/calendar/clock/check/camera glyphs do NOT flip. Logical properties only (ps/pe, inset-inline-*, text-align:start) — no physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — real copy-deck §5/§6 strings only (no Lorem Ipsum): «اطلب زيارة أولًا», «رسوم الزيارة», «بترجع لو وظّفتني», «الزيارة بتطمّن صاحب العقار وبتأكّد السعر», «اقتراح ذكي», «شو رح تعايِن؟», «إيمتى بتمرّ؟», «خلّصت الزيارة», «ابعت السعر النهائي», «تواعدنا!», rail labels, «بانتظار رد صاحب العقار», «عدّل السعر النهائي». Holds at 390px; the longest slot «بعد بكرا صباحًا» + the 5-step rail labels do not clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0; h1 26px ≠ h2 22px ≠ h3 19px ≠ body; NO tracking-* on any Arabic node; loaded IBM Plex Sans Arabic webfont (400/500/600/700); Western numerals; fee/range/price/time <bdi>-isolated.
+  -->
+</body>
+</html>

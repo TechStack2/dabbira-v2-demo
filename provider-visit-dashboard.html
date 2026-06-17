@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <!--
-  Dabbira V2 — PROVIDER «Submit Offer» A/B/C MODERATOR LAUNCHER (provider dashboard)
+  Dabbira V2 — PROVIDER «Request Visit» A/B/C MODERATOR LAUNCHER (set 2 of 3)
   ════════════════════════════════════════════════════════════════════════════
   DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
-  Kit:  design/research/provider-offer-session-kit.md  (counterbalanced order + protocol)
-  Runs: prototypes/provider-offer-a-pro.html · provider-offer-b-express.html · provider-offer-c-guided.html
+  Kit:  design/research/provider-visit-session-kit.md  (counterbalanced order + protocol)
+  Runs: prototypes/provider-visit-a-structured.html · provider-visit-b-express.html · provider-visit-c-guided.html
 
   ── WHAT THIS IS ────────────────────────────────────────────────────────────
-  A SIMPLE moderator home for the founder to run the provider Submit-Offer A/B/C session with
-  3–5 providers, one variant at a time, provider-facing, from the new-request card to "offer sent".
-  This is the FIRST of three provider sets (Submit Offer → Request Visit → Job Management).
+  A SIMPLE moderator home for the founder to run the provider Request-Visit (inspect-then-quote)
+  A/B/C session with 3–5 providers, one variant at a time, provider-facing, from the new-request card
+  all the way to "my visit". This is SET 2 of 3 of the provider program (Submit Offer → Request Visit → Job Management).
 
   Each "Run from start" link opens a variant in CLEAN MODE (?clean): no artifact banner,
   no dev screen-switcher — the provider sees ONLY the product. When the provider finishes
-  (offer sent / "my offer"), «رجوع للقائمة ↩» brings the moderator back here.
+  (final quote sent / "my visit"), «رجوع للقائمة ↩» brings the moderator back here.
 
-  Cross-link to the OWNER session launcher (demo-dashboard.html) so one shared link covers both.
+  Sets nav links to the Submit-Offer launcher (set 1); cross-link to the OWNER session launcher.
 
   ── HARD CONSTRAINT: works by double-clicking on disk (file://) ──────────────
   Navigation is plain <a href> link navigation file→file (NO iframes / NO fetch / NO JS module
@@ -26,7 +26,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>دبّرها — لوحة جلسة المحترفين (تقديم العرض A/B/C)</title>
+  <title>دبّرها — لوحة جلسة المحترفين (طلب زيارة A/B/C)</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -107,7 +107,7 @@
     }
     .crosslink:hover{background:#faf9f7;}
 
-    /* sets nav (set 1 of 3) */
+    /* sets nav */
     .setsnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
     .setlink{
       font-size:14px;font-weight:600;text-decoration:none;color:#1c1a17;
@@ -133,19 +133,19 @@
   <main class="wrap py-7">
 
     <!-- intro -->
-    <h1 class="t-display mb-2">جلسة تقديم العرض (A/B/C)</h1>
+    <h1 class="t-display mb-2">جلسة طلب الزيارة (A/B/C)</h1>
     <p class="t-body text-[#5b554d] mb-3">
-      هاي لوحة لإدارة جلسة التجربة مع المحترفين. اختار طريقة، اضغط «شغّل من البداية»، وسلّم التلفون للمحترف يجرّب يقدّم عرضو لحالو.
-      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. شغّل الطرق حسب ترتيب المحترف (تحت ↓).
+      هاي لوحة لإدارة جلسة التجربة مع المحترفين على «اطلب زيارة أولًا». اختار طريقة، اضغط «شغّل من البداية»، وسلّم التلفون للمحترف
+      يجرّب يقترح زيارة لحالو. المعلومات قليلة بالطلب — المطلوب منّو يطلب زيارة قبل ما يسعّر. لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون.
     </p>
-    <p class="t-caption text-[#8a857c] mb-6">
-      السؤال: أي طريقة لتقديم العرض بيفضّلها المحترفون فعليًا — وليش؟ (الخط محسوم، مش تحت التجربة.) هاي أول مجموعة من ثلاث: تقديم العرض ← طلب زيارة ← إدارة الشغل.
+    <p class="t-caption text-[#8a857c] mb-5">
+      السؤال: أي طريقة لاقتراح الزيارة بيفضّلها المحترفون فعليًا — وهل بيحطّوا رسوم؟ ليش؟ (الخط محسوم، مش تحت التجربة.)
     </p>
 
-    <!-- SETS NAV (set 1 of 3) -->
+    <!-- SETS NAV (set 2 of 3) -->
     <div class="setsnav mb-6">
-      <span class="setlink is-current">المجموعة 1: تقديم العرض (هلّق)</span>
-      <a class="setlink" href="provider-visit-dashboard.html">المجموعة 2: طلب زيارة</a>
+      <a class="setlink" href="provider-dashboard.html">المجموعة 1: تقديم العرض</a>
+      <span class="setlink is-current">المجموعة 2: طلب زيارة (هلّق)</span>
       <span class="setlink is-soon">3: إدارة الشغل — قريبًا</span>
     </div>
 
@@ -158,26 +158,26 @@
     <!-- ════════════════ VARIANT CARDS ════════════════ -->
     <section class="space-y-4">
 
-      <!-- A — Pro proposal builder -->
+      <!-- A — Structured -->
       <div class="card a">
         <div class="flex items-start gap-3.5 mb-3">
           <span class="badge">A</span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-2">
-              <h2 class="t-h3">احترافي <span class="t-caption text-[#8a857c]">· Pro builder</span></h2>
+              <h2 class="t-h3">مفصّل <span class="t-caption text-[#8a857c]">· Structured</span></h2>
               <button class="donebtn" data-j="A" onclick="toggleDone(this)" aria-pressed="false">
                 <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
                 <span class="lbl">تمّت</span>
               </button>
             </div>
-            <p class="t-small text-[#5b554d] mt-1">عرض كامل: سعر + مدّة + صلاحية + وصف بقوالب + مواد + تفاصيل إضافية.</p>
+            <p class="t-small text-[#5b554d] mt-1">اقتراح كامل: رسوم + بترجع لو وظّفك + مدّة + شو رح تعايِن + مواعيد متعدّدة.</p>
           </div>
         </div>
-        <a class="run" href="provider-offer-a-pro.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
-        <a class="preview" href="provider-offer-a-pro.html">معاينة (مع المبدّل) · Preview with switcher</a>
+        <a class="run" href="provider-visit-a-structured.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-visit-a-structured.html">معاينة (مع المبدّل) · Preview with switcher</a>
       </div>
 
-      <!-- B — Express quote -->
+      <!-- B — Express -->
       <div class="card b">
         <div class="flex items-start gap-3.5 mb-3">
           <span class="badge">B</span>
@@ -189,11 +189,11 @@
                 <span class="lbl">تمّت</span>
               </button>
             </div>
-            <p class="t-small text-[#5b554d] mt-1">أسرع طريق: سعر كبير + مدّة بضغطة + إملاء صوتي + بتبعت بضغطتين.</p>
+            <p class="t-small text-[#5b554d] mt-1">الرسوم جاهزة <bdi>$50</bdi> + إيمتى فاضي؟ بضغطة — بتقترح الزيارة بضغطتين.</p>
           </div>
         </div>
-        <a class="run" href="provider-offer-b-express.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
-        <a class="preview" href="provider-offer-b-express.html">معاينة (مع المبدّل) · Preview with switcher</a>
+        <a class="run" href="provider-visit-b-express.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-visit-b-express.html">معاينة (مع المبدّل) · Preview with switcher</a>
       </div>
 
       <!-- C — Guided / smart -->
@@ -208,11 +208,11 @@
                 <span class="lbl">تمّت</span>
               </button>
             </div>
-            <p class="t-small text-[#5b554d] mt-1">اقتراح ذكي بتأكّدو، وبعدها خطوة خطوة بقيَم جاهزة معبّاية.</p>
+            <p class="t-small text-[#5b554d] mt-1">اقتراح رسوم ذكي + شو تعايِن جاهز + مواعيد مقترَحة + «الزيارة بتطمّن صاحب العقار».</p>
           </div>
         </div>
-        <a class="run" href="provider-offer-c-guided.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
-        <a class="preview" href="provider-offer-c-guided.html">معاينة (مع المبدّل) · Preview with switcher</a>
+        <a class="run" href="provider-visit-c-guided.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="provider-visit-c-guided.html">معاينة (مع المبدّل) · Preview with switcher</a>
       </div>
 
     </section>
@@ -239,10 +239,10 @@
     <!-- footer note -->
     <footer class="mt-7 mb-10">
       <p class="t-caption text-[#8a857c]">
-        ملاحظة: بدّها إنترنت (الخطوط + Tailwind عبر CDN). هودي نماذج تصميم — مش التطبيق الحقيقي.
+        ملاحظة: بدّها إنترنت (الخطوط + Tailwind عبر CDN). هودي نماذج تصميم — مش التطبيق الحقيقي. صاحب العقار «بيختار الموعد» عبر زرّ تمثيل المُيسِّر داخل النموذج.
       </p>
       <p class="t-caption text-[#8a857c] mt-1" dir="ltr" style="text-align:start;">
-        DESIGN ARTIFACT — provider Submit-Offer A/B/C launcher (set 1 of 3) · needs internet (fonts + Tailwind CDN) · not the live app.
+        DESIGN ARTIFACT — provider Request-Visit A/B/C launcher (set 2 of 3) · needs internet (fonts + Tailwind CDN) · not the live app.
       </p>
     </footer>
 
@@ -260,23 +260,26 @@
   ════════════════════════ ACCEPTANCE CRITERIA (this launcher) ════════════════════════
    1. Opens by double-clicking from disk (file://): all links are plain <a href> file→file.
       No iframes, no fetch, no JS module imports. Needs internet only for fonts + Tailwind CDN.
-   2. Three clearly distinct variant cards — A احترافي/Pro builder (green), B سريع/Express (orange),
+   2. Three clearly distinct variant cards — A مفصّل/Structured (green), B سريع/Express (orange),
       C ذكي مُوجَّه/Guided-smart (indigo) — each with a one-line description and a big «شغّل من البداية ▶
-      Run from start» link to provider-offer-x.html?clean (clean mode).
+      Run from start» link to provider-visit-x.html?clean (clean mode).
    3. A secondary, smaller «معاينة (مع المبدّل) · Preview with switcher» link per variant → the
       variant WITHOUT ?clean (dev mode, screen-switcher visible) for the moderator to rehearse.
    4. A counterbalanced-order reference EXTENDED to 3–5 providers (P1: A,B,C · P2: B,C,A · P3: C,A,B ·
       P4: A,C,B · P5: B,A,C) so the moderator runs the right order per provider.
    5. Optional per-variant «تمّت/done» toggle (pure client-side, no storage) to track progress.
-   6. CROSS-LINK to the OWNER session launcher (demo-dashboard.html) — «جلسة أصحاب العقارات ↔ جلسة
-      المحترفين» — so one shared link covers both sessions. (The owner launcher links back here.)
-   7. Footer note: needs internet (fonts/CDN); these are design prototypes, not the live app; marked
-      as set 1 of 3 of the provider program.
-   8. RTL/lang=ar, IBM Plex Sans Arabic, «دبّرها» brand, real Arabic copy (no Lorem Ipsum),
+   6. SETS NAV: «المجموعة 1: تقديم العرض» → provider-dashboard.html · «المجموعة 2: طلب زيارة (هلّق)» (current) ·
+      «3: إدارة الشغل — قريبًا» (disabled). Marks this as SET 2 of 3.
+   7. CROSS-LINK to the OWNER session launcher (demo-dashboard.html) — «جلسة أصحاب العقارات ↔ جلسة
+      المحترفين» — so one shared link covers both sessions.
+   8. Footer note: needs internet (fonts/CDN); these are design prototypes, not the live app; explains the
+      moderator-sim "owner picks a slot" affordance.
+   9. RTL/lang=ar, IBM Plex Sans Arabic, «دبّرها» brand, real Arabic copy (no Lorem Ipsum),
       works centered on a laptop and full-width on a phone.
 
-   FLOW CONTRACT: from here, «شغّل من البداية» → variant clean → run entry→offer-sent via the variant's
-   own in-page CTAs → «رجوع للقائمة ↩» (shown on the variant's sent + my-offer screens in clean mode) → back here.
+   FLOW CONTRACT: from here, «شغّل من البداية» → variant clean → run entry→final-quote-sent via the variant's
+   own in-page CTAs + the moderator-sim «صاحب العقار اختار موعد» → «رجوع للقائمة ↩» (shown on the variant's
+   proposed + done + my-visit screens in clean mode) → back here.
   -->
 </body>
 </html>
