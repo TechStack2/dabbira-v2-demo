@@ -34,9 +34,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- LOCKED Arabic face: IBM Plex Sans Arabic (400/500/600/700) — held constant across A/B/C -->
+  <!-- Latin face for EN/LTR: IBM Plex Sans (same superfamily, so the scripts feel unified) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
@@ -63,6 +64,13 @@
       font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
       letter-spacing:0 !important; -webkit-text-size-adjust:100%;
     }
+    /* EN/LTR swaps the Latin face in; line-height tightens to Latin defaults */
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    /* compact AR|EN language switcher — visible in normal AND clean mode */
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #d6d2f2;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#5b554d;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#4338ca;color:#fff;}
     .t-display{font-size:32px;line-height:1.4;font-weight:700;}
     .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
     .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
@@ -155,97 +163,103 @@
       DESIGN ARTIFACT — not production · PROVIDER VISIT C (Guided/smart · indigo) · font LOCKED: IBM Plex Sans Arabic
     </div>
 
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode), default Arabic/RTL. -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:50;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
     <header id="pub-header" class="sticky top-0 z-20 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
       <div class="flex items-center gap-2">
-        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong">د</span>
-        <span class="t-h3">دبّرها</span>
+        <span class="grid place-items-center size-8 rounded-lg bg-brand text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
       </div>
-      <span class="t-caption text-soft">محترف · سباكة</span>
+      <span class="t-caption text-soft" data-i18n="provider_chip">محترف · سباكة</span>
     </header>
 
     <!-- ════════════════════════════ SCREEN 0 — PROVIDER ENTRY (lead-in · IDENTICAL across A/B/C) ════════════════════════════ -->
     <section id="screen-entry" class="screen px-4 pb-28 pt-5">
-      <h1 class="t-h1 mb-1">طلب جديد إلك</h1>
-      <p class="t-body text-soft mb-5">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك أو تطلب زيارة.</p>
+      <h1 class="t-h1 mb-1" data-i18n="entry_title">طلب جديد إلك</h1>
+      <p class="t-body text-soft mb-5" data-i18n="entry_sub">وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك أو تطلب زيارة.</p>
 
       <button class="w-full text-start rounded-xl2 border border-brand/40 bg-card p-4 mb-4" onclick="goto('brief')" style="cursor:pointer;">
         <div class="flex items-center justify-between gap-2 mb-2">
           <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-            <span class="size-1.5 rounded-full bg-brand"></span> جديد · بمجالك بمنطقتك
+            <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="new_in_area">جديد · بمجالك بمنطقتك</span>
           </span>
-          <span class="t-caption text-faint">من <bdi>5</bdi> دقايق</span>
+          <span class="t-caption text-faint"><span data-i18n="ago_prefix">من</span> <bdi>5</bdi> <span data-i18n="minutes">دقايق</span></span>
         </div>
-        <p class="t-h3 mb-2">تسريب مياه تحت مغسلة الحمام</p>
+        <p class="t-h3 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</p>
         <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
         </div>
         <span class="mt-3 inline-flex items-center gap-1.5 t-small text-brandink" style="font-weight:600;">
-          افتح الطلب
+          <span data-i18n="open_request">افتح الطلب</span>
           <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </span>
       </button>
 
-      <p class="t-caption text-soft">هاد نموذج تجربة — منركّز على خطوة طلب الزيارة.</p>
+      <p class="t-caption text-soft" data-i18n="entry_note">هاد نموذج تجربة — منركّز على خطوة طلب الزيارة.</p>
     </section>
 
     <!-- ════════════════════════════ SCREEN 1 — REQUEST «QUOTE BRIEF» (IDENTICAL across A/B/C; primary CTA = اطلب زيارة أولًا) ════════════════════════════ -->
     <section id="screen-brief" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-brand"></span> مفتوح للعروض
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="open_for_offers">مفتوح للعروض</span>
         </span>
-        <span class="t-caption text-faint">طلب صاحب العقار</span>
+        <span class="t-caption text-faint" data-i18n="owner_request">طلب صاحب العقار</span>
       </div>
 
-      <h1 class="t-h1 mb-2">تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</h1>
       <div class="flex flex-wrap gap-2 mb-5">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">عادي</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="urg_normal">عادي</span>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <p class="t-h3 mb-3">تفاصيل الطلب</p>
+        <p class="t-h3 mb-3" data-i18n="req_details">تفاصيل الطلب</p>
         <dl class="space-y-2.5">
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">وين التسريب</dt>
-            <dd class="t-small text-ink">تحت المغسلة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_where_leak">وين التسريب</dt>
+            <dd class="t-small text-ink" data-i18n="ans_under_sink">تحت المغسلة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">المياه</dt>
-            <dd class="t-small text-ink">نقطة نقطة</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_water">المياه</dt>
+            <dd class="t-small text-ink" data-i18n="ans_dripping">نقطة نقطة</dd>
           </div>
           <div class="flex items-start gap-2">
-            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;">الوصف</dt>
-            <dd class="t-small text-ink">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
+            <dt class="t-small text-faint shrink-0" style="min-inline-size:88px;" data-i18n="dt_desc">الوصف</dt>
+            <dd class="t-small text-ink" data-i18n="desc_value">في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.</dd>
           </div>
         </dl>
       </div>
 
-      <p class="t-h3 mb-3">شو بتحب تعمل؟</p>
+      <p class="t-h3 mb-3" data-i18n="what_do">شو بتحب تعمل؟</p>
       <div class="space-y-3 mb-1">
         <button class="choice is-primary" onclick="goto('propose')">
           <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="t-strong text-brandink">اطلب زيارة أولًا</span>
+            <span class="t-strong text-brandink" data-i18n="choice_visit">اطلب زيارة أولًا</span>
             <span class="inline-flex items-center justify-center size-7 rounded-full bg-brand text-white">
               <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </span>
           </div>
-          <p class="t-small text-soft">روح عايِن، وبعدها سعّر سعر مضبوط.</p>
+          <p class="t-small text-soft" data-i18n="choice_visit_help">روح عايِن، وبعدها سعّر سعر مضبوط.</p>
         </button>
         <button class="choice" onclick="document.getElementById('c-offernow-note').style.display='block';">
           <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="t-strong text-ink">قدّم عرضك</span>
+            <span class="t-strong text-ink" data-i18n="choice_offer">قدّم عرضك</span>
             <span class="inline-flex items-center justify-center size-7 rounded-full bg-bg text-faint">
               <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </span>
           </div>
-          <p class="t-small text-soft">سعّر على طول لو المشكلة واضحة.</p>
+          <p class="t-small text-soft" data-i18n="choice_offer_help">سعّر على طول لو المشكلة واضحة.</p>
         </button>
       </div>
-      <p id="c-offernow-note" class="t-caption text-soft mt-3" style="display:none;">
+      <p id="c-offernow-note" class="t-caption text-soft mt-3" style="display:none;" data-i18n="offernow_note">
         (هاي الجلسة منجرّب فيها «اطلب زيارة أولًا» — اختار النيلي فوق.)
       </p>
     </section>
@@ -253,11 +267,11 @@
     <!-- ════════════════════════════ SCREEN 2 — VARIANT C · GUIDED / SMART PROPOSE-VISIT (one step at a time) ════════════════════════════ -->
     <section id="screen-propose" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center gap-2 mb-3">
-        <span class="t-caption text-faint">عَ طلب:</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">تسريب مياه تحت مغسلة الحمام</span>
+        <span class="t-caption text-faint" data-i18n="on_request">عَ طلب:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small" data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</span>
       </div>
 
-      <!-- progress (3 guided steps) -->
+      <!-- progress (3 guided steps) — JS-set via t('step_a')/t('step_of') -->
       <p id="c-progress-label" class="t-caption text-faint mb-2">خطوة <bdi>1</bdi> من <bdi>3</bdi></p>
       <div class="flex gap-1.5 mb-5" aria-hidden="true">
         <span class="c-bar h-1.5 flex-1 rounded-full bg-brand"></span>
@@ -267,7 +281,7 @@
 
       <!-- STEP 1 — smart fee suggestion + refundable pre-checked + trust framing -->
       <div id="c-step-1" class="step is-active">
-        <h1 class="t-h1 mb-1">رسوم الزيارة</h1>
+        <h1 class="t-h1 mb-1" data-i18n="step1_title">رسوم الزيارة</h1>
 
         <!-- owner-trust framing -->
         <div class="rounded-xl2 border border-brand/40 bg-wash p-4 mb-4">
@@ -275,7 +289,7 @@
             <span class="grid place-items-center size-9 rounded-xl bg-brand text-white shrink-0">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </span>
-            <p class="t-small text-ink">الزيارة بتطمّن صاحب العقار وبتأكّد السعر — مبلغ بسيط بترجعو لو وظّفك.</p>
+            <p class="t-small text-ink" data-i18n="trust_framing">الزيارة بتطمّن صاحب العقار وبتأكّد السعر — مبلغ بسيط بترجعو لو وظّفك.</p>
           </div>
         </div>
 
@@ -286,14 +300,14 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
             </span>
             <div class="min-w-0">
-              <p class="t-strong text-brandink mb-0.5">اقتراح ذكي</p>
-              <p class="t-small text-ink">لهيك معاينة سباكة، المعتاد بحدود <bdi>$40</bdi>–<bdi>$60</bdi>. عبّيناها بالوسط.</p>
+              <p class="t-strong text-brandink mb-0.5" data-i18n="smart_suggestion">اقتراح ذكي</p>
+              <p class="t-small text-ink" data-i18n="fee_suggestion_body">لهيك معاينة سباكة، المعتاد بحدود <bdi>$40</bdi>–<bdi>$60</bdi>. عبّيناها بالوسط.</p>
             </div>
           </div>
         </div>
 
         <label class="block mb-3">
-          <span class="t-small text-ink">رسوم الزيارة <span class="text-brand">*</span></span>
+          <span class="t-small text-ink"><span data-i18n="fee_label">رسوم الزيارة</span> <span class="text-brand">*</span></span>
           <div class="relative mt-1.5">
             <span class="absolute inset-y-0 start-4 grid place-items-center text-soft pointer-events-none" style="font-size:26px;font-weight:700;">$</span>
             <input id="c-fee" inputmode="numeric" class="feefield" value="50" oninput="armStep()" />
@@ -302,47 +316,47 @@
 
         <div class="flex items-center justify-between gap-3 rounded-xl2 border border-line bg-card p-4">
           <div class="min-w-0">
-            <p class="t-strong">بترجع لو وظّفتني</p>
-            <p class="t-caption text-soft">الرسوم بتنحسم من سعر الشغل لو اتفقنا.</p>
+            <p class="t-strong" data-i18n="refundable">بترجع لو وظّفتني</p>
+            <p class="t-caption text-soft" data-i18n="refundable_help">الرسوم بتنحسم من سعر الشغل لو اتفقنا.</p>
           </div>
-          <button id="c-refund" class="switch is-on" role="switch" aria-checked="true" aria-label="بترجع لو وظّفتني" onclick="toggleSwitch(this)"><span class="knob"></span></button>
+          <button id="c-refund" class="switch is-on" role="switch" aria-checked="true" data-i18n-aria="refundable" aria-label="بترجع لو وظّفتني" onclick="toggleSwitch(this)"><span class="knob"></span></button>
         </div>
       </div>
 
       <!-- STEP 2 — recommended assessment scope (pre-filled, editable) + duration -->
       <div id="c-step-2" class="step">
-        <h1 class="t-h1 mb-1">شو رح تعايِن؟</h1>
-        <p class="t-body text-soft mb-4">عبّينالك المعتاد لهيك شغل — عدّل لو بدّك.</p>
-        <textarea id="c-scope" dir="auto" rows="4" class="field resize-none mb-5">بفحص مصدر التسريب، حالة السيفون والمواسير، والخزانة المتضرّرة لأعطيك سعر مضبوط.</textarea>
+        <h1 class="t-h1 mb-1" data-i18n="step2_title">شو رح تعايِن؟</h1>
+        <p class="t-body text-soft mb-4" data-i18n="step2_sub">عبّينالك المعتاد لهيك شغل — عدّل لو بدّك.</p>
+        <textarea id="c-scope" dir="auto" rows="4" class="field resize-none mb-5" data-i18n-val="scope_val">بفحص مصدر التسريب، حالة السيفون والمواسير، والخزانة المتضرّرة لأعطيك سعر مضبوط.</textarea>
 
         <label class="block">
-          <span class="t-small text-ink">مدّة الزيارة التقديرية</span>
+          <span class="t-small text-ink" data-i18n="duration_est_label">مدّة الزيارة التقديرية</span>
           <div class="mt-1.5 flex flex-wrap gap-2">
-            <button class="opt" onclick="pickOne(this)"><bdi>30</bdi> دقيقة</button>
-            <button class="opt is-sel" onclick="pickOne(this)">ساعة</button>
-            <button class="opt" onclick="pickOne(this)">ساعة ونص</button>
-            <button class="opt" onclick="pickOne(this)">ساعتين</button>
+            <button class="opt" onclick="pickOne(this)"><bdi>30</bdi> <span data-i18n="minute">دقيقة</span></button>
+            <button class="opt is-sel" onclick="pickOne(this)" data-i18n="dur_hour">ساعة</button>
+            <button class="opt" onclick="pickOne(this)" data-i18n="dur_hour_half">ساعة ونص</button>
+            <button class="opt" onclick="pickOne(this)" data-i18n="dur_two_hours">ساعتين</button>
           </div>
         </label>
       </div>
 
       <!-- STEP 3 — smart-proposed slots (multi-select, pre-filled) + live preview -->
       <div id="c-step-3" class="step">
-        <h1 class="t-h1 mb-1">إيمتى بتمرّ؟</h1>
-        <p class="t-body text-soft mb-4">اقترحنالك مواعيد قريبة — اختار اللي بيناسبك، أو ضيف غيرهن.</p>
+        <h1 class="t-h1 mb-1" data-i18n="step3_title">إيمتى بتمرّ؟</h1>
+        <p class="t-body text-soft mb-4" data-i18n="step3_sub">اقترحنالك مواعيد قريبة — اختار اللي بيناسبك، أو ضيف غيرهن.</p>
         <div id="c-slots" class="space-y-2.5">
-          <button class="slotchip is-on" onclick="toggleSlot(this)">اليوم بعد الضهر <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
-          <button class="slotchip is-on" onclick="toggleSlot(this)">بكرا صباحًا <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
-          <button class="slotchip" onclick="toggleSlot(this)">بكرا بعد الضهر <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
-          <button class="slotchip" onclick="toggleSlot(this)">بعد بكرا صباحًا <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip is-on" onclick="toggleSlot(this)"><span data-i18n="slot_today_pm">اليوم بعد الضهر</span> <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip is-on" onclick="toggleSlot(this)"><span data-i18n="slot_tomorrow_am">بكرا صباحًا</span> <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip" onclick="toggleSlot(this)"><span data-i18n="slot_tomorrow_pm">بكرا بعد الضهر</span> <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          <button class="slotchip" onclick="toggleSlot(this)"><span data-i18n="slot_day_after_am">بعد بكرا صباحًا</span> <span class="tick"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
         </div>
 
         <!-- live preview of the assembled proposal -->
         <div class="rounded-xl2 border border-line bg-card p-4 mt-5">
-          <p class="t-caption text-faint mb-2">معاينة اقتراحك</p>
+          <p class="t-caption text-faint mb-2" data-i18n="preview_label">معاينة اقتراحك</p>
           <div class="flex items-end justify-between">
-            <p class="t-h2 text-ink">كلفة <bdi>$50</bdi></p>
-            <p class="t-small text-soft"><bdi id="c-slotpreview">2</bdi> مواعيد · ساعة</p>
+            <p class="t-h2 text-ink"><span data-i18n="fee_word">كلفة</span> <bdi>$50</bdi></p>
+            <p class="t-small text-soft"><bdi id="c-slotpreview">2</bdi> <span data-i18n="slots_word">مواعيد · ساعة</span></p>
           </div>
         </div>
       </div>
@@ -354,60 +368,60 @@
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
           <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m9 16 2 2 4-4"/></svg>
         </span>
-        <h1 class="t-h1 mb-1">اقترحت الزيارة!</h1>
-        <p class="t-h3 text-soft">بانتظار صاحب العقار يختار موعد.</p>
+        <h1 class="t-h1 mb-1" data-i18n="proposed_title">اقترحت الزيارة!</h1>
+        <p class="t-h3 text-soft" data-i18n="proposed_sub">بانتظار صاحب العقار يختار موعد.</p>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <p class="t-caption text-faint mb-3" data-i18n="rail_label">مسار الزيارة</p>
         <div class="rail flex items-center justify-between"></div>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <span class="t-caption text-faint">اقتراحك</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> مقترَحة</span>
+          <span class="t-caption text-faint" data-i18n="your_proposal">اقتراحك</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="rail_offered">مقترَحة</span></span>
         </div>
-        <p class="t-strong mb-1">كلفة الزيارة <bdi>$50</bdi> · بترجع لو وظّفك</p>
-        <p class="t-small text-soft">اقترحت <bdi id="c-slotcount">2</bdi> مواعيد — بانتظار صاحب العقار يختار واحد.</p>
+        <p class="t-strong mb-1"><span data-i18n="fee_label">كلفة الزيارة</span> <bdi>$50</bdi> · <span data-i18n="refundable_if_hired">بترجع لو وظّفك</span></p>
+        <p class="t-small text-soft"><span data-i18n="proposed_slots_a">اقترحت</span> <bdi id="c-slotcount">2</bdi> <span data-i18n="proposed_slots_b">مواعيد — بانتظار صاحب العقار يختار واحد.</span></p>
       </div>
 
       <div class="moderator-sim mb-5">
         <p class="t-caption text-amber mb-2" dir="ltr" style="text-align:start;">MODERATOR SIM — stands in for the owner</p>
-        <button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="goto('scheduled')">صاحب العقار اختار موعد ✓</button>
+        <button class="cta-ghost" style="border-color:#efe2bd;color:#8a6d00;" onclick="goto('scheduled')" data-i18n="sim_owner_picked">صاحب العقار اختار موعد ✓</button>
       </div>
 
-      <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+      <button class="cta-ghost" onclick="goto('entry')" data-i18n="back_to_requests">رجوع للطلبات</button>
 
-      <a id="back-to-dash-proposed" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-proposed" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 4 — VISIT SCHEDULED (SHARED) ════════════════════════════ -->
     <section id="screen-scheduled" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-brand"></span> مواعَدة
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="rail_scheduled">مواعَدة</span>
         </span>
-        <span class="t-caption text-faint">زيارتك</span>
+        <span class="t-caption text-faint" data-i18n="your_visit">زيارتك</span>
       </div>
 
-      <h1 class="t-h1 mb-1">تواعدنا!</h1>
-      <p class="t-body text-soft mb-5">صاحب العقار اختار موعد — روح عايِن، وبعدها سعّر سعر مضبوط.</p>
+      <h1 class="t-h1 mb-1" data-i18n="scheduled_title">تواعدنا!</h1>
+      <p class="t-body text-soft mb-5" data-i18n="scheduled_sub">صاحب العقار اختار موعد — روح عايِن، وبعدها سعّر سعر مضبوط.</p>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <p class="t-caption text-faint mb-3" data-i18n="rail_label">مسار الزيارة</p>
         <div class="rail flex items-center justify-between"></div>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-h3 mb-3">الموعد المختار</p>
+        <p class="t-h3 mb-3" data-i18n="chosen_slot">الموعد المختار</p>
         <div class="flex items-center gap-3">
           <span class="grid place-items-center size-11 rounded-xl bg-wash text-brandink shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
           </span>
           <div>
-            <p class="t-strong">بكرا صباحًا</p>
-            <p class="t-small text-soft">مدّة تقديرية: ساعة · كلفة <bdi>$50</bdi> (بترجع لو وظّفك)</p>
+            <p class="t-strong" data-i18n="slot_tomorrow_am">بكرا صباحًا</p>
+            <p class="t-small text-soft"><span data-i18n="est_duration_pre">مدّة تقديرية: ساعة · كلفة</span> <bdi>$50</bdi> <span data-i18n="refundable_paren">(بترجع لو وظّفك)</span></p>
           </div>
         </div>
       </div>
@@ -415,34 +429,34 @@
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center gap-2">
           <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
-          <p class="t-small text-soft">بعد ما تخلّص الزيارة، دوس الزر تحت وسجّل شو لقيت.</p>
+          <p class="t-small text-soft" data-i18n="after_visit_note">بعد ما تخلّص الزيارة، دوس الزر تحت وسجّل شو لقيت.</p>
         </div>
       </div>
 
       <!-- primary advance: provider has done the visit → log findings (owns its button; footer stays hidden) -->
-      <button class="cta-primary" onclick="goto('report')">خلّصت الزيارة — سجّل شو لقيت</button>
+      <button class="cta-primary" onclick="goto('report')" data-i18n="done_visit_cta">خلّصت الزيارة — سجّل شو لقيت</button>
     </section>
 
     <!-- ════════════════════════════ SCREEN 5 — VISIT REPORT («خلّصت الزيارة») (SHARED) ════════════════════════════ -->
     <section id="screen-report" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-brand"></span> تمّت الزيارة
+          <span class="size-1.5 rounded-full bg-brand"></span> <span data-i18n="rail_completed">تمّت الزيارة</span>
         </span>
-        <span class="t-caption text-faint">تقرير الزيارة</span>
+        <span class="t-caption text-faint" data-i18n="visit_report">تقرير الزيارة</span>
       </div>
 
-      <h1 class="t-h1 mb-1">خلّصت الزيارة؟</h1>
-      <p class="t-body text-soft mb-5">سجّل شو لقيت — بيساعد صاحب العقار يفهم سعرك النهائي.</p>
+      <h1 class="t-h1 mb-1" data-i18n="report_title">خلّصت الزيارة؟</h1>
+      <p class="t-body text-soft mb-5" data-i18n="report_sub">سجّل شو لقيت — بيساعد صاحب العقار يفهم سعرك النهائي.</p>
 
       <div class="mb-5">
-        <span class="t-small text-ink">شو لقيت <span class="text-brand">*</span></span>
-        <textarea id="c-found" dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="متلاً: السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام…" oninput="armReport()"></textarea>
+        <span class="t-small text-ink"><span data-i18n="found_label">شو لقيت</span> <span class="text-brand">*</span></span>
+        <textarea id="c-found" dir="auto" rows="3" class="field mt-1.5 resize-none" data-i18n-ph="found_ph" placeholder="متلاً: السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام…" oninput="armReport()"></textarea>
       </div>
 
       <label class="block mb-5">
-        <span class="t-small text-ink">ملاحظات إضافية</span>
-        <textarea dir="auto" rows="2" class="field mt-1.5 resize-none" placeholder="أي شي تاني لازم صاحب العقار يعرفو (اختياري)."></textarea>
+        <span class="t-small text-ink" data-i18n="extra_notes_label">ملاحظات إضافية</span>
+        <textarea dir="auto" rows="2" class="field mt-1.5 resize-none" data-i18n-ph="extra_notes_ph" placeholder="أي شي تاني لازم صاحب العقار يعرفو (اختياري)."></textarea>
       </label>
 
       <div class="rounded-xl2 border border-dashed border-line bg-card p-4 mb-2">
@@ -451,54 +465,54 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
           </span>
           <div class="min-w-0">
-            <p class="t-strong">صوّر اللي لقيته</p>
-            <p class="t-caption text-amber" dir="ltr" style="text-align:start;">[BE] — رفع صور الزيارة</p>
+            <p class="t-strong" data-i18n="photograph_findings">صوّر اللي لقيته</p>
+            <p class="t-caption text-amber"><span dir="ltr">[BE]</span> — <span data-i18n="be_upload_photos">رفع صور الزيارة</span></p>
           </div>
         </div>
       </div>
 
       <p id="c-report-msg" class="t-caption text-brandink mt-3 flex items-center gap-1.5" style="display:none;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-        اكتب شو لقيت لتكمّل.
+        <span data-i18n="report_gate">اكتب شو لقيت لتكمّل.</span>
       </p>
     </section>
 
     <!-- ════════════════════════════ SCREEN 6 — SUBMIT FINAL QUOTE (SHARED) ════════════════════════════ -->
     <section id="screen-finalquote" class="screen px-4 pb-40 pt-4">
       <div class="flex items-center gap-2 mb-4">
-        <span class="t-caption text-faint">بعد المعاينة:</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small">سعر نهائي مضبوط</span>
+        <span class="t-caption text-faint" data-i18n="after_inspection">بعد المعاينة:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-small" data-i18n="firm_final_price">سعر نهائي مضبوط</span>
       </div>
 
-      <h1 class="t-h1 mb-1">ابعت السعر النهائي</h1>
-      <p class="t-body text-soft mb-5">بعد ما عايَنت — حُط السعر النهائي والمدّة وسطر شرح.</p>
+      <h1 class="t-h1 mb-1" data-i18n="final_title">ابعت السعر النهائي</h1>
+      <p class="t-body text-soft mb-5" data-i18n="final_sub">بعد ما عايَنت — حُط السعر النهائي والمدّة وسطر شرح.</p>
 
       <label class="block mb-5">
-        <span class="t-small text-ink">السعر النهائي <span class="text-brand">*</span></span>
+        <span class="t-small text-ink"><span data-i18n="final_price_label">السعر النهائي</span> <span class="text-brand">*</span></span>
         <div class="relative mt-1.5">
           <span class="absolute inset-y-0 start-4 grid place-items-center text-soft pointer-events-none" style="font-size:26px;font-weight:700;">$</span>
           <input id="c-final" inputmode="numeric" class="feefield" placeholder="180" oninput="armFinal()" />
         </div>
-        <span class="t-caption text-soft mt-1 block">رسوم الزيارة <bdi>$50</bdi> بتنحسم لو وظّفك.</span>
+        <span class="t-caption text-soft mt-1 block"><span data-i18n="fee_label">رسوم الزيارة</span> <bdi>$50</bdi> <span data-i18n="fee_deducted">بتنحسم لو وظّفك.</span></span>
       </label>
 
       <label class="block mb-5">
-        <span class="t-small text-ink">مدّة الشغل</span>
+        <span class="t-small text-ink" data-i18n="work_duration_label">مدّة الشغل</span>
         <div class="mt-1.5 flex flex-wrap gap-2">
-          <button class="opt" onclick="pickOne(this)">بنفس اليوم</button>
-          <button class="opt is-sel" onclick="pickOne(this)">خلال يوم – يومين</button>
-          <button class="opt" onclick="pickOne(this)">خلال أسبوع</button>
+          <button class="opt" onclick="pickOne(this)" data-i18n="tl_same_day">بنفس اليوم</button>
+          <button class="opt is-sel" onclick="pickOne(this)" data-i18n="tl_1_2_days">خلال يوم – يومين</button>
+          <button class="opt" onclick="pickOne(this)" data-i18n="tl_week">خلال أسبوع</button>
         </div>
       </label>
 
       <div class="mb-5">
-        <span class="t-small text-ink">سطر شرح <span class="text-brand">*</span></span>
-        <textarea id="c-finalnote" dir="auto" rows="3" class="field mt-1.5 resize-none" placeholder="شو رح تعمل بالسعر النهائي… (٢٠ حرف على الأقل)" oninput="armFinal()"></textarea>
+        <span class="t-small text-ink"><span data-i18n="explainer_label">سطر شرح</span> <span class="text-brand">*</span></span>
+        <textarea id="c-finalnote" dir="auto" rows="3" class="field mt-1.5 resize-none" data-i18n-ph="explainer_ph" placeholder="شو رح تعمل بالسعر النهائي… (٢٠ حرف على الأقل)" oninput="armFinal()"></textarea>
       </div>
 
       <p id="c-final-msg" class="t-caption text-brandink mt-1 flex items-center gap-1.5" style="display:none;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-        لازم سعر نهائي وسطر شرح لتبعت.
+        <span data-i18n="final_gate">لازم سعر نهائي وسطر شرح لتبعت.</span>
       </p>
     </section>
 
@@ -508,92 +522,92 @@
         <span class="inline-grid place-items-center size-20 rounded-full bg-wash text-brand mb-4">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
         </span>
-        <h1 class="t-h1 mb-1">انبعت سعرك النهائي!</h1>
-        <p class="t-h3 text-soft">صاحب العقار رح يشوفه ويردّ.</p>
+        <h1 class="t-h1 mb-1" data-i18n="done_title">انبعت سعرك النهائي!</h1>
+        <p class="t-h3 text-soft" data-i18n="done_sub">صاحب العقار رح يشوفه ويردّ.</p>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
-        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <p class="t-caption text-faint mb-3" data-i18n="rail_label">مسار الزيارة</p>
         <div class="rail flex items-center justify-between"></div>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-5 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <span class="t-caption text-faint">سعرك النهائي</span>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار</span>
+          <span class="t-caption text-faint" data-i18n="your_final_price">سعرك النهائي</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption"><span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="awaiting_owner">بانتظار رد صاحب العقار</span></span>
         </div>
         <p class="t-display text-ink mb-1"><bdi>$180</bdi></p>
-        <p class="t-small text-soft">خلال يوم – يومين · بعد معاينة</p>
+        <p class="t-small text-soft"><span data-i18n="tl_1_2_days">خلال يوم – يومين</span> · <span data-i18n="after_visit_tag">بعد معاينة</span></p>
       </div>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="goto('myvisit')">شوف زيارتك</button>
-        <button class="cta-ghost" onclick="goto('entry')">رجوع للطلبات</button>
+        <button class="cta-primary" onclick="goto('myvisit')" data-i18n="view_visit">شوف زيارتك</button>
+        <button class="cta-ghost" onclick="goto('entry')" data-i18n="back_to_requests">رجوع للطلبات</button>
       </div>
 
-      <a id="back-to-dash-done" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-done" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════════════════ SCREEN 8 — «MY VISIT» VIEW (SHARED · + Edit) ════════════════════════════ -->
     <section id="screen-myvisit" class="screen px-4 pb-28 pt-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-amberbg text-amber px-3 py-1 t-caption">
-          <span class="size-1.5 rounded-full bg-amber"></span> بانتظار رد صاحب العقار
+          <span class="size-1.5 rounded-full bg-amber"></span> <span data-i18n="awaiting_owner">بانتظار رد صاحب العقار</span>
         </span>
-        <span class="t-caption text-faint">زيارتك</span>
+        <span class="t-caption text-faint" data-i18n="your_visit">زيارتك</span>
       </div>
 
-      <h1 class="t-h1 mb-2">زيارتك عَ: تسريب مياه تحت مغسلة الحمام</h1>
+      <h1 class="t-h1 mb-2"><span data-i18n="your_visit_on">زيارتك عَ:</span> <span data-i18n="req_title">تسريب مياه تحت مغسلة الحمام</span></h1>
       <div class="flex flex-wrap gap-2 mb-5">
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">سباكة</span>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption">بيروت — الأشرفية</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-leaf="سباكة">سباكة</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-wash text-brandink ps-3 pe-3 py-1 t-caption" data-i18n="region_beirut">بيروت — الأشرفية</span>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
-        <p class="t-caption text-faint mb-3">مسار الزيارة</p>
+        <p class="t-caption text-faint mb-3" data-i18n="rail_label">مسار الزيارة</p>
         <div class="rail flex items-center justify-between"></div>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-4">
         <div class="flex items-end justify-between mb-3">
           <div>
-            <p class="t-caption text-faint mb-0.5">السعر النهائي</p>
+            <p class="t-caption text-faint mb-0.5" data-i18n="final_price_label">السعر النهائي</p>
             <p class="t-display text-ink leading-none"><bdi>$180</bdi></p>
           </div>
           <div class="text-end">
-            <p class="t-caption text-faint mb-0.5">المدّة</p>
-            <p class="t-strong">خلال يوم – يومين</p>
+            <p class="t-caption text-faint mb-0.5" data-i18n="duration_label">المدّة</p>
+            <p class="t-strong" data-i18n="tl_1_2_days">خلال يوم – يومين</p>
           </div>
         </div>
         <hr class="border-line mb-3" />
-        <p class="t-h3 mb-2">شو لقيت بالمعاينة</p>
-        <p class="t-small text-ink">السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام. الخزانة تحت مبلّلة بس سليمة.</p>
+        <p class="t-h3 mb-2" data-i18n="found_in_visit">شو لقيت بالمعاينة</p>
+        <p class="t-small text-ink" data-i18n="found_value">السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام. الخزانة تحت مبلّلة بس سليمة.</p>
         <hr class="border-line my-3" />
         <div class="flex items-center justify-between t-small">
-          <span class="text-faint">كلفة الزيارة</span>
-          <span class="text-ink"><bdi>$50</bdi> · بتنحسم لو وظّفك</span>
+          <span class="text-faint" data-i18n="fee_label">كلفة الزيارة</span>
+          <span class="text-ink"><bdi>$50</bdi> · <span data-i18n="refundable_if_hired">بتنحسم لو وظّفك</span></span>
         </div>
       </div>
 
       <div class="rounded-xl2 border border-line bg-card p-4 mb-5">
         <div class="flex items-center gap-2">
           <span class="grid place-items-center size-6 rounded-full bg-wash text-brandink shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></span>
-          <p class="t-small text-soft">بانتظار رد صاحب العقار. فيك تعدّل سعرك النهائي طول ما هو مفتوح.</p>
+          <p class="t-small text-soft" data-i18n="waiting_note">بانتظار رد صاحب العقار. فيك تعدّل سعرك النهائي طول ما هو مفتوح.</p>
         </div>
       </div>
 
       <div class="space-y-2.5">
-        <button class="cta-primary" onclick="editVisit()">عدّل السعر النهائي</button>
-        <button class="cta-ghost" onclick="goto('brief')">شوف الطلب من جديد</button>
+        <button class="cta-primary" onclick="editVisit()" data-i18n="edit_final_price">عدّل السعر النهائي</button>
+        <button class="cta-ghost" onclick="goto('brief')" data-i18n="view_request_again">شوف الطلب من جديد</button>
       </div>
 
-      <a id="back-to-dash-myvisit" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;">رجوع للقائمة ↩</a>
+      <a id="back-to-dash-myvisit" href="provider-visit-dashboard.html" class="cta-ghost mt-6 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
     </section>
 
     <!-- ════════════════ STICKY FOOTER CTA ════════════════ -->
     <div id="footer" class="sticky bottom-0 z-20 bg-card/95 backdrop-blur border-t border-line px-4 pt-3" style="padding-bottom:calc(12px + env(safe-area-inset-bottom));">
       <div class="flex items-center gap-2">
-        <button id="cta-back" class="cta-ghost" onclick="stepBack()" style="display:none;width:auto;padding-inline:18px;">رجوع</button>
+        <button id="cta-back" class="cta-ghost" onclick="stepBack()" style="display:none;width:auto;padding-inline:18px;" data-i18n="cta_back">رجوع</button>
         <button id="cta" class="cta-primary" onclick="onCta()">التالي</button>
       </div>
     </div>
@@ -614,9 +628,213 @@
   </div>
 
   <script>
-    // ── 5-step rail renderer (shared; right→left in RTL) ──────────────────
-    const RAIL = ["مقترَحة","مواعَدة","تمّت الزيارة","سعر نهائي","تمّ الاتفاق"];
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic is canonical/default. EN derived from copy-deck.md §5/§6 (NOT yet
+    //  through the Arabic review bar). Numerals stay Western in both languages.
+    //  Dynamic content (the 5-step rail, the 3-step guided progress label, the
+    //  slot-count + live preview, the footer back/next CTAs) re-localizes from setLang.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar"; // in-memory only (no storage)
+
+    const LEAF = {
+      "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتدفئة":"Heating & cooling",
+      "إصلاح أجهزة كهربائية":"Appliance repair","صيانة عامة":"General maintenance",
+      "بناء وتشييد":"Construction","تجديد وترميم":"Renovation","أعمال حجر وبناء":"Stone & masonry","أسقف وعزل":"Roofing & insulation",
+      "دهان":"Painting","أرضيات":"Flooring","بلاط وسيراميك":"Tiling","نجارة":"Carpentry","ألمنيوم وزجاج":"Aluminium & glass",
+      "تنظيف":"Cleaning","مكافحة حشرات":"Pest control","تنسيق حدائق":"Landscaping",
+      "تركيب وصيانة طاقة شمسية":"Solar install & service","أنظمة أمان ومراقبة":"Security & surveillance","منزل ذكي":"Smart home",
+      "خدمات نقل":"Moving services","خدمات أثاث":"Furniture services"
+    };
+    function tLeaf(arLabel){ return LANG==="ar" ? arLabel : (LEAF[arLabel] || arLabel); }
+
+    const I18N = {
+      ar: {
+        brand_mark:"د", brand:"دبّرها", provider_chip:"محترف · سباكة",
+        entry_title:"طلب جديد إلك", entry_sub:"وصلك طلب بمجالك بمنطقتك — فيك تقدّم عرضك أو تطلب زيارة.",
+        new_in_area:"جديد · بمجالك بمنطقتك", ago_prefix:"من", minutes:"دقايق",
+        open_request:"افتح الطلب", entry_note:"هاد نموذج تجربة — منركّز على خطوة طلب الزيارة.",
+        req_title:"تسريب مياه تحت مغسلة الحمام",
+        region_beirut:"بيروت — الأشرفية", urg_normal:"عادي",
+        open_for_offers:"مفتوح للعروض", owner_request:"طلب صاحب العقار",
+        req_details:"تفاصيل الطلب",
+        dt_where_leak:"وين التسريب", ans_under_sink:"تحت المغسلة",
+        dt_water:"المياه", ans_dripping:"نقطة نقطة",
+        dt_desc:"الوصف", desc_value:"في تسريب مي تحت مغسلة الحمام، عم يقطّر من ساعة، وبلّش يبلّل الخزانة تحت.",
+        what_do:"شو بتحب تعمل؟",
+        choice_visit:"اطلب زيارة أولًا", choice_visit_help:"روح عايِن، وبعدها سعّر سعر مضبوط.",
+        choice_offer:"قدّم عرضك", choice_offer_help:"سعّر على طول لو المشكلة واضحة.",
+        offernow_note:"(هاي الجلسة منجرّب فيها «اطلب زيارة أولًا» — اختار النيلي فوق.)",
+        // propose (C guided)
+        on_request:"عَ طلب:",
+        step1_title:"رسوم الزيارة",
+        trust_framing:"الزيارة بتطمّن صاحب العقار وبتأكّد السعر — مبلغ بسيط بترجعو لو وظّفك.",
+        smart_suggestion:"اقتراح ذكي",
+        fee_suggestion_body:"لهيك معاينة سباكة، المعتاد بحدود <bdi>$40</bdi>–<bdi>$60</bdi>. عبّيناها بالوسط.",
+        fee_label:"رسوم الزيارة",
+        refundable:"بترجع لو وظّفتني", refundable_help:"الرسوم بتنحسم من سعر الشغل لو اتفقنا.",
+        step2_title:"شو رح تعايِن؟", step2_sub:"عبّينالك المعتاد لهيك شغل — عدّل لو بدّك.",
+        scope_val:"بفحص مصدر التسريب، حالة السيفون والمواسير، والخزانة المتضرّرة لأعطيك سعر مضبوط.",
+        duration_est_label:"مدّة الزيارة التقديرية", minute:"دقيقة",
+        dur_hour:"ساعة", dur_hour_half:"ساعة ونص", dur_two_hours:"ساعتين",
+        step3_title:"إيمتى بتمرّ؟", step3_sub:"اقترحنالك مواعيد قريبة — اختار اللي بيناسبك، أو ضيف غيرهن.",
+        slot_today_pm:"اليوم بعد الضهر", slot_tomorrow_am:"بكرا صباحًا",
+        slot_tomorrow_pm:"بكرا بعد الضهر", slot_day_after_am:"بعد بكرا صباحًا",
+        preview_label:"معاينة اقتراحك", fee_word:"كلفة", slots_word:"مواعيد · ساعة",
+        // proposed
+        proposed_title:"اقترحت الزيارة!", proposed_sub:"بانتظار صاحب العقار يختار موعد.",
+        rail_label:"مسار الزيارة", your_proposal:"اقتراحك",
+        refundable_if_hired:"بترجع لو وظّفك",
+        proposed_slots_a:"اقترحت", proposed_slots_b:"مواعيد — بانتظار صاحب العقار يختار واحد.",
+        sim_owner_picked:"صاحب العقار اختار موعد ✓", back_to_requests:"رجوع للطلبات", back_to_list:"رجوع للقائمة ↩",
+        rail_offered:"مقترَحة", rail_scheduled:"مواعَدة", rail_completed:"تمّت الزيارة",
+        rail_final:"سعر نهائي", rail_engaged:"تمّ الاتفاق",
+        // scheduled
+        your_visit:"زيارتك", scheduled_title:"تواعدنا!",
+        scheduled_sub:"صاحب العقار اختار موعد — روح عايِن، وبعدها سعّر سعر مضبوط.",
+        chosen_slot:"الموعد المختار",
+        est_duration_pre:"مدّة تقديرية: ساعة · كلفة", refundable_paren:"(بترجع لو وظّفك)",
+        after_visit_note:"بعد ما تخلّص الزيارة، دوس الزر تحت وسجّل شو لقيت.",
+        done_visit_cta:"خلّصت الزيارة — سجّل شو لقيت",
+        // report
+        visit_report:"تقرير الزيارة", report_title:"خلّصت الزيارة؟",
+        report_sub:"سجّل شو لقيت — بيساعد صاحب العقار يفهم سعرك النهائي.",
+        found_label:"شو لقيت", found_ph:"متلاً: السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام…",
+        extra_notes_label:"ملاحظات إضافية", extra_notes_ph:"أي شي تاني لازم صاحب العقار يعرفو (اختياري).",
+        photograph_findings:"صوّر اللي لقيته", be_upload_photos:"رفع صور الزيارة",
+        report_gate:"اكتب شو لقيت لتكمّل.",
+        // final quote
+        after_inspection:"بعد المعاينة:", firm_final_price:"سعر نهائي مضبوط",
+        final_title:"ابعت السعر النهائي", final_sub:"بعد ما عايَنت — حُط السعر النهائي والمدّة وسطر شرح.",
+        final_price_label:"السعر النهائي", fee_deducted:"بتنحسم لو وظّفك.",
+        work_duration_label:"مدّة الشغل",
+        tl_same_day:"بنفس اليوم", tl_1_2_days:"خلال يوم – يومين", tl_week:"خلال أسبوع",
+        explainer_label:"سطر شرح", explainer_ph:"شو رح تعمل بالسعر النهائي… (٢٠ حرف على الأقل)",
+        final_gate:"لازم سعر نهائي وسطر شرح لتبعت.",
+        // done
+        done_title:"انبعت سعرك النهائي!", done_sub:"صاحب العقار رح يشوفه ويردّ.",
+        your_final_price:"سعرك النهائي", awaiting_owner:"بانتظار رد صاحب العقار",
+        after_visit_tag:"بعد معاينة", view_visit:"شوف زيارتك",
+        // my visit
+        your_visit_on:"زيارتك عَ:", duration_label:"المدّة",
+        found_in_visit:"شو لقيت بالمعاينة",
+        found_value:"السيفون متشقّق ولازم تبديل، والوصلة تحتو محتاجة إحكام. الخزانة تحت مبلّلة بس سليمة.",
+        waiting_note:"بانتظار رد صاحب العقار. فيك تعدّل سعرك النهائي طول ما هو مفتوح.",
+        edit_final_price:"عدّل السعر النهائي", view_request_again:"شوف الطلب من جديد",
+        // JS-set footer CTAs + progress
+        cta_open_request:"افتح الطلب", cta_next:"التالي", cta_back:"رجوع",
+        cta_propose_visit:"اقترِح الزيارة", cta_continue_price:"تابِع — حدّد السعر", cta_send_final:"ابعت السعر النهائي",
+        step_a:"خطوة", step_of:"من"
+      },
+      en: {
+        brand_mark:"D", brand:"Dabbira", provider_chip:"Pro · Plumbing",
+        entry_title:"A new request for you", entry_sub:"A request in your trade, in your area — you can send an offer or ask for a visit.",
+        new_in_area:"New · in your trade & area", ago_prefix:"", minutes:"min ago",
+        open_request:"Open the request", entry_note:"This is a test prototype — we focus on the request-a-visit step.",
+        req_title:"Water leak under the bathroom sink",
+        region_beirut:"Beirut — Achrafieh", urg_normal:"Normal",
+        open_for_offers:"Open for offers", owner_request:"Owner's request",
+        req_details:"Request details",
+        dt_where_leak:"Where's the leak", ans_under_sink:"Under the sink",
+        dt_water:"Water", ans_dripping:"Dripping",
+        dt_desc:"Description", desc_value:"There's a water leak under the bathroom sink; it's been dripping for an hour and started soaking the cabinet below.",
+        what_do:"What do you want to do?",
+        choice_visit:"Ask for a visit first", choice_visit_help:"Inspect first, then give a firm price.",
+        choice_offer:"Send an offer", choice_offer_help:"Quote now if it's clear.",
+        offernow_note:"(This session tests “Ask for a visit first” — pick the indigo option above.)",
+        on_request:"On request:",
+        step1_title:"Visit fee",
+        trust_framing:"A visit reassures the owner and confirms the price — a small fee that's refunded if they hire you.",
+        smart_suggestion:"Smart suggestion",
+        fee_suggestion_body:"For a plumbing inspection like this, the usual range is around <bdi>$40</bdi>–<bdi>$60</bdi>. We pre-filled the middle.",
+        fee_label:"Visit fee",
+        refundable:"Refunded if you hire me", refundable_help:"The fee comes off the job price if we agree.",
+        step2_title:"What will you assess?", step2_sub:"We pre-filled the usual for this kind of job — edit if you like.",
+        scope_val:"I'll check the leak source, the siphon and pipes, and the affected cabinet so I can give you a firm price.",
+        duration_est_label:"Estimated visit time", minute:"min",
+        dur_hour:"1 hour", dur_hour_half:"1.5 hours", dur_two_hours:"2 hours",
+        step3_title:"When can you stop by?", step3_sub:"We suggested some nearby times — pick what suits you, or add others.",
+        slot_today_pm:"Today afternoon", slot_tomorrow_am:"Tomorrow morning",
+        slot_tomorrow_pm:"Tomorrow afternoon", slot_day_after_am:"Day after, morning",
+        preview_label:"Proposal preview", fee_word:"Fee", slots_word:"times · 1 hour",
+        proposed_title:"Visit proposed!", proposed_sub:"Waiting for the owner to pick a time.",
+        rail_label:"Visit progress", your_proposal:"Your proposal",
+        refundable_if_hired:"refunded if hired",
+        proposed_slots_a:"You proposed", proposed_slots_b:"times — waiting for the owner to pick one.",
+        sim_owner_picked:"Owner picked a time ✓", back_to_requests:"Back to requests", back_to_list:"Back to list ↩",
+        rail_offered:"Proposed", rail_scheduled:"Scheduled", rail_completed:"Visited",
+        rail_final:"Final quote", rail_engaged:"Agreed",
+        your_visit:"Your visit", scheduled_title:"You're booked!",
+        scheduled_sub:"The owner picked a time — go inspect, then give a firm price.",
+        chosen_slot:"Chosen time",
+        est_duration_pre:"Est. duration: 1 hour · fee", refundable_paren:"(refunded if hired)",
+        after_visit_note:"After you finish the visit, tap the button below and log what you found.",
+        done_visit_cta:"Visit done — log what you found",
+        visit_report:"Visit report", report_title:"Visit done?",
+        report_sub:"Log what you found — it helps the owner understand your final price.",
+        found_label:"What you found", found_ph:"e.g. The siphon is cracked and needs replacing, and the joint below needs tightening…",
+        extra_notes_label:"Extra notes", extra_notes_ph:"Anything else the owner should know (optional).",
+        photograph_findings:"Photograph what you found", be_upload_photos:"upload visit photos",
+        report_gate:"Write what you found to continue.",
+        after_inspection:"After the visit:", firm_final_price:"Firm final price",
+        final_title:"Send the final price", final_sub:"Now that you've inspected — set the final price, the duration, and a one-line note.",
+        final_price_label:"Final price", fee_deducted:"comes off if you hire me.",
+        work_duration_label:"Job duration",
+        tl_same_day:"Same day", tl_1_2_days:"Within a day or two", tl_week:"Within a week",
+        explainer_label:"One-line note", explainer_ph:"What you'll do for the final price… (at least 20 chars)",
+        final_gate:"You need a final price and a one-line note to send.",
+        done_title:"Final price sent!", done_sub:"The owner will see it and reply.",
+        your_final_price:"Your final price", awaiting_owner:"Awaiting the owner's reply",
+        after_visit_tag:"after a visit", view_visit:"View your visit",
+        your_visit_on:"Your visit on:", duration_label:"Duration",
+        found_in_visit:"What you found on the visit",
+        found_value:"The siphon is cracked and needs replacing, and the joint below needs tightening. The cabinet underneath is wet but sound.",
+        waiting_note:"Awaiting the owner's reply. You can edit your final price while it's open.",
+        edit_final_price:"Edit final price", view_request_again:"View the request again",
+        cta_open_request:"Open the request", cta_next:"Next", cta_back:"Back",
+        cta_propose_visit:"Propose the visit", cta_continue_price:"Continue — set the price", cta_send_final:"Send the final price",
+        step_a:"Step", step_of:"of"
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-i18n-val]").forEach(node=>{
+        const k=node.getAttribute("data-i18n-val");
+        const arDef=I18N.ar[k], enDef=I18N.en[k];
+        if((node.value===arDef || node.value===enDef) && d[k]!=null) node.value=d[k];
+      });
+      document.querySelectorAll("[data-leaf]").forEach(node=>{ node.textContent=tLeaf(node.getAttribute("data-leaf")); });
+    }
+
+    // THE switcher — defined + wired to both AR and EN buttons
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      applyStaticI18n();
+      // re-localize dynamic paths for the active screen: the rail, the guided
+      // 3-step progress label, and the footer back/next CTAs.
+      const active=document.querySelector(".screen.is-active");
+      if(active){
+        const name=Object.keys(screens).find(k=>screens[k]===active.id);
+        if(name && (name in railIdx)) renderRail(railIdx[name]);
+        if(name==="propose") renderProgress();
+        if(name) configureFooter(name);
+      }
+    }
+
+    // ── 5-step rail renderer (shared; right→left in RTL; labels localized) ──
+    const RAIL_KEYS = ["rail_offered","rail_scheduled","rail_completed","rail_final","rail_engaged"];
     function renderRail(currentIdx){
+      const RAIL = RAIL_KEYS.map(t);
       document.querySelectorAll(".rail").forEach(rail=>{
         rail.innerHTML = RAIL.map((label,i)=>{
           const done = i < currentIdx, cur = i === currentIdx;
@@ -663,11 +881,12 @@
     function configureFooter(name){
       const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
       cta.classList.remove("is-ready"); cta.disabled=false; back.style.display="none";
-      if(name==="entry"){ cta.textContent="افتح الطلب"; cta.style.display="block"; }
+      back.textContent=t("cta_back");
+      if(name==="entry"){ cta.textContent=t("cta_open_request"); cta.style.display="block"; }
       else if(name==="brief"){ cta.style.display="none"; return; }
       else if(name==="propose"){ updateProposeFooter(); cta.style.display="block"; }
-      else if(name==="report"){ cta.textContent="تابِع — حدّد السعر"; cta.style.display="block"; armReport(); }
-      else if(name==="finalquote"){ cta.textContent="ابعت السعر النهائي"; cta.style.display="block"; armFinal(); }
+      else if(name==="report"){ cta.textContent=t("cta_continue_price"); cta.style.display="block"; armReport(); }
+      else if(name==="finalquote"){ cta.textContent=t("cta_send_final"); cta.style.display="block"; armFinal(); }
     }
     function onCta(){
       const active=document.querySelector(".screen.is-active").id;
@@ -689,10 +908,15 @@
     function flash(id){ const m=document.getElementById(id); m.style.display="flex"; m.scrollIntoView({behavior:"smooth",block:"center"}); }
 
     // ── guided step controller (the C propose-visit step) ─────────────────
+    // localized progress label «خطوة 1 من 3» / «Step 1 of 3» (Western numerals, bdi-isolated)
+    function renderProgress(){
+      document.getElementById("c-progress-label").innerHTML =
+        t("step_a")+' <bdi>'+cStep+'</bdi> '+t("step_of")+' <bdi>'+C_TOTAL+'</bdi>';
+    }
     function setStep(n){
       cStep=n;
       for(let i=1;i<=C_TOTAL;i++) document.getElementById("c-step-"+i).classList.toggle("is-active", i===n);
-      document.getElementById("c-progress-label").innerHTML = 'خطوة <bdi>'+n+'</bdi> من <bdi>'+C_TOTAL+'</bdi>';
+      renderProgress();
       document.querySelectorAll(".c-bar").forEach((b,i)=>{ b.classList.toggle("bg-brand", i<n); b.classList.toggle("bg-line", i>=n); });
       updateProposeFooter();
       window.scrollTo(0,0);
@@ -700,9 +924,9 @@
     function stepBack(){ if(cStep>1) setStep(cStep-1); else goto("brief"); }
     function updateProposeFooter(){
       const cta=document.getElementById("cta"), back=document.getElementById("cta-back");
-      back.style.display="inline-flex";
-      if(cStep<C_TOTAL){ cta.textContent="التالي"; armStep(); }
-      else { cta.textContent="اقترِح الزيارة"; cta.disabled=false; void cta.offsetWidth; cta.classList.add("is-ready"); }
+      back.style.display="inline-flex"; back.textContent=t("cta_back");
+      if(cStep<C_TOTAL){ cta.textContent=t("cta_next"); armStep(); }
+      else { cta.textContent=t("cta_propose_visit"); cta.disabled=false; void cta.offsetWidth; cta.classList.add("is-ready"); }
     }
     // step 1 needs a fee (pre-filled); steps 2/3 have smart defaults so they're ready
     function armStep(){
@@ -748,8 +972,12 @@
     // Edit from "my visit" → re-enter the final-quote step (the editable submitted quote)
     function editVisit(){ goto("finalquote"); }
 
+    // init — render Arabic from the dictionary (source of truth), then show entry
+    setLang("ar");
     goto("entry");
 
+    // ── CLEAN MODE (moderator demo) — hides banner + dev switcher (NEVER the
+    // language switcher); reveals «رجوع للقائمة». Plain DOM only (file://-safe).
     (function(){
       if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
       var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
