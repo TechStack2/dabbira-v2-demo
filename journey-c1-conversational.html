@@ -29,6 +29,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>دبّرها — رحلة C1 (حكي مُركّز) · نموذج تصميم</title>
+  <!-- PWA (installable demo) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="دبّرها" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -140,6 +149,16 @@
     .backbtn{ display:inline-flex;align-items:center;gap:6px;margin-block-end:8px;font-size:13px;font-weight:600;color:#5b6b66;background:#fff;border:1px solid #d7e5e7;border-radius:999px;padding:6px 12px;cursor:pointer; }
     .backbtn:hover{ background:#eef7f6;color:#0b5a54;border-color:#9ccbc4; }
     [dir="rtl"] .bb-arrow{ transform:scaleX(-1); }
+    /* A-style category accordion */
+    .c1grp{ border:1px solid #e6efee;border-radius:16px;background:#fff;overflow:hidden; }
+    .c1grp-head{ display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;background:transparent;border:none;cursor:pointer;text-align:start; }
+    .c1grp-solo{ display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;background:#fff;border:1px solid #e6efee;border-radius:16px;cursor:pointer;text-align:start; }
+    .c1grp-ic{ display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#eaf4f2;font-size:18px;flex-shrink:0; }
+    .c1grp-chev{ color:#9bb3ae;transition:transform .18s ease;flex-shrink:0; }
+    [dir="rtl"] .c1grp-chev{ transform:scaleX(-1); }
+    .c1grp.open .c1grp-chev{ transform:rotate(90deg); }
+    .c1grp-leaves{ display:none;flex-wrap:wrap;gap:8px;padding:0 14px 13px; }
+    .c1grp.open .c1grp-leaves{ display:flex; }
     .svc-search{ width:100%;font-size:15px;font-weight:500;border:1.5px solid #d7e5e7;border-radius:999px;background:#fff;padding:10px 15px;outline:none; }
     .svc-search:focus{ border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16); }
 
@@ -370,17 +389,15 @@
     function catLabel(id){ return (CAT[LANG] && CAT[LANG][id]) || CAT.ar[id] || id; }
 
     // ── DOMAIN → SERVICE-TYPE grouping (all 23 reachable; domain-first) — ported verbatim ──
+    // Functional groups (mirrors Version A's triage logic) — by what the owner is trying to do.
     const DOMAINS = [
-      { id:"plumb",  emoji:"🚰", ar:"سباكة ومياه",                   en:"Plumbing & water",                         services:["plumbing"] },
-      { id:"elec",   emoji:"⚡", ar:"كهرباء وأنظمة",                  en:"Electrical & systems",                     services:["electrical","solar_installation","smart_home","security_systems"] },
-      { id:"cool",   emoji:"❄️", ar:"تبريد وتدفئة وأجهزة",           en:"Cooling, heating & appliances",            services:["hvac","appliance_repair"] },
-      { id:"surf",   emoji:"🎨", ar:"دهان وأرضيات وأسطح",            en:"Paint, floors & surfaces",                 services:["painting","tiling","flooring"] },
-      { id:"wood",   emoji:"🪟", ar:"نجارة وأثاث وألمنيوم وزجاج",    en:"Carpentry, furniture, aluminum & glass",   services:["carpentry","furniture","aluminum_and_glass"] },
-      { id:"build",  emoji:"🧱", ar:"بناء وترميم وأسقف",            en:"Building, renovation & roofing",           services:["renovation","construction","masonry","roofing","general_maintenance"] },
-      { id:"clean",  emoji:"🧽", ar:"تنظيف ومكافحة حشرات",          en:"Cleaning & pest control",                  services:["cleaning","pest_control"] },
-      { id:"garden", emoji:"🌿", ar:"حدائق وخارج",                  en:"Outdoor & garden",                         services:["landscaping"] },
-      { id:"move",   emoji:"🚚", ar:"نقل",                          en:"Moving",                                   services:["moving"] },
-      { id:"other",  emoji:"❓", ar:"غير هيك / مش متأكد",            en:"Other / not sure",                         services:["other"] },
+      { id:"fix",     emoji:"🔧", ar:"تصليح وصيانة",      en:"Repair & maintenance",     services:["plumbing","electrical","hvac","appliance_repair","general_maintenance"] },
+      { id:"build",   emoji:"🏗️", ar:"بناء وتجديد",       en:"Build & renovate",         services:["construction","renovation","masonry","roofing"] },
+      { id:"finish",  emoji:"🎨", ar:"تشطيب وديكور",      en:"Finishing & décor",        services:["painting","flooring","tiling","carpentry","aluminum_and_glass"] },
+      { id:"clean",   emoji:"🧽", ar:"تنظيف وعناية",       en:"Cleaning & care",          services:["cleaning","pest_control","landscaping"] },
+      { id:"install", emoji:"🔌", ar:"تركيبات وأنظمة",     en:"Installations & systems",  services:["solar_installation","security_systems","smart_home"] },
+      { id:"move",    emoji:"🚚", ar:"نقل وأثاث",          en:"Moving & furniture",       services:["moving","furniture"] },
+      { id:"other",   emoji:"❓", ar:"غير هيك / مش متأكد",  en:"Other / not sure",         services:["other"] },
     ];
     function domLabel(d){ return LANG==="en" ? d.en : d.ar; }
     const ALL_SERVICES = DOMAINS.reduce((a,d)=>a.concat(d.services),[]);
@@ -1107,8 +1124,8 @@
         use_my_location:"استخدم موقعي الحالي", loc_detected:"حدّدنا موقعك تقريبيًا", loc_edit:"عدّل يدويًا", back_step_one:"رجوع خطوة",
         media_skip:"كمّل بلا ما أفرجي",
         visit_note:"هالشغلة صعب نسعّرها عن بُعد — الأصحّ محترف يجي يعاين ويعطيك سعر دقيق. كمّلنا شوي وبنرتّبلك زيارة.",
-        chat_ready:"تمام، صار معي كل اللازم! 🙌 راجِع طلبك من السطر فوق، وابعتو لمّا تكون جاهز.",
-        cta_review:"تمام — ابعت الطلب",
+        chat_ready:"✅ خلصنا — طلبك جاهز! فتحنالك الملخّص فوق لتراجعو، وإذا تمام دوس «ابعت الطلب».",
+        cta_review:"✅ ابعت الطلب",
         rec_label:"عم يسجّل…", sim_tag:"محاكاة",
         kind_photo:"صورة", kind_video:"فيديو", kind_audio:"رسالة صوتية",
         loc_word:"الموقع",
@@ -1157,8 +1174,8 @@
         use_my_location:"Use my current location", loc_detected:"We pinned your approximate location", loc_edit:"Set manually", back_step_one:"Back a step",
         media_skip:"Continue without showing",
         visit_note:"This is hard to price remotely — best if a pro comes, inspects, and gives you an accurate price. Let's finish up and we'll set up a visit.",
-        chat_ready:"Done — I've got everything I need! 🙌 Review your request from the line above and send it when you're ready.",
-        cta_review:"Looks good — send the request",
+        chat_ready:"✅ All set — your request is ready! I've opened the summary above to review; if it looks good, tap “Send request”.",
+        cta_review:"✅ Send request",
         rec_label:"Recording…", sim_tag:"Simulated",
         kind_photo:"photo", kind_video:"video", kind_audio:"voice note",
         loc_word:"Location",
@@ -1365,20 +1382,32 @@
         z.className="px-4 pb-1.5 flex flex-col gap-2"; z.style.flexDirection="";
         const search=el(`<input id="svc-search" class="svc-search" type="search" inputmode="search" placeholder="${esc(t('svc_search_ph'))}" data-i18n-ph="svc_search_ph" oninput="filterServices(this.value)" />`);
         z.appendChild(search);
-        const grid=el(`<div id="dom-grid" class="grid grid-cols-2 gap-2"></div>`);
+        // A-style accordion: functional groups → tap to expand → pick the service leaf
+        const acc=el(`<div id="dom-acc" class="flex flex-col gap-2"></div>`);
         DOMAINS.forEach(d=>{
-          const b=el(`<button class="dchip" data-dom="${d.id}"><span>${d.emoji}</span><span data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
-          b.onclick=()=>chooseDomain(d.id); grid.appendChild(b);
+          if(d.services.length===1){
+            const solo=el(`<button class="c1grp-solo" data-dom="${d.id}"><span class="c1grp-ic">${d.emoji}</span><span class="t-strong" data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
+            solo.onclick=()=>chooseService(d.services[0], false); acc.appendChild(solo); return;
+          }
+          const card=el(`<div class="c1grp" data-dom="${d.id}"><button class="c1grp-head" onclick="toggleGroupC1('${d.id}')"><span class="c1grp-ic">${d.emoji}</span><span class="t-strong" style="flex:1;" data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span><svg class="c1grp-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button><div class="c1grp-leaves"></div></div>`);
+          const leaves=card.querySelector(".c1grp-leaves");
+          d.services.forEach(svc=> leaves.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
+          acc.appendChild(card);
         });
-        z.appendChild(grid);
+        z.appendChild(acc);
         z.appendChild(el(`<div id="svc-results" class="flex flex-wrap gap-2" style="display:none;"></div>`));
+      });
+    }
+    function toggleGroupC1(id){
+      document.querySelectorAll("#dom-acc .c1grp").forEach(g=>{
+        g.classList.toggle("open", g.getAttribute("data-dom")===id ? !g.classList.contains("open") : false);
       });
     }
     function filterServices(q){
       q=(q||"").trim().toLowerCase();
-      const grid=document.getElementById("dom-grid"), results=document.getElementById("svc-results");
+      const grid=document.getElementById("dom-acc"), results=document.getElementById("svc-results");
       if(!grid||!results) return;
-      if(!q){ grid.style.display="grid"; results.style.display="none"; results.innerHTML=""; return; }
+      if(!q){ grid.style.display="flex"; results.style.display="none"; results.innerHTML=""; return; }
       grid.style.display="none"; results.style.display="flex"; results.innerHTML="";
       const matches=ALL_SERVICES.filter(svc=>{
         const ar=(CAT.ar[svc]||""), en=(CAT.en[svc]||"").toLowerCase(), syn=(SVC_SYN[svc]||"").toLowerCase();
@@ -1480,8 +1509,6 @@
           } else {
             z.appendChild(notSureChip());
           }
-          // contextual media prompt fires at the decisive question of the branch / overlay anchor
-          maybeMediaPrompt(p);
         });
       });
     }
@@ -1491,12 +1518,12 @@
     function answerProbeOpt(p, optKey){
       recordProbe(p.id, "opt", optKey, {ar:p.ar.opt[optKey], en:p.en.opt[optKey]}, p, optKey);
       userSay(p.ar.opt[optKey], p.en.opt[optKey]);
-      clearZone(); renderStatus(); saveState(); applyVisitFlag(); nextProbe();
+      clearZone(); renderStatus(); saveState(); applyVisitFlag(); maybeMediaStep(p, nextProbe);
     }
-    function answerProbeSkip(p){ S.probes[p.id]={ value:null, type:"skip", label:null, free:!!p.free }; clearZone(); renderStatus(); saveState(); nextProbe(); }
+    function answerProbeSkip(p){ S.probes[p.id]={ value:null, type:"skip", label:null, free:!!p.free }; clearZone(); renderStatus(); saveState(); maybeMediaStep(p, nextProbe); }
     function answerProbeFree(p, txt){
       recordProbe(p.id, "free", txt, {ar:txt, en:txt}, p);
-      userSayRaw(txt); clearZone(); renderStatus(); saveState(); applyVisitFlag(); nextProbe();
+      userSayRaw(txt); clearZone(); renderStatus(); saveState(); applyVisitFlag(); maybeMediaStep(p, nextProbe);
     }
     function nextProbe(){ DRILL.idx++; askProbe(); }
 
@@ -1509,15 +1536,15 @@
         if(rule==="always"){ route=true; return; }
         if(rule && rule.probe){ const a=S.probes[rule.probe]; if(a && a.value && rule.in && rule.in.includes(a.value)) route=true; }
       });
-      if(route && !S.visit){
-        S.visit=true; saveState();
-        botSayKey("visit_note");
-      }
+      // Internal tag only — providers decide whether to visit or give a directional offer.
+      // No customer-facing "needs a visit" messaging (founder decision).
+      if(route && !S.visit){ S.visit=true; saveState(); }
     }
 
-    // ── CONTEXTUAL MEDIA PROMPT (deep: mediaAt + probe.media; baseline: overlayFor) ──
-    function maybeMediaPrompt(p){
-      if(S.mediaAsks>=2) return;
+    // ── CONTEXTUAL MEDIA STEP — a DEDICATED turn AFTER the decisive probe (not a chip that
+    //    competes with the answers). Fires the right modality (📷/🎥/🎤) at the branch's mediaAt. ──
+    function maybeMediaStep(p, then){
+      if(S.mediaAsks>=2){ then(); return; }
       let media=null;
       if(isDeep(S.service)){
         const br=deepBranch();
@@ -1528,20 +1555,23 @@
         const anchor = ov.after==="__first__" ? probes[0] && probes[0].id : ov.after;
         if(anchor===p.id) media=ov.media;
       }
-      if(!media) return;
+      if(!media){ then(); return; }
+      pushHist(); clearZone();
       const em=kindEmoji(media.kind);
       botSay(media.ar.ask, media.en.ask, ()=>{
         const z=document.getElementById("quick-zone");
-        // the media offer sits ABOVE the answer chips; tapping it captures + advances,
-        // OR the user just answers the probe normally (which clears everything).
-        const skipMc=chip(I18N.ar.media_skip,I18N.en.media_skip, ()=>{ skipMc.remove(); mc.remove(); }, "is-notsure");
-        const mc=chip(em+media.ar.thumb, em+media.en.thumb, ()=>captureMedia(media), "is-media");
-        z.prepend(mc);
-        z.prepend(skipMc);
+        z.appendChild(chip(em+media.ar.thumb, em+media.en.thumb, ()=>captureMedia(media, then), "is-media"));
+        // optional second modality where it genuinely helps (e.g. a video of an active leak)
+        if(media.also){
+          const em2=kindEmoji(media.also.kind);
+          const alt={ kind:media.also.kind, ar:{thumb:media.also.thumb, tx:media.also.tx||media.ar.tx}, en:{thumb:media.also.thumbEn||media.also.thumb, tx:media.also.txEn||media.en.tx} };
+          z.appendChild(chip(em2+media.also.thumb, em2+(media.also.thumbEn||media.also.thumb), ()=>captureMedia(alt, then), "is-media"));
+        }
+        z.appendChild(chip(I18N.ar.media_skip, I18N.en.media_skip, ()=>{ clearZone(); then(); }, "is-notsure"));
       });
     }
-    function captureMedia(media){
-      S.mediaAsks++; clearZone();
+    function captureMedia(media, then){
+      S.mediaAsks++; clearZone(); window.__mediaThen=then||nextProbe;
       const log=document.getElementById("chat-log");
       if(media.kind==="audio"){
         const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:09</bdi></div></div>`);
@@ -1560,7 +1590,7 @@
       userSay(arBody, enBody);
       botSay(media.ar.tx, media.en.tx, ()=>{
         S.media.push({kind:media.kind, thumbAr:media.ar.thumb, thumbEn:media.en.thumb, txAr:media.ar.tx, txEn:media.en.tx});
-        renderStatus(); saveState(); clearZone(); nextProbe();
+        renderStatus(); saveState(); clearZone(); const k=window.__mediaThen; window.__mediaThen=null; (k||nextProbe)();
       });
     }
 
@@ -1689,11 +1719,15 @@
 
     function finishChat(){
       STEP="ready"; pushHist(); clearZone();
+      // make completion unmistakable: open the summary recap above + a clear ready message + prominent send CTA
+      renderStatus(); renderSummary();
+      const sb=document.getElementById("statusbar"); if(sb) sb.classList.add("open");
+      const sl=document.getElementById("status-line"); if(sl) sl.setAttribute("aria-expanded","true");
       botSayKey("chat_ready", ()=>{
         const log=document.getElementById("chat-log");
-        const btn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_review")}</button></div>`);
+        const btn=el(`<div class="row bot" style="margin-block-start:8px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_review")}</button></div>`);
         log.appendChild(btn); scrollChat();
-        renderStatus(); saveState();
+        saveState();
       });
     }
 
@@ -1873,7 +1907,7 @@
       if(sum){ const {html}=summaryRowsHtml({editable:false}); sum.innerHTML=html; }
       // the SINGLE end-of-flow expectation line — visit-routed jobs get the visit line
       const nl=document.getElementById("next-line");
-      if(nl){ const key=S.visit?"next_line_visit":"next_line_quote"; nl.setAttribute("data-tkey",key); nl.innerHTML=t(key); }
+      if(nl){ nl.setAttribute("data-tkey","next_line_quote"); nl.innerHTML=t("next_line_quote"); }
       // clean mode → back-to-dash link
       if(isClean()){ const b=document.getElementById("back-to-dash-posted"); if(b) b.style.display="block"; }
     }
