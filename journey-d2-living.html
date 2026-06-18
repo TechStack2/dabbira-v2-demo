@@ -145,6 +145,14 @@
     }
     .dockbtn:hover{background:#e1f0ee;}
     .dockbtn:active{transform:scale(.96);}
+    .backbtn{ display:inline-flex;align-items:center;gap:6px;margin-block-end:8px;font-size:13px;font-weight:600;color:#5b6b66;background:#fff;border:1px solid #d7e5e7;border-radius:999px;padding:6px 12px;cursor:pointer; }
+    .backbtn:hover{ background:#eef7f6;color:#0b5a54;border-color:#9ccbc4; }
+    [dir="rtl"] .bb-arrow{ transform:scaleX(-1); }
+    .svc-search{ width:100%;font-size:15px;font-weight:500;border:1.5px solid #d7e5e7;border-radius:999px;background:#fff;padding:10px 15px;outline:none; }
+    .svc-search:focus{ border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16); }
+    .nextcard{ border:1px solid #d7e5e7;border-radius:14px;background:#f6fbfb;padding:13px 14px; }
+    .nextrow{ display:flex;align-items:flex-start;gap:9px;margin-block-start:7px; }
+    .nstep{ flex-shrink:0;display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:#0f766e;color:#fff;font-size:11px;font-weight:700;margin-block-start:1px; }
 
     .field{font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #d7e5e7;border-radius:12px;background:#fff;padding:12px 14px;outline:none;}
     .field:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16);}
@@ -413,7 +421,13 @@
 
           <!-- posted-state extras (hidden until posted) -->
           <div id="posted-block" class="mt-1.5" style="display:none;">
-            <button class="cta-ghost" onclick="reopenFromPosted()" data-tkey="edit_request" style="margin-block-start:6px;">عدّل الطلب</button>
+            <div class="nextcard">
+              <p class="t-small text-ink" style="font-weight:700;margin-block-end:8px;" data-tkey="next_t">شو بيصير هلّق؟</p>
+              <div class="nextrow"><span class="nstep"><bdi>1</bdi></span><p class="t-caption text-soft" data-tkey="next_1">المحترفون بمنطقتك عم يشوفوا طلبك.</p></div>
+              <div class="nextrow"><span class="nstep"><bdi>2</bdi></span><p class="t-caption text-soft" data-tkey="next_2">بيبعتولك عروض — أول ردّ غالبًا خلال ساعة.</p></div>
+              <div class="nextrow"><span class="nstep"><bdi>3</bdi></span><p class="t-caption text-soft" data-tkey="next_3">بتقارن وبتختار — وبتحكي معهن مباشرة.</p></div>
+            </div>
+            <button class="cta-ghost" onclick="reopenFromPosted()" data-tkey="edit_request" style="margin-block-start:10px;">عدّل الطلب</button>
             <a id="back-to-dash-posted" href="demo-dashboard.html" class="cta-ghost mt-2 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
           </div>
         </div>
@@ -429,6 +443,11 @@
 
         <!-- multimodal dock + composer (sticky) -->
         <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2" style="padding-bottom:calc(9px + env(safe-area-inset-bottom));">
+          <!-- back-a-step (shown once there's a previous question) -->
+          <button id="back-btn" class="backbtn" onclick="goBack()" style="display:none;">
+            <svg class="bb-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+            <span data-tkey="back_step_one">رجوع خطوة</span>
+          </button>
           <!-- ALWAYS-available multimodal dock -->
           <div class="dock mb-2" id="dock">
             <button class="dockbtn" onclick="dockCapture('photo')" data-i18n-aria="dock_photo_aria"><span>📷</span><span data-tkey="dock_photo">صورة</span></button>
@@ -522,6 +541,33 @@
       { id:"other",  emoji:"❓", ar:"غير هيك / مش متأكد",            en:"Other / not sure",                         services:["other"] },
     ];
     function domLabel(d){ return LANG==="en" ? d.en : d.ar; }
+    // A-style search: all services + colloquial synonyms so «دوّر عن الخدمة» finds the right leaf
+    const ALL_SERVICES = DOMAINS.reduce((a,d)=>a.concat(d.services),[]);
+    const SVC_SYN = {
+      plumbing:"تسريب تنقيط انسداد ماي مي مجلى حنفية مرحاض سخان leak drip clog pipe water faucet",
+      electrical:"كهربا فيش طفي قاطع تمديدات اباجور wiring outlet breaker power switch",
+      hvac:"مكيف تكييف اي سي تبريد تدفئة سبليت ac air condition heating cooling",
+      appliance_repair:"براد غسالة فرن جلاية تصليح اجهزة fridge washer oven appliance",
+      carpentry:"خشب نجار باب خزانة موبيليا wood door cabinet furniture",
+      painting:"دهان طلاء بوية صبغ paint wall",
+      masonry:"باطون حجر اسمنت بناء concrete stone cement",
+      roofing:"سطح عزل تسريب سقف roof waterproof insulation",
+      flooring:"ارضية باركيه parquet floor",
+      tiling:"بلاط سيراميك قرميد tile ceramic",
+      landscaping:"حديقة زرع تنسيق نجيل garden plants landscape",
+      pest_control:"حشرات صراصير فئران رش pest insects mice cockroach",
+      cleaning:"تنظيف جلي تنضيف تعفير clean wash",
+      security_systems:"كاميرا انذار مراقبة camera cctv alarm security",
+      solar_installation:"شمسي طاقة الواح solar panels",
+      general_maintenance:"صيانة تصليح هاندي maintenance handyman fix",
+      renovation:"ترميم تجديد ديكور renovation remodel",
+      construction:"بناء تشييد مقاول construction build contractor",
+      smart_home:"سمارت ذكي اتمتة smart home automation",
+      moving:"نقل عفش شحن move moving transport",
+      furniture:"اثاث تركيب فك موبيليا furniture assembly",
+      aluminum_and_glass:"املنيوم المنيوم زجاج قزاز شباك aluminum glass window",
+      other:"غير هيك تاني other else",
+    };
     function domainForService(svc){ return DOMAINS.find(d=>d.services.includes(svc)); }
     function domEmoji(svc){ const d=domainForService(svc); return d?d.emoji:"🛠️"; }
 
@@ -530,7 +576,7 @@
       plumbing:{ probes:[
         {id:"issue_type", ar:{label:"ما نوع مشكلة السباكة؟",opt:{leak:"تسرّب / تنقيط",blockage:"انسداد",installation:"تركيب جديد",replacement:"استبدال",repair:"إصلاح"}}, en:{label:"What type of plumbing issue?",opt:{leak:"Leak / Dripping",blockage:"Blockage / Clog",installation:"New Installation",replacement:"Replacement",repair:"Repair"}}},
         {id:"location", ar:{label:"أين تقع المشكلة؟",opt:{kitchen:"المطبخ",bathroom:"الحمّام",laundry:"غرفة الغسيل",basement:"القبو",outdoor:"الخارج / الحديقة"}}, en:{label:"Where is the issue located?",opt:{kitchen:"Kitchen",bathroom:"Bathroom",laundry:"Laundry Room",basement:"Basement",outdoor:"Outdoor / Garden"}}},
-        {id:"urgency_reason", free:true, ar:{label:"تفاصيل إضافية حول مدى الإلحاح (اختياري)",ph:"مثال: المياه تغمر الأرض…"}, en:{label:"Additional details about urgency (optional)",ph:"e.g. Water is flooding the floor…"}},
+        {id:"urgency_reason", free:true, ar:{label:"في شي تاني المحترف لازم يعرفو؟ (اختياري)",ph:"متلاً: الماي وصلت عالخزانة، أو في صوت غريب…"}, en:{label:"Anything else the pro should know? (optional)",ph:"e.g. water reached the cabinet, or there's an odd noise…"}},
       ]},
       electrical:{ probes:[
         {id:"issue_type", ar:{label:"ما نوع العمل الكهربائي؟",opt:{outlet:"مشكلة مقبس / فيشة",lighting:"إضاءة / تجهيزات",switch:"مشكلة مفتاح",circuit:"قاطع كهربائي",wiring:"أسلاك / إعادة تمديد",installation:"تركيب جديد"}}, en:{label:"What type of electrical work?",opt:{outlet:"Outlet / Socket Issue",lighting:"Lighting / Fixture",switch:"Switch Issue",circuit:"Circuit Breaker",wiring:"Wiring / Rewiring",installation:"New Installation"}}},
@@ -761,6 +807,7 @@
         edit_request:"عدّل الطلب",
         resume_t:"تابِع طلبك المحفوظ", resume_d:"رجّعناك من وين وقفت.", resume_clear:"ابدأ من جديد",
         posted_status:"منشور · مفتوح للعروض",
+        next_t:"شو بيصير هلّق؟", next_1:"المحترفون بمنطقتك عم يشوفوا طلبك.", next_2:"بيبعتولك عروض — أول ردّ غالبًا خلال ساعة.", next_3:"بتقارن وبتختار — وبتحكي معهن مباشرة.",
         // ── forecast tiers (live value preview) ──
         // built dynamically with numbers — see forecastCopy()
         prov_label_empty:"",
@@ -774,6 +821,7 @@
         sub_apartment:"شقة", sub_condo:"كومباوند", sub_villa:"فيلا / منزل",
         sub_shop:"محل", sub_restaurant:"مطعم", sub_office:"مكتب", sub_warehouse:"مستودع",
         q_domain:"شو بدّك مساعدة فيه؟", q_servicetype:"تمام. أي نوع بالضبط؟",
+        svc_search_ph:"دوّر عن الخدمة… (متلاً: تسريب، دهان، مكيّف)", svc_noresult:"ما لقينا خدمة بهالاسم — جرّب كلمة تانية أو اختار من القائمة.",
         q_area:"وين العقار؟ (وين بدّك المحترف يجي)",
         q_gov:"بأي محافظة؟", q_dist:"بأي قضاء؟", q_areaname:"بأي منطقة بالضبط؟", back_step:"رجوع",
         region_beirut:"بيروت — الأشرفية", region_mtleb:"جبل لبنان — جونية", region_north:"الشمال — طرابلس", region_south:"الجنوب — صيدا",
@@ -786,6 +834,7 @@
         q_timewindow:"أي وقت بيناسبك للزيارة؟",
         tw_morning:"صباحًا بأيام الأسبوع", tw_afternoon:"بعد الظهر", tw_evening:"مساءً", tw_weekend:"عطلة نهاية الأسبوع", tw_flexible:"مرن",
         not_sure:"مش متأكد", show_instead:"فرجينا بدل ما تكتب", record_instead:"سجّل بدل ما تكتب", skip_step:"تخطّى",
+        add_photo:"صورة", add_video:"فيديو", use_my_location:"استخدم موقعي الحالي", loc_detected:"حدّدنا موقعك تقريبيًا", loc_edit:"عدّل يدويًا", back_step_one:"رجوع خطوة",
         // pivot
         pivot_bot:"ما في مشكلة — أسهل تفرجينا بدل ما تحزر. صوّر أو سجّل ونحنا منفهم. 📷🎥",
         pivot_logged:"سجّلنا إنك مش متأكد — المحترف بيعتمد على اللي فرجيتنا، وغالبًا منرتّب زيارة سريعة ليأكّد.",
@@ -825,6 +874,7 @@
         edit_request:"Edit request",
         resume_t:"Resume your saved request", resume_d:"We brought you back where you left off.", resume_clear:"Start over",
         posted_status:"Live · Open for offers",
+        next_t:"What happens now?", next_1:"Pros in your area are seeing your request.", next_2:"They'll send offers — first reply usually within the hour.", next_3:"You compare and choose — and talk to them directly.",
         prov_label_empty:"",
         dock_photo:"Photo", dock_video:"Video", dock_voice:"Voice", dock_gallery:"Gallery",
         dock_photo_aria:"Add a photo", dock_video_aria:"Add a video", dock_voice_aria:"Record a voice note", dock_gallery_aria:"Pick from gallery",
@@ -834,6 +884,7 @@
         sub_apartment:"Apartment", sub_condo:"Condo", sub_villa:"Villa / House",
         sub_shop:"Shop", sub_restaurant:"Restaurant", sub_office:"Office", sub_warehouse:"Warehouse",
         q_domain:"What do you need help with?", q_servicetype:"Got it. Which one exactly?",
+        svc_search_ph:"Search for the service… (e.g. leak, paint, AC)", svc_noresult:"No service by that name — try another word or pick from the list.",
         q_area:"Where's the place? (where should the pro come)",
         q_gov:"Which governorate?", q_dist:"Which district?", q_areaname:"Which area exactly?", back_step:"Back",
         region_beirut:"Beirut — Achrafieh", region_mtleb:"Mount Lebanon — Jounieh", region_north:"North — Tripoli", region_south:"South — Saida",
@@ -846,6 +897,7 @@
         q_timewindow:"What time window works for a visit?",
         tw_morning:"Weekday mornings", tw_afternoon:"Afternoons", tw_evening:"Evenings", tw_weekend:"Weekends", tw_flexible:"Flexible",
         not_sure:"I'm not sure", show_instead:"Show us instead of typing", record_instead:"Record instead of typing", skip_step:"Skip",
+        add_photo:"Photo", add_video:"Video", use_my_location:"Use my current location", loc_detected:"We pinned your approximate location", loc_edit:"Set manually", back_step_one:"Back a step",
         pivot_bot:"No problem — easier to just show me than guess. Snap or record and we'll figure it out. 📷🎥",
         pivot_logged:"We logged that you're unsure — the pro will rely on what you showed, and we'll likely set up a quick visit to confirm.",
         media_skip:"Continue without showing", media_added_more:"Show something else",
@@ -958,7 +1010,7 @@
     let probeIdx = 0;
 
     // freshStart = always reset (used by "Start over" + dev). startChat() is resume-aware (defined below).
-    function freshStart(){ resetState(); clearSaved(); document.getElementById("chat-log").innerHTML=""; clearZone();
+    function freshStart(){ resetState(); HIST=[]; clearSaved(); document.getElementById("chat-log").innerHTML=""; clearZone();
       document.getElementById("resume-banner").style.display="none";
       document.getElementById("assistant").style.display="flex";
       document.getElementById("canvas-wrap").style.maxHeight="48dvh";
@@ -966,9 +1018,43 @@
       goto("build"); renderCanvas(); askSector(); }
     function startOver(){ freshStart(); }
 
+    // ── BACK-A-STEP history (snapshot before each question; restore + re-ask) ──
+    let HIST=[];
+    function pushHist(){
+      try{
+        HIST.push({ S:structuredClone(S), probeIdx, step:STEP,
+          chat:document.getElementById("chat-log").innerHTML,
+          quickCls:document.getElementById("quick-zone").className });
+      }catch(e){}
+      updateBackBtn();
+    }
+    function updateBackBtn(){
+      const b=document.getElementById("back-btn"); if(!b) return;
+      b.style.display = (HIST.length>=2 && !S.posted) ? "inline-flex" : "none";
+    }
+    function reAsk(step, idx){
+      if(step==="drill"){ probeIdx=idx; askProbe(); return; }
+      const map={ sector:askSector, subtype:askSubtype, domain:askDomain,
+        service:()=>{ const d=DOMAINS.find(x=>x.id===S.domain); d?askServiceType(d):askDomain(); },
+        area:askArea, urgency:askUrgency, offers:askOffers, budget:askBudget, timewindow:askTimeWindow };
+      (map[step]||askDomain)();
+    }
+    function goBack(){
+      if(HIST.length<2) return;
+      HIST.pop();                    // discard current question's snapshot
+      const prev=HIST.pop();         // previous question (re-ask will re-push it)
+      try{ S=structuredClone(prev.S); }catch(e){}
+      probeIdx=prev.probeIdx; STEP=prev.step;
+      document.getElementById("chat-log").innerHTML=prev.chat;
+      const qz=document.getElementById("quick-zone"); qz.innerHTML=""; qz.className=prev.quickCls||"px-4 pb-1.5 flex flex-wrap gap-2"; qz.style.flexDirection="";
+      renderCanvas(); saveState();
+      reAsk(prev.step, prev.probeIdx);
+      scrollChat(); updateBackBtn();
+    }
+
     // FRAME 1 — sector
     function askSector(){
-      STEP="sector"; clearZone();
+      STEP="sector"; pushHist(); clearZone();
       botSayKey("q_sector", ()=>{
         const z=document.getElementById("quick-zone");
         z.appendChild(chip(I18N.ar.chip_residential,I18N.en.chip_residential, ()=>chooseSector("residential")));
@@ -982,7 +1068,7 @@
     }
     // FRAME 2 — subtype
     function askSubtype(){
-      STEP="subtype"; clearZone();
+      STEP="subtype"; pushHist(); clearZone();
       const isRes=S.sector==="residential";
       const subs = isRes ? ["apartment","condo","villa"] : ["shop","restaurant","office","warehouse"];
       botSayKey(isRes?"q_subtype_res":"q_subtype_com", ()=>{
@@ -996,15 +1082,34 @@
     }
     // FRAME 3 — domain
     function askDomain(){
-      STEP="domain"; clearZone();
+      STEP="domain"; pushHist(); clearZone();
       botSayKey("q_domain", ()=>{
         const z=document.getElementById("quick-zone");
-        z.className="px-4 pb-1.5 grid grid-cols-2 gap-2";
+        z.className="px-4 pb-1.5 flex flex-col gap-2"; z.style.flexDirection="";
+        // A-style: search across all 23 services OR browse the 10 domains
+        const search=el(`<input id="svc-search" class="svc-search" type="search" inputmode="search" placeholder="${esc(t('svc_search_ph'))}" data-i18n-ph="svc_search_ph" oninput="filterServices(this.value)" />`);
+        z.appendChild(search);
+        const grid=el(`<div id="dom-grid" class="grid grid-cols-2 gap-2"></div>`);
         DOMAINS.forEach(d=>{
           const b=el(`<button class="dchip" data-dom="${d.id}"><span>${d.emoji}</span><span data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
-          b.onclick=()=>chooseDomain(d.id); z.appendChild(b);
+          b.onclick=()=>chooseDomain(d.id); grid.appendChild(b);
         });
+        z.appendChild(grid);
+        z.appendChild(el(`<div id="svc-results" class="flex flex-wrap gap-2" style="display:none;"></div>`));
       });
+    }
+    function filterServices(q){
+      q=(q||"").trim().toLowerCase();
+      const grid=document.getElementById("dom-grid"), results=document.getElementById("svc-results");
+      if(!grid||!results) return;
+      if(!q){ grid.style.display="grid"; results.style.display="none"; results.innerHTML=""; return; }
+      grid.style.display="none"; results.style.display="flex"; results.innerHTML="";
+      const matches=ALL_SERVICES.filter(svc=>{
+        const ar=(CAT.ar[svc]||""), en=(CAT.en[svc]||"").toLowerCase(), syn=(SVC_SYN[svc]||"").toLowerCase();
+        return ar.includes(q)||en.includes(q)||syn.includes(q);
+      });
+      if(!matches.length){ results.appendChild(el(`<span class="t-caption text-faint px-1" data-tkey="svc_noresult">${t("svc_noresult")}</span>`)); return; }
+      matches.forEach(svc=> results.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
     }
     function chooseDomain(domId){
       const d=DOMAINS.find(x=>x.id===domId); S.domain=domId; resetZoneClass();
@@ -1016,14 +1121,14 @@
     function resetZoneClass(){ const z=document.getElementById("quick-zone"); z.className="px-4 pb-1.5 flex flex-wrap gap-2"; z.style.flexDirection=""; }
     // FRAME 4 — service type
     function askServiceType(d){
-      STEP="service"; clearZone();
+      STEP="service"; pushHist(); clearZone();
       botSayKey("q_servicetype", ()=>{
         const z=document.getElementById("quick-zone");
         d.services.forEach(svc=> z.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
       });
     }
     function chooseService(svc, echoed){
-      S.service=svc; if(!S.domain){ const d=domainForService(svc); S.domain=d?d.id:null; } clearZone();
+      S.service=svc; if(!S.domain){ const d=domainForService(svc); S.domain=d?d.id:null; } resetZoneClass(); clearZone();
       if(!echoed) userSay(CAT.ar[svc],CAT.en[svc]);
       renderCanvas(); popSlot("slot-service"); saveState();
       startDrill();
@@ -1032,7 +1137,7 @@
     // ── DRILL ──
     function startDrill(){ probeIdx=0; askProbe(); }
     function askProbe(){
-      STEP="drill"; clearZone();
+      STEP="drill"; pushHist(); clearZone();
       const probes=Q[S.service].probes;
       if(probeIdx>=probes.length){ afterDrill(); return; }
       const p=probes[probeIdx];
@@ -1041,6 +1146,8 @@
         const z=document.getElementById("quick-zone");
         if(p.free){
           z.appendChild(chip("🎤 "+I18N.ar.record_instead, "🎤 "+I18N.en.record_instead, ()=>recordAudioForProbe(p), "is-media"));
+          z.appendChild(chip("📷 "+I18N.ar.add_photo, "📷 "+I18N.en.add_photo, ()=>captureForProbe(p,"photo"), "is-media"));
+          z.appendChild(chip("🎥 "+I18N.ar.add_video, "🎥 "+I18N.en.add_video, ()=>captureForProbe(p,"video"), "is-media"));
           z.appendChild(chip(I18N.ar.skip_step,I18N.en.skip_step, ()=>answerProbeSkip(p)));
           z.appendChild(notSureChip());
         } else {
@@ -1065,6 +1172,16 @@
       userSayRaw(txt); clearZone(); renderCanvas(); popFactFor(p.id); saveState(); probeIdx++; askProbe();
     }
 
+    function captureForProbe(p, kind){
+      clearZone();
+      const labAr=kind==="video"?I18N.ar.kind_video:I18N.ar.kind_photo, labEn=kind==="video"?I18N.en.kind_video:I18N.en.kind_photo;
+      const dur=kind==="video"?" 0:08":"";
+      S.media.push({kind, thumbAr:labAr+dur, thumbEn:labEn+dur});
+      S.probes[p.id]={ value:"__"+kind+"__", type:kind };
+      const em=kind==="video"?"🎥 ":"📷 ";
+      userSay(em+labAr+dur, em+labEn+dur);
+      renderCanvas(); popLastTile(); saveState(); probeIdx++; askProbe();
+    }
     function recordAudioForProbe(p){
       clearZone();
       const log=document.getElementById("chat-log");
@@ -1177,12 +1294,34 @@
     function askArea(){ askGov(); }
     function backChip(onBack){ return chip("↩ "+I18N.ar.back_step, "↩ "+I18N.en.back_step, onBack, "is-notsure"); }
     function askGov(){
-      STEP="area"; clearZone();
+      STEP="area"; pushHist(); clearZone();
       botSayKey("q_gov", ()=>{
         const z=document.getElementById("quick-zone");
+        // device-location alternative (simulated) — sits above the governorate list
+        z.appendChild(chip("📍 "+I18N.ar.use_my_location, "📍 "+I18N.en.use_my_location, ()=>useDeviceLocation(), "is-media"));
         Object.keys(LEB).forEach(g=>{ const gv=LEB[g];
           z.appendChild(chip(gv.ar, gv.en, ()=>{ userSay(gv.ar,gv.en); clearZone(); askDist(g); })); });
       });
+    }
+    // simulated device location → pins a plausible area, with a manual-edit fallback ([BE] in production)
+    function useDeviceLocation(){
+      clearZone();
+      userSay("📍 "+I18N.ar.use_my_location, "📍 "+I18N.en.use_my_location);
+      const log=document.getElementById("chat-log");
+      const loc=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot" style="background:#6fb6ff;"></span><span data-tar="عم نحدّد موقعك…" data-ten="Locating you…">${LANG==="en"?"Locating you…":"عم نحدّد موقعك…"}</span></div></div>`);
+      log.appendChild(loc); scrollChat();
+      setTimeout(()=>{
+        loc.remove();
+        // demo: resolve to Achrafieh, Beirut (Beirut/beirut/achrafieh) — [BE] reverse-geocode in production
+        const g="beirut", d="beirut", a=["achrafieh","الأشرفية","Achrafieh"];
+        S.area={ gov:g, dist:d, area:a[0], govAr:LEB[g].ar, govEn:LEB[g].en, distAr:LEB[g].districts[d].ar, distEn:LEB[g].districts[d].en, areaAr:a[1], areaEn:a[2], auto:true };
+        botSay(`${I18N.ar.loc_detected}: ${a[1]} — ${LEB[g].ar}`, `${I18N.en.loc_detected}: ${a[2]} — ${LEB[g].en}`, ()=>{
+          const z=document.getElementById("quick-zone");
+          z.appendChild(chip(I18N.ar.loc_edit, I18N.en.loc_edit, ()=>{ clearZone(); askGov(); }, "is-notsure"));
+          z.appendChild(chip("✓ "+(LANG==="en"?"Continue":"تابِع"), "✓ Continue", ()=>{ clearZone(); renderCanvas(); popSlot("slot-map"); saveState(); afterDrill(); }));
+        });
+        renderCanvas(); popSlot("slot-map"); saveState();
+      }, 1000);
     }
     function askDist(g){
       STEP="area"; clearZone();
@@ -1208,7 +1347,7 @@
       });
     }
     function askUrgency(){
-      STEP="urgency"; clearZone();
+      STEP="urgency"; pushHist(); clearZone();
       botSayKey("q_urgency", ()=>{
         const z=document.getElementById("quick-zone");
         ["urg_emergency","urg_week","urg_flexible"].forEach(k=>
@@ -1216,7 +1355,7 @@
       });
     }
     function askOffers(){
-      STEP="offers"; clearZone();
+      STEP="offers"; pushHist(); clearZone();
       botSayKey("q_offers", ()=>{
         const z=document.getElementById("quick-zone");
         ["offers_23","offers_35","offers_max"].forEach(k=>
@@ -1224,7 +1363,7 @@
       });
     }
     function askBudget(){
-      STEP="budget"; clearZone();
+      STEP="budget"; pushHist(); clearZone();
       botSayKey("q_budget", ()=>{
         const z=document.getElementById("quick-zone");
         ["budget_lt100","budget_100_300","budget_300_1000","budget_1000"].forEach(k=>
@@ -1233,7 +1372,7 @@
       });
     }
     function askTimeWindow(){
-      STEP="timewindow"; clearZone();
+      STEP="timewindow"; pushHist(); clearZone();
       botSayKey("q_timewindow", ()=>{
         const z=document.getElementById("quick-zone");
         ["tw_morning","tw_afternoon","tw_evening","tw_weekend","tw_flexible"].forEach(k=>
@@ -1242,7 +1381,7 @@
     }
 
     function finishChat(){
-      STEP="ready"; clearZone();
+      STEP="ready"; pushHist(); clearZone();
       botSayKey("chat_ready", ()=>{
         const log=document.getElementById("chat-log");
         const btn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_review")}</button></div>`);
@@ -1351,7 +1490,10 @@
       if(ct){ const k=S.posted?"canvas_title_posted":"canvas_title"; ct.setAttribute("data-tkey",k); ct.innerHTML=t(k); }
       // progress
       const pr=document.getElementById("canvas-progress");
-      if(pr) pr.innerHTML = `<bdi>${progressCount()}/6</bdi>`;
+      if(pr){
+        if(S.posted){ pr.removeAttribute("data-tdyn"); pr.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;color:#0f8a5f;font-weight:700;"><span style="width:6px;height:6px;border-radius:999px;background:#0f8a5f;"></span><span data-tkey="posted_status">${t("posted_status")}</span></span>`; }
+        else { pr.setAttribute("data-tdyn","progress"); pr.innerHTML = `<bdi>${progressCount()}/6</bdi>`; }
+      }
 
       // service slot
       const sIcon=document.getElementById("slot-service-icon"), sVal=document.getElementById("slot-service-val"), sSlot=document.getElementById("slot-service");
