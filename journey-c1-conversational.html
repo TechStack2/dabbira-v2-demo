@@ -1123,6 +1123,9 @@
         add_photo:"صورة", add_video:"فيديو", record_instead:"سجّل بدل ما تكتب",
         use_my_location:"استخدم موقعي الحالي", loc_detected:"حدّدنا موقعك تقريبيًا", loc_edit:"عدّل يدويًا", back_step_one:"رجوع خطوة",
         media_skip:"كمّل بلا ما أفرجي",
+        media_done:"تمام، تابِع",
+        q_depth:"قبل ما نبلّش — تحب الأسئلة سريعة (الأساسيات بس) ولا مفصّلة (تفاصيل أكتر = عروض أدقّ)؟",
+        depth_express:"سريع — الأساسيات", depth_full:"مفصّل — عروض أدقّ",
         visit_note:"هالشغلة صعب نسعّرها عن بُعد — الأصحّ محترف يجي يعاين ويعطيك سعر دقيق. كمّلنا شوي وبنرتّبلك زيارة.",
         chat_ready:"✅ خلصنا — طلبك جاهز! فتحنالك الملخّص فوق لتراجعو، وإذا تمام دوس «ابعت الطلب».",
         cta_review:"✅ ابعت الطلب",
@@ -1173,6 +1176,9 @@
         add_photo:"Photo", add_video:"Video", record_instead:"Record instead of typing",
         use_my_location:"Use my current location", loc_detected:"We pinned your approximate location", loc_edit:"Set manually", back_step_one:"Back a step",
         media_skip:"Continue without showing",
+        media_done:"Done, continue",
+        q_depth:"Before we start — quick questions (the basics) or detailed (more detail = sharper offers)?",
+        depth_express:"Quick — the basics", depth_full:"Detailed — sharper offers",
         visit_note:"This is hard to price remotely — best if a pro comes, inspects, and gives you an accurate price. Let's finish up and we'll set up a visit.",
         chat_ready:"✅ All set — your request is ready! I've opened the summary above to review; if it looks good, tap “Send request”.",
         cta_review:"✅ Send request",
@@ -1238,6 +1244,10 @@
     function kindIcon(kind){ return kind==="video"?VID_ICON:kind==="audio"?MIC_ICON:CAM_ICON; }
     function kindEmoji(kind){ return kind==="video"?"🎥 ":kind==="audio"?"🎤 ":"📷 "; }
     function kindWord(kind){ const k=kind==="video"?"kind_video":kind==="audio"?"kind_audio":"kind_photo"; return {ar:I18N.ar[k], en:I18N.en[k]}; }
+    // media caps: photos ≤5; video ≤3 (≤30s each); audio ≤3 (≤90s each). Sim durations stay within caps.
+    const MEDIA_CAP={ photo:5, video:3, audio:3 };
+    const MEDIA_DUR={ photo:"", video:" 0:22", audio:" 1:05" };
+    function mcount(kind){ return S.media.filter(m=>m.kind===kind).length; }
 
     // ════════════════════ NAV ════════════════════
     const screens={ landing:"screen-landing", build:"screen-build", signup:"screen-signup", posted:"screen-posted" };
@@ -1261,7 +1271,7 @@
             branch:null,            // chosen q1 branch key (deep trades)
             probes:{},              // {probeId: {value, type, label:{ar,en}}}  (ordered by insertion)
             probeOrder:[],          // probe ids in answer order (for summary "details")
-            area:null, urgency:null,
+            area:null, urgency:null, depth:null,   // depth: 'express' (core only) | 'full' (core+deeper)
             media:[], notSure:false, visit:false, posted:false, mediaAsks:0 };
     }
 
@@ -1340,7 +1350,7 @@
     }
     function reAsk(step, drill){
       if(step==="drill"){ DRILL=drill||DRILL; askProbe(); return; }
-      const map={ sector:askSector, subtype:askSubtype, domain:askDomain,
+      const map={ sector:askSector, subtype:askSubtype, depth:askDepth, domain:askDomain,
         service:()=>{ const d=DOMAINS.find(x=>x.id===S.domain); d&&d.services.length>1?askServiceType(d):askDomain(); },
         area:askGov, urgency:askUrgency, ready:finishChat };
       (map[step]||askDomain)();
@@ -1372,7 +1382,22 @@
     }
     function chooseSubtype(sub){
       S.subtype=sub; clearZone();
-      userSay(I18N.ar["sub_"+sub],I18N.en["sub_"+sub]); renderStatus(); saveState(); askDomain();
+      userSay(I18N.ar["sub_"+sub],I18N.en["sub_"+sub]); renderStatus(); saveState(); askDepth();
+    }
+    // ── DEPTH MODE — express (core only) vs detailed (core + deeper). Chosen once, applies to the drill. ──
+    function askDepth(){
+      STEP="depth"; pushHist(); clearZone();
+      botSayKey("q_depth", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.appendChild(chip("⚡ "+I18N.ar.depth_express, "⚡ "+I18N.en.depth_express, ()=>chooseDepth("express")));
+        z.appendChild(chip("📋 "+I18N.ar.depth_full, "📋 "+I18N.en.depth_full, ()=>chooseDepth("full")));
+      });
+    }
+    function chooseDepth(mode){
+      S.depth=mode; clearZone();
+      userSay((mode==="express"?"⚡ ":"📋 ")+(mode==="express"?I18N.ar.depth_express:I18N.ar.depth_full),
+              (mode==="express"?"⚡ ":"📋 ")+(mode==="express"?I18N.en.depth_express:I18N.en.depth_full));
+      renderStatus(); saveState(); askDomain();
     }
     // ════════════════════ FRAME 3 — DOMAIN (with service search) ════════════════════
     function askDomain(){
@@ -1479,8 +1504,8 @@
       STEP="drill";
       // phase boundaries — resolve BEFORE snapshotting history (no phantom back-steps)
       if(DRILL.phase==="core" && DRILL.idx>=corePhaseProbes().length){
-        // finished CORE → if deep & has deeper probes, offer «هيك كفّى» + deeper; else go on
-        if(isDeep(S.service) && deeperPhaseProbes().length){ DRILL={phase:"deeper", idx:0}; askProbe(); return; }
+        // finished CORE → DETAILED mode adds the deeper probes; EXPRESS stops at core (the founder's fallback level)
+        if(isDeep(S.service) && S.depth!=="express" && deeperPhaseProbes().length){ DRILL={phase:"deeper", idx:0}; askProbe(); return; }
         afterDrill(); return;
       }
       if(DRILL.phase==="deeper" && DRILL.idx>=deeperPhaseProbes().length){ afterDrill(); return; }
@@ -1556,65 +1581,68 @@
         if(anchor===p.id) media=ov.media;
       }
       if(!media){ then(); return; }
-      pushHist(); clearZone();
-      const em=kindEmoji(media.kind);
-      botSay(media.ar.ask, media.en.ask, ()=>{
-        const z=document.getElementById("quick-zone");
-        z.appendChild(chip(em+media.ar.thumb, em+media.en.thumb, ()=>captureMedia(media, then), "is-media"));
-        // optional second modality where it genuinely helps (e.g. a video of an active leak)
-        if(media.also){
-          const em2=kindEmoji(media.also.kind);
-          const alt={ kind:media.also.kind, ar:{thumb:media.also.thumb, tx:media.also.tx||media.ar.tx}, en:{thumb:media.also.thumbEn||media.also.thumb, tx:media.also.txEn||media.en.tx} };
-          z.appendChild(chip(em2+media.also.thumb, em2+(media.also.thumbEn||media.also.thumb), ()=>captureMedia(alt, then), "is-media"));
-        }
-        z.appendChild(chip(I18N.ar.media_skip, I18N.en.media_skip, ()=>{ clearZone(); then(); }, "is-notsure"));
-      });
+      S.mediaAsks++; pushHist(); clearZone();
+      // contextual ASK, then a clear multi-type panel: the customer picks photo / video / voice (capped)
+      botSay(media.ar.ask, media.en.ask, ()=>{ renderMediaPanel(media, then); });
     }
-    function captureMedia(media, then){
-      S.mediaAsks++; clearZone(); window.__mediaThen=then||nextProbe;
+    // ── MEDIA PANEL: pick any of the 3 types, add several (within caps), then continue ──
+    function renderMediaPanel(media, then){
+      const z=document.getElementById("quick-zone"); z.innerHTML="";
+      [["photo","📷"],["video","🎥"],["audio","🎤"]].forEach(([kind,em])=>{
+        const n=mcount(kind), cap=MEDIA_CAP[kind], w=kindWord(kind);
+        const lim = kind==="video" ? " · ≤30ث" : kind==="audio" ? " · ≤90ث" : "";
+        const limEn = kind==="video" ? " · ≤30s" : kind==="audio" ? " · ≤90s" : "";
+        const c=chip(`${em} ${w.ar} (${n}/${cap})${lim}`, `${em} ${w.en} (${n}/${cap})${limEn}`, ()=>captureMediaType(kind, media, then), "is-media");
+        if(n>=cap){ c.disabled=true; c.style.opacity=".45"; c.style.cursor="default"; }
+        z.appendChild(c);
+      });
+      const added=S.media.length>0;
+      z.appendChild(chip(added?I18N.ar.media_done:I18N.ar.media_skip, added?I18N.en.media_done:I18N.en.media_skip, ()=>{ clearZone(); then(); }, added?"is-enough":"is-notsure"));
+    }
+    function captureMediaType(kind, media, then){
+      if(mcount(kind)>=MEDIA_CAP[kind]) return;
+      const w=kindWord(kind), dur=MEDIA_DUR[kind];
+      const z=document.getElementById("quick-zone"); z.innerHTML="";
       const log=document.getElementById("chat-log");
-      if(media.kind==="audio"){
-        const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:09</bdi></div></div>`);
-        log.appendChild(rec); scrollChat();
-        setTimeout(()=>{ rec.remove(); placeMediaBubble(media); }, 1100);
-      } else {
-        const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
-        log.appendChild(cap); scrollChat();
-        setTimeout(()=>{ cap.remove(); placeMediaBubble(media); }, 800);
-      }
-    }
-    function placeMediaBubble(media){
-      const icon=kindIcon(media.kind);
-      const arBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${media.ar.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.ar.sim_tag}</span></span></span>`;
-      const enBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${media.en.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.en.sim_tag}</span></span></span>`;
-      userSay(arBody, enBody);
-      botSay(media.ar.tx, media.en.tx, ()=>{
-        S.media.push({kind:media.kind, thumbAr:media.ar.thumb, thumbEn:media.en.thumb, txAr:media.ar.tx, txEn:media.en.tx});
-        renderStatus(); saveState(); clearZone(); const k=window.__mediaThen; window.__mediaThen=null; (k||nextProbe)();
-      });
+      const busyInner = kind==="audio"
+        ? `<span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>${(dur||"").trim()}</bdi>`
+        : `<span class="typing"><span></span><span></span><span></span></span>`;
+      const busy=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;">${busyInner}</div></div>`);
+      log.appendChild(busy); scrollChat();
+      setTimeout(()=>{
+        busy.remove();
+        const icon=kindIcon(kind);
+        userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${w.ar}${dur}</span><span style="font-size:12px;opacity:.8;">${I18N.ar.sim_tag}</span></span></span>`,
+                `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${w.en}${dur}</span><span style="font-size:12px;opacity:.8;">${I18N.en.sim_tag}</span></span></span>`);
+        S.media.push({kind, thumbAr:w.ar+dur, thumbEn:w.en+dur});
+        renderStatus(); saveState();
+        renderMediaPanel(media, then);   // stay on the panel so the user can add another type
+      }, kind==="audio"?900:700);
     }
 
     // ── per-probe media (free probes: 🎤/📷/🎥) ──
     function captureForProbe(p, kind){
+      if(mcount(kind)>=MEDIA_CAP[kind]){ return; }   // cap reached for this type
       clearZone();
-      const w=kindWord(kind); const dur=kind==="video"?" 0:08":kind==="audio"?" 0:06":"";
+      const w=kindWord(kind); const dur=kind==="video"?MEDIA_DUR.video:kind==="audio"?MEDIA_DUR.audio:"";
       S.media.push({kind, thumbAr:w.ar+dur, thumbEn:w.en+dur});
       recordProbe(p.id, kind, "__"+kind+"__", {ar:kindEmoji(kind)+w.ar+dur, en:kindEmoji(kind)+w.en+dur}, p);
       userSay(kindEmoji(kind)+w.ar+dur, kindEmoji(kind)+w.en+dur);
       renderStatus(); saveState(); nextProbe();
     }
     function recordAudioForProbe(p){
+      if(mcount("audio")>=MEDIA_CAP.audio){ return; }   // audio cap reached
       clearZone();
       const log=document.getElementById("chat-log");
-      const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:06</bdi></div></div>`);
+      const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>1:05</bdi></div></div>`);
       log.appendChild(rec); scrollChat();
       setTimeout(()=>{
         rec.remove();
-        const arTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.ar.kind_audio} <bdi>0:06</bdi></span>`;
-        const enTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.en.kind_audio} <bdi>0:06</bdi></span>`;
+        const arTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.ar.kind_audio} <bdi>1:05</bdi></span>`;
+        const enTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.en.kind_audio} <bdi>1:05</bdi></span>`;
         userSay(arTx, enTx);
-        recordProbe(p.id, "audio", "__audio__", {ar:"🎤 "+I18N.ar.kind_audio+" 0:06", en:"🎤 "+I18N.en.kind_audio+" 0:06"}, p);
-        S.media.push({kind:"audio", thumbAr:I18N.ar.kind_audio+" 0:06", thumbEn:I18N.en.kind_audio+" 0:06"});
+        recordProbe(p.id, "audio", "__audio__", {ar:"🎤 "+I18N.ar.kind_audio+" 1:05", en:"🎤 "+I18N.en.kind_audio+" 1:05"}, p);
+        S.media.push({kind:"audio", thumbAr:I18N.ar.kind_audio+" 1:05", thumbEn:I18N.en.kind_audio+" 1:05"});
         renderStatus(); saveState(); clearZone(); nextProbe();
       }, 1100);
     }
@@ -1746,6 +1774,7 @@
     // small inline photo/voice affordance (NO persistent dock) — lands a media bubble
     function quickMedia(){
       if(document.getElementById("screen-build").style.display==="none"){ startChat(); return; }
+      if(mcount("photo")>=MEDIA_CAP.photo){ return; }   // photo cap reached
       const ov={kind:"photo", ar:{thumb:"صورة — من الكاميرا", tx:"[صورة] لقطة للمكان أو المشكلة متل ما هي."}, en:{thumb:"Photo — from camera", tx:"[Photo] A shot of the place or the issue as-is."}};
       const log=document.getElementById("chat-log");
       const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
