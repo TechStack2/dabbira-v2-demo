@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — JOURNEY D2 · «الطلب الحيّ · The Living Request» (DEEP TEAL)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Spec:    design/flows/journey-d2-living.md
+  Engine:  ported VERBATIM from journey-d-adaptive.html (D1.0) — Q (23 services),
+           DOMAINS (10), OVERLAYS (5 deep + default), I18N, t(), setLang() + relocalize,
+           not-sure→media pivot, metadata steps, register gate, ?clean mode, simulated media.
+
+  ── THE 10x SHIFT (founder critique of D1.0: "it's all contained in the chatbox") ──
+  D1.0 = a chatbox that ASKS.  D2.0 = a REQUEST THAT BUILDS ITSELF IN FRONT OF YOU.
+  SPLIT SURFACE: sticky TOP = live Request Canvas (editable artifact, slots fill in) ;
+  BOTTOM = conversational Assistant (D1.0's Frame→Drill→Show/Tell→metadata). Every answer
+  ANIMATES into the card above (highlight + scale pop). Talk-OR-tap: every empty slot and
+  every filled chip on the canvas is a button (jump to that question / edit it). Non-linear.
+  Live Offer Forecast (meter→value preview) + Provider preview. Save & resume via localStorage.
+  Register-late → the posted request IS the same canvas in a «منشور» state (the canvas is the
+  request page — no separate detail screen).
+
+  FONT LOCKED to IBM Plex Sans Arabic (validated by all 3 testers 2026-06-17).
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+  Western numerals (0-9), <bdi>-isolated. D-family TEAL, slightly deeper than D1.0 (#0f766e / #115e59).
+  NOTE: English column is DERIVED (messages + brief) and has NOT passed the native-Lebanese review bar.
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — رحلة D2 (الطلب الحيّ) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic — held CONSTANT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#0e1f24", soft:"#46585e", faint:"#7c8e94", line:"#d7e5e7",
+            bg:"#eef5f6", card:"#ffffff",
+            /* DEEP TEAL — D2's identity (deeper than D1.0's #0e7490) */
+            teal:"#0f766e", tealink:"#0b5a54", teald:"#115e59", wash:"#e1f0ee", tealln:"#bce0db",
+            floor:"#c2740b", floorbg:"#fcf1de", ceil:"#0f8a5f", ceilbg:"#e4f5ec", visit:"#9a6a00", visitbg:"#fdf4dd",
+            amber:"#9a6a00", amberbg:"#fdf4dd", amberln:"#efddb0",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#eef5f6);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #bce0db;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#46585e;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#0f766e;color:#fff;}
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #d2e3e5, 0 24px 60px -28px rgba(10,40,50,.25); position:relative; overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+
+    /* ════════ chat bubbles ════════ */
+    .bubble-bot{
+      max-width:86%; align-self:flex-start;
+      background:#fff; border:1px solid #d7e5e7; color:#0e1f24;
+      border-radius:18px; border-start-start-radius:6px;
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+      box-shadow:0 1px 2px rgba(10,40,50,.04);
+    }
+    .bubble-user{
+      max-width:86%; align-self:flex-end;
+      background:#0f766e; color:#fff;
+      border-radius:18px; border-end-end-radius:6px;
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+    }
+    .row{display:flex;}
+    .row.bot{justify-content:flex-start;}
+    .row.user{justify-content:flex-end;}
+    .avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:#0f766e;color:#fff;flex-shrink:0;font-weight:700;font-size:14px;}
+
+    .typing{display:inline-flex;gap:4px;align-items:center;}
+    .typing span{width:7px;height:7px;border-radius:999px;background:#a5cbc6;animation:blink 1.2s infinite ease-in-out;}
+    .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+
+    /* quick-reply / metadata / probe chips */
+    .qchip{
+      display:inline-flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:600;
+      border:1.5px solid #bce0db;border-radius:999px;background:#fff;color:#0b5a54;padding:9px 14px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .qchip:hover{background:#e1f0ee;}
+    .qchip.is-sel{background:#0f766e;color:#fff;border-color:#0f766e;}
+    .qchip.is-media{border-style:dashed;color:#0f766e;}
+    .qchip.is-notsure{border-style:dashed;border-color:#cdb88a;color:#9a6a00;background:#fdfaf2;}
+    .qchip.is-done{background:#0b5a54;color:#fff;border-color:#0b5a54;}
+
+    .dchip{
+      display:inline-flex;align-items:center;gap:7px;font-size:15px;line-height:1.25;font-weight:600;
+      border:1.5px solid #bce0db;border-radius:14px;background:#fff;color:#0b5a54;padding:11px 13px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .dchip:hover{background:#e1f0ee;}
+
+    /* composer + dock */
+    .composer{display:flex;align-items:center;gap:8px;}
+    .composer input{flex:1;font-size:16px;line-height:1.5;font-weight:500;border:1px solid #d7e5e7;border-radius:999px;background:#fff;padding:11px 16px;outline:none;}
+    .composer input:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16);}
+    .icon-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;border:1px solid #d7e5e7;background:#fff;color:#0f766e;cursor:pointer;flex-shrink:0;}
+    .send-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:#0f766e;color:#fff;border:none;cursor:pointer;flex-shrink:0;}
+
+    /* multimodal dock (always available) */
+    .dock{display:flex;align-items:center;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-block:2px;}
+    .dock::-webkit-scrollbar{display:none;}
+    .dockbtn{
+      display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-size:13px;font-weight:600;line-height:1.2;
+      border:1.5px solid #bce0db;border-radius:999px;background:#fff;color:#0b5a54;padding:7px 12px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease,transform .1s ease;
+    }
+    .dockbtn:hover{background:#e1f0ee;}
+    .dockbtn:active{transform:scale(.96);}
+
+    .field{font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #d7e5e7;border-radius:12px;background:#fff;padding:12px 14px;outline:none;}
+    .field:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16);}
+
+    .cta-primary{font-size:16px;line-height:1.3;font-weight:600;background:#0f766e;color:#fff;border:none;border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;transition:transform .12s ease,box-shadow .15s ease;}
+    .cta-primary:disabled{background:#a6cdc8;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(15,118,110,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#0b5a54;border:1px solid #bce0db;border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;}
+    .vtab{font-size:12px;font-weight:600;border:1px solid #d7e5e7;background:#fff;color:#46585e;border-radius:999px;padding:6px 12px;cursor:pointer;}
+    .vtab.is-sel{background:#0e1f24;color:#fff;border-color:#0e1f24;}
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#0e1f24;opacity:1;}
+
+    /* simulated media bubble inside chat */
+    .media-thumb{display:grid;place-items:center;width:64px;height:64px;border-radius:12px;background:rgba(255,255,255,.18);color:#fff;flex-shrink:0;}
+    .rec-dot{width:9px;height:9px;border-radius:999px;background:#ff5c5c;animation:recblink 1s infinite;}
+    @keyframes recblink{0%,100%{opacity:1}50%{opacity:.25}}
+
+    /* ════════════════════ THE LIVING CANVAS (top surface) ════════════════════ */
+    .canvas-wrap{
+      position:sticky; inset-block-start:0; z-index:15;
+      background:linear-gradient(180deg,#ffffff 0%,#f6fbfb 100%);
+      border-block-end:1px solid #cfe2e0; box-shadow:0 8px 18px -14px rgba(10,40,50,.4);
+      max-height:48dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    }
+    .canvas-wrap::-webkit-scrollbar{width:0;}
+    .canvas-pad{padding:12px 14px 14px;}
+    /* slot = a tappable region of the artifact */
+    .slot{ border:1.5px dashed #c2dad6; border-radius:14px; background:#fbfdfd; cursor:pointer; transition:background .12s ease,border-color .12s ease,box-shadow .15s ease; text-align:start; width:100%; }
+    .slot:hover{ background:#eef7f6; border-color:#9ccbc4; }
+    .slot.is-filled{ border-style:solid; border-color:#dbeae8; background:#fff; cursor:default; }
+    .slot-empty-label{ color:#7c8e94; font-weight:600; }
+
+    /* live-fill pop */
+    @keyframes fill-pop{0%{transform:scale(.94);background:#cdeee9;}45%{transform:scale(1.025);background:#e1f5f2;}100%{transform:scale(1);}}
+    .just-filled{ animation:fill-pop .55s ease; }
+    @keyframes chip-pop{0%{transform:scale(.85);opacity:.4;}60%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+    .chip-pop{ animation:chip-pop .4s ease; }
+
+    /* fact chip (editable) on the canvas */
+    .fact{
+      display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:13px;line-height:1.35;font-weight:600;
+      border:1px solid #bce0db;border-radius:999px;background:#e9f4f2;color:#0b5a54;padding:6px 11px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .fact:hover{background:#d6ece8;border-color:#9ccbc4;}
+    .fact .pen{opacity:.55;flex-shrink:0;}
+    .fact.is-empty{background:#fbfdfd;border-style:dashed;color:#7c8e94;}
+
+    .slot-add{
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;
+      border:1.5px dashed #bce0db;border-radius:12px;background:#fbfdfd;color:#0b5a54;padding:8px 12px;cursor:pointer;
+      transition:background .12s ease;
+    }
+    .slot-add:hover{background:#eef7f6;}
+
+    /* mock map */
+    .mockmap{
+      position:relative; height:96px; border-radius:14px; overflow:hidden; cursor:pointer; border:1px solid #cfe2e0;
+      background:
+        linear-gradient(135deg, rgba(15,118,110,.10), rgba(15,118,110,.02)),
+        repeating-linear-gradient(0deg, rgba(15,118,110,.10) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, rgba(15,118,110,.10) 0 1px, transparent 1px 22px),
+        #eaf4f3;
+    }
+    .mockmap .road{position:absolute;background:rgba(15,118,110,.18);}
+    .mockpin{position:absolute;inset-block-start:50%;inset-inline-start:50%;transform:translate(50%,-100%);color:#0f766e;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));transition:opacity .2s ease;}
+    .mockmap.no-pin .mockpin{opacity:0;}
+    .map-hint{position:absolute;inset-block-end:7px;inset-inline-start:8px;font-size:11px;font-weight:600;color:#0b5a54;background:rgba(255,255,255,.82);border-radius:999px;padding:3px 9px;}
+
+    /* gallery strip */
+    .gallery{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-block:2px;}
+    .gallery::-webkit-scrollbar{display:none;}
+    .gtile{
+      position:relative;flex-shrink:0;width:62px;height:62px;border-radius:12px;display:grid;place-items:center;
+      background:#0f766e;color:#fff;overflow:hidden;
+    }
+    .gtile .lbl{position:absolute;inset-block-end:0;inset-inline:0;font-size:9px;font-weight:600;background:rgba(0,0,0,.4);padding:2px 3px;text-align:center;line-height:1.1;}
+    .gtile-add{
+      flex-shrink:0;width:62px;height:62px;border-radius:12px;display:grid;place-items:center;
+      border:1.5px dashed #bce0db;background:#fbfdfd;color:#0f766e;cursor:pointer;
+    }
+    .gtile-add:hover{background:#eef7f6;}
+
+    /* forecast tile */
+    .forecast{border:1px solid #d7e5e7;border-radius:14px;padding:11px 12px;background:#fff;}
+    .fc-dot{width:10px;height:10px;border-radius:999px;flex-shrink:0;}
+    .fc-routable{background:#e09a2b;} .fc-quotable{background:#0f8a5f;} .fc-visit{background:#caa12e;}
+    .fc-meter{display:flex;gap:3px;height:7px;border-radius:999px;overflow:hidden;background:#eef4f5;margin-block:7px;}
+    .fc-seg{flex:1;background:#eef4f5;transition:background .35s ease;}
+    .fc-seg.on-routable{background:#e09a2b;} .fc-seg.on-quotable{background:#0f8a5f;} .fc-seg.on-visit{background:#caa12e;}
+
+    /* provider preview */
+    .provprev{display:flex;align-items:center;gap:8px;border:1px solid #d7e5e7;border-radius:14px;padding:9px 11px;background:#fff;}
+    .provav{display:flex;}
+    .provav span{display:grid;place-items:center;width:26px;height:26px;border-radius:999px;background:#0f766e;color:#fff;font-size:11px;font-weight:700;border:2px solid #fff;margin-inline-start:-8px;}
+    .provav span:first-child{margin-inline-start:0;}
+
+    /* resume banner */
+    .resume{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #bce0db;border-radius:14px;padding:11px 13px;box-shadow:0 4px 14px -8px rgba(10,40,50,.3);}
+
+    @media (prefers-reduced-motion:reduce){ .cta-primary.is-ready,.typing span,.rec-dot,.just-filled,.chip-pop{animation:none;} }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · OWNER JOURNEY D2 (Living Request) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode). -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:60;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-30 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-teal text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
+      </div>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4" data-i18n="signin_secondary">عندك حساب؟ سجّل الدخول</a>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — LANDING ════════════════════════════ -->
+    <section id="screen-landing" class="screen is-active">
+      <div class="px-5 pt-8 pb-7 bg-wash">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-tealink px-3 py-1 t-caption mb-4">
+          <span class="size-1.5 rounded-full bg-teal"></span> <span data-i18n="tagline">احكِ معنا — وطلبك بيتكوّن قدّامك خطوة خطوة.</span>
+        </span>
+        <h1 class="t-display mb-3" data-i18n="hero_title">قلّنا شو في…<br/>وشوف طلبك بيتكوّن.</h1>
+        <p class="t-body text-soft mb-6" data-i18n="hero_sub">منحكي سوا، وكل جواب بتعطيه بيتعبّى فوق ببطاقة طلبك — صورة، موقع، تفاصيل. كل ما تعطينا أكتر، العروض بتجي أدقّ وأسرع.</p>
+        <button class="cta-primary" onclick="startChat()" data-i18n="start_chat">ابدأ — وشوف طلبك بيتكوّن</button>
+        <p class="t-caption text-soft mt-3 text-center" data-i18n="free_note">ببلاش · بلا حساب لتبلّش · بتفرجينا بدل ما تكتب</p>
+      </div>
+
+      <div class="px-5 py-7">
+        <h2 class="t-h2 mb-4" data-i18n="how_it_works">كيف بتمشي؟</h2>
+        <div class="rounded-xl2 border border-line bg-card p-4 space-y-2.5">
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q1">أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟</div></div>
+          <div class="row user"><div class="bubble-user" data-i18n="preview_a1">لبيت</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q2">تمام. شو بدّك مساعدة فيه؟</div></div>
+        </div>
+        <p class="t-small text-soft mt-3" data-i18n="preview_note">كل جواب منه بينحفر ببطاقة طلبك فوق — وفيك تدوس عأي خانة تعدّلها أو تكمّلها وقت ما بدّك.</p>
+      </div>
+
+      <div class="px-5 pb-8">
+        <div class="rounded-xl2 border border-line bg-card p-4 flex items-center gap-3">
+          <span class="grid place-items-center size-10 rounded-xl bg-wash text-tealink shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div class="min-w-0"><p class="t-strong" data-i18n="trust_t">محترفين مقيَّمين</p><p class="t-small text-soft" data-i18n="trust_d">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
+        </div>
+        <button class="cta-primary mt-5" onclick="startChat()" data-i18n="start_chat">ابدأ — وشوف طلبك بيتكوّن</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — THE LIVING REQUEST (split surface) ════════════════════════════ -->
+    <section id="screen-build" class="screen" style="display:none;flex-direction:column;min-height:0;flex:1;">
+
+      <!-- resume banner (shown only if a saved build exists on load) -->
+      <div id="resume-banner" class="px-4 pt-3" style="display:none;">
+        <div class="resume">
+          <span class="grid place-items-center size-8 rounded-full bg-wash text-teal shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.7 9.7 0 0 0-6.7 2.8L3 8"/><path d="M3 3v5h5"/></svg></span>
+          <div class="min-w-0 flex-1">
+            <p class="t-small text-ink" style="font-weight:700;" data-tkey="resume_t">تابِع طلبك المحفوظ</p>
+            <p class="t-caption text-soft" data-tkey="resume_d">رجّعناك من وين وقفت.</p>
+          </div>
+          <button class="t-caption text-tealink underline underline-offset-2" onclick="startOver()" data-tkey="resume_clear" style="flex-shrink:0;">ابدأ من جديد</button>
+        </div>
+      </div>
+
+      <!-- ─────────── TOP SURFACE: the Living Request Canvas (sticky) ─────────── -->
+      <div class="canvas-wrap" id="canvas-wrap">
+        <div class="canvas-pad" id="canvas">
+          <!-- header line -->
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <p class="t-caption" style="font-weight:700;color:#0b5a54;" data-tkey="canvas_title">طلبك — عم يتكوّن</p>
+            <span class="t-caption text-faint" id="canvas-progress" data-tdyn="progress"><bdi>0</bdi>/<bdi>6</bdi></span>
+          </div>
+
+          <!-- service + property row -->
+          <div class="flex items-stretch gap-2 mb-2.5">
+            <button class="slot flex-1" id="slot-service" data-jump="domain" style="padding:10px 12px;">
+              <span class="flex items-center gap-2.5">
+                <span id="slot-service-icon" style="font-size:22px;line-height:1;">🛠️</span>
+                <span class="min-w-0">
+                  <span class="t-caption text-faint block" data-tkey="lbl_service">الخدمة</span>
+                  <span class="t-small text-ink block" id="slot-service-val" style="font-weight:600;" data-tkey="empty_service">اختار شو بدّك</span>
+                </span>
+              </span>
+            </button>
+            <button class="slot" id="slot-property" data-jump="sector" style="padding:10px 12px;min-inline-size:104px;">
+              <span class="t-caption text-faint block" data-tkey="lbl_property">العقار</span>
+              <span class="t-small text-ink block" id="slot-property-val" style="font-weight:600;" data-tkey="empty_property">— بيت/محل</span>
+            </button>
+          </div>
+
+          <!-- mock map + area -->
+          <button class="mockmap no-pin w-full mb-2.5" id="slot-map" data-jump="area" aria-label="الموقع">
+            <span class="road" style="inset-block-start:34px;inset-inline:0;height:6px;"></span>
+            <span class="road" style="inset-inline-start:42%;inset-block:0;width:6px;"></span>
+            <span class="mockpin"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg></span>
+            <span class="map-hint" id="map-hint" data-tkey="map_empty">📍 دوس لتحدّد الموقع</span>
+          </button>
+
+          <!-- media gallery strip -->
+          <div class="mb-2.5">
+            <div class="flex items-center justify-between mb-1.5">
+              <p class="t-caption text-faint" data-tkey="lbl_media">صور · فيديو · صوت</p>
+              <span class="t-caption text-faint" id="media-count" data-tdyn="mediacount"></span>
+            </div>
+            <div class="gallery" id="canvas-gallery">
+              <button class="gtile-add" onclick="openDock()" aria-label="أضف وسائط" data-i18n-aria="add_media_aria">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- editable key-fact chips -->
+          <div class="mb-2.5">
+            <p class="t-caption text-faint mb-1.5" data-tkey="lbl_facts">تفاصيل الطلب</p>
+            <div class="flex flex-wrap gap-1.5" id="canvas-facts">
+              <span class="t-caption text-faint" id="facts-empty" data-tkey="facts_empty">رح تتعبّى مع كل جواب…</span>
+            </div>
+          </div>
+
+          <!-- Offer Forecast -->
+          <div class="forecast mb-2.5" id="forecast" style="display:none;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="fc-dot" id="fc-dot"></span>
+              <p class="t-small text-ink" id="fc-line" style="font-weight:600;"></p>
+            </div>
+            <div class="fc-meter" id="fc-meter">
+              <div class="fc-seg" data-fc="0"></div><div class="fc-seg" data-fc="1"></div>
+              <div class="fc-seg" data-fc="2"></div><div class="fc-seg" data-fc="3"></div><div class="fc-seg" data-fc="4"></div>
+            </div>
+            <p class="t-caption text-soft" id="fc-sub"></p>
+          </div>
+
+          <!-- Provider preview -->
+          <div class="provprev mb-1" id="provprev" style="display:none;">
+            <span class="provav">
+              <span>أ</span><span>م</span><span>ر</span>
+            </span>
+            <p class="t-caption text-ink" id="prov-line" style="font-weight:500;"></p>
+          </div>
+
+          <!-- posted-state extras (hidden until posted) -->
+          <div id="posted-block" class="mt-1.5" style="display:none;">
+            <button class="cta-ghost" onclick="reopenFromPosted()" data-tkey="edit_request" style="margin-block-start:6px;">عدّل الطلب</button>
+            <a id="back-to-dash-posted" href="demo-dashboard.html" class="cta-ghost mt-2 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────── BOTTOM SURFACE: the Assistant ─────────── -->
+      <div id="assistant" class="flex flex-col" style="flex:1;min-height:0;">
+        <!-- chat log -->
+        <div id="chat-log" class="px-4 pt-3 pb-2 flex flex-col gap-2.5" style="overflow-y:auto;flex:1;min-height:120px;"></div>
+
+        <!-- dynamic answer zone -->
+        <div id="quick-zone" class="px-4 pb-1.5 flex flex-wrap gap-2"></div>
+
+        <!-- multimodal dock + composer (sticky) -->
+        <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2" style="padding-bottom:calc(9px + env(safe-area-inset-bottom));">
+          <!-- ALWAYS-available multimodal dock -->
+          <div class="dock mb-2" id="dock">
+            <button class="dockbtn" onclick="dockCapture('photo')" data-i18n-aria="dock_photo_aria"><span>📷</span><span data-tkey="dock_photo">صورة</span></button>
+            <button class="dockbtn" onclick="dockCapture('video')" data-i18n-aria="dock_video_aria"><span>🎥</span><span data-tkey="dock_video">فيديو</span></button>
+            <button class="dockbtn" onclick="dockCapture('audio')" data-i18n-aria="dock_voice_aria"><span>🎤</span><span data-tkey="dock_voice">صوت</span></button>
+            <button class="dockbtn" onclick="dockCapture('gallery')" data-i18n-aria="dock_gallery_aria"><span>🖼️</span><span data-tkey="dock_gallery">المعرض</span></button>
+          </div>
+          <div class="composer">
+            <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار" data-i18n-ph="composer_ph" onkeydown="if(event.key==='Enter')sendFree()" />
+            <button class="send-btn" onclick="sendFree()" data-i18n-aria="send_aria" aria-label="ابعت">
+              <svg id="send-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </div>
+          <p class="t-caption text-amber mt-1" dir="ltr" style="text-align:start;" data-i18n="be_media_capture">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — REGISTER-LATE GATE ════════════════════════════ -->
+    <section id="screen-signup" class="screen px-4 pb-28 pt-8" style="display:none;">
+      <div class="text-center mb-5">
+        <span class="inline-grid place-items-center size-16 rounded-full bg-ceilbg text-ceil mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1" data-i18n="gate_title">طلبك جاهز ✅</h1>
+        <p class="t-body text-soft" data-i18n="gate_sub">اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.</p>
+      </div>
+
+      <!-- forecast snapshot in the gate (reinforce value) -->
+      <div class="forecast mb-5" id="gate-forecast">
+        <div class="flex items-center gap-2 mb-0.5">
+          <span class="fc-dot" id="gate-fc-dot"></span>
+          <p class="t-small text-ink" id="gate-fc-line" style="font-weight:600;"></p>
+        </div>
+        <div class="fc-meter" id="gate-fc-meter">
+          <div class="fc-seg" data-gfc="0"></div><div class="fc-seg" data-gfc="1"></div>
+          <div class="fc-seg" data-gfc="2"></div><div class="fc-seg" data-gfc="3"></div><div class="fc-seg" data-gfc="4"></div>
+        </div>
+        <p class="t-caption text-soft" id="gate-fc-sub"></p>
+      </div>
+
+      <label class="block mb-4"><span class="t-small text-ink" data-i18n="name_label">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" data-i18n-ph="name_ph" /></label>
+      <label class="block mb-5">
+        <span class="t-small text-ink" data-i18n="phone_label">رقم تلفونك</span>
+        <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
+        <span class="t-caption text-soft mt-1 block" data-i18n="otp_note">منبعتلك رمز تأكيد عالرسائل.</span>
+      </label>
+
+      <button class="cta-primary" onclick="postRequest()" data-i18n="gate_send">اعمل حساب وابعت</button>
+      <button class="cta-ghost mt-2.5" onclick="goto('build')" data-i18n="gate_back">رجوع للطلب</button>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_otp">[BE] — تسجيل/تأكيد عبر OTP</p>
+    </section>
+
+    <!-- ════════════════ SCREEN PICKER + dev jumps (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1.5 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">D2:</span>
+      <button class="picker is-sel" data-s="landing" onclick="goto('landing')">0·landing</button>
+      <button class="picker"        data-s="build"   onclick="goto('build')">1·living request</button>
+      <button class="picker"        data-s="signup"  onclick="goto('signup')">2·register</button>
+      <button class="picker"        onclick="devPostPreview()">3·posted</button>
+      <span class="opacity-60 ms-2">jump svc:</span>
+      <select id="dev-svc" onchange="devJumpService(this.value)" style="background:#13282d;color:#fff;border:1px solid #244249;border-radius:6px;padding:3px 6px;font-size:11px;max-width:150px;"></select>
+    </nav>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic canonical/default. EN derived, NOT review-passed.
+    //  Chat bubbles/chips AND the live CARD carry data-tkey / data-tar/data-ten / data-tdyn
+    //  so the switcher relocalizes BOTH surfaces in place; layout mirrors automatically in LTR.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar";
+
+    // ── REAL service-category labels (messages/service_categories) — ported verbatim ──
+    const CAT = {
+      ar:{plumbing:"سباكة",electrical:"كهرباء",hvac:"تكييف وتدفئة",carpentry:"نجارة",painting:"دهان",masonry:"أعمال حجر وبناء",roofing:"أسقف وعزل",flooring:"أرضيات",tiling:"بلاط وسيراميك",landscaping:"تنسيق حدائق",pest_control:"مكافحة حشرات",cleaning:"تنظيف",appliance_repair:"إصلاح أجهزة كهربائية",security_systems:"أنظمة أمان ومراقبة",solar_installation:"تركيب وصيانة طاقة شمسية",general_maintenance:"صيانة عامة",renovation:"تجديد وترميم",construction:"بناء وتشييد",smart_home:"منزل ذكي",moving:"خدمات نقل",furniture:"خدمات أثاث",aluminum_and_glass:"ألمنيوم وزجاج",other:"أخرى"},
+      en:{plumbing:"Plumbing",electrical:"Electrical",hvac:"HVAC",carpentry:"Carpentry",painting:"Painting",masonry:"Masonry",roofing:"Roofing",flooring:"Flooring",tiling:"Tiling",landscaping:"Landscaping",pest_control:"Pest Control",cleaning:"Cleaning",appliance_repair:"Appliance Repair",security_systems:"Security Systems",solar_installation:"Solar Installation & Maintenance",general_maintenance:"General Maintenance",renovation:"Renovation",construction:"Construction",smart_home:"Smart Home",moving:"Moving Services",furniture:"Furniture Services",aluminum_and_glass:"Aluminum & Glass",other:"Other"}
+    };
+    function catLabel(id){ return (CAT[LANG] && CAT[LANG][id]) || CAT.ar[id] || id; }
+
+    // ── DOMAIN → SERVICE-TYPE grouping (all 23 reachable; domain-first) — ported verbatim ──
+    const DOMAINS = [
+      { id:"plumb",  emoji:"🚰", ar:"سباكة ومياه",                   en:"Plumbing & water",                         services:["plumbing"] },
+      { id:"elec",   emoji:"⚡", ar:"كهرباء وأنظمة",                  en:"Electrical & systems",                     services:["electrical","solar_installation","smart_home","security_systems"] },
+      { id:"cool",   emoji:"❄️", ar:"تبريد وتدفئة وأجهزة",           en:"Cooling, heating & appliances",            services:["hvac","appliance_repair"] },
+      { id:"surf",   emoji:"🎨", ar:"دهان وأرضيات وأسطح",            en:"Paint, floors & surfaces",                 services:["painting","tiling","flooring"] },
+      { id:"wood",   emoji:"🪟", ar:"نجارة وأثاث وألمنيوم وزجاج",    en:"Carpentry, furniture, aluminum & glass",   services:["carpentry","furniture","aluminum_and_glass"] },
+      { id:"build",  emoji:"🧱", ar:"بناء وترميم وأسقف",            en:"Building, renovation & roofing",           services:["renovation","construction","masonry","roofing","general_maintenance"] },
+      { id:"clean",  emoji:"🧽", ar:"تنظيف ومكافحة حشرات",          en:"Cleaning & pest control",                  services:["cleaning","pest_control"] },
+      { id:"garden", emoji:"🌿", ar:"حدائق وخارج",                  en:"Outdoor & garden",                         services:["landscaping"] },
+      { id:"move",   emoji:"🚚", ar:"نقل",                          en:"Moving",                                   services:["moving"] },
+      { id:"other",  emoji:"❓", ar:"غير هيك / مش متأكد",            en:"Other / not sure",                         services:["other"] },
+    ];
+    function domLabel(d){ return LANG==="en" ? d.en : d.ar; }
+    function domainForService(svc){ return DOMAINS.find(d=>d.services.includes(svc)); }
+    function domEmoji(svc){ const d=domainForService(svc); return d?d.emoji:"🛠️"; }
+
+    // ── REAL probes (messages/service_questions), verbatim AR+EN — ported verbatim from D1.0 ──
+    const Q = {
+      plumbing:{ probes:[
+        {id:"issue_type", ar:{label:"ما نوع مشكلة السباكة؟",opt:{leak:"تسرّب / تنقيط",blockage:"انسداد",installation:"تركيب جديد",replacement:"استبدال",repair:"إصلاح"}}, en:{label:"What type of plumbing issue?",opt:{leak:"Leak / Dripping",blockage:"Blockage / Clog",installation:"New Installation",replacement:"Replacement",repair:"Repair"}}},
+        {id:"location", ar:{label:"أين تقع المشكلة؟",opt:{kitchen:"المطبخ",bathroom:"الحمّام",laundry:"غرفة الغسيل",basement:"القبو",outdoor:"الخارج / الحديقة"}}, en:{label:"Where is the issue located?",opt:{kitchen:"Kitchen",bathroom:"Bathroom",laundry:"Laundry Room",basement:"Basement",outdoor:"Outdoor / Garden"}}},
+        {id:"urgency_reason", free:true, ar:{label:"تفاصيل إضافية حول مدى الإلحاح (اختياري)",ph:"مثال: المياه تغمر الأرض…"}, en:{label:"Additional details about urgency (optional)",ph:"e.g. Water is flooding the floor…"}},
+      ]},
+      electrical:{ probes:[
+        {id:"issue_type", ar:{label:"ما نوع العمل الكهربائي؟",opt:{outlet:"مشكلة مقبس / فيشة",lighting:"إضاءة / تجهيزات",switch:"مشكلة مفتاح",circuit:"قاطع كهربائي",wiring:"أسلاك / إعادة تمديد",installation:"تركيب جديد"}}, en:{label:"What type of electrical work?",opt:{outlet:"Outlet / Socket Issue",lighting:"Lighting / Fixture",switch:"Switch Issue",circuit:"Circuit Breaker",wiring:"Wiring / Rewiring",installation:"New Installation"}}},
+        {id:"location", ar:{label:"أين يلزم العمل؟",opt:{kitchen:"المطبخ",bathroom:"الحمّام",living_room:"غرفة المعيشة",bedroom:"غرفة النوم",outdoor:"الخارج / الحديقة"}}, en:{label:"Where is the work needed?",opt:{kitchen:"Kitchen",bathroom:"Bathroom",living_room:"Living Room",bedroom:"Bedroom",outdoor:"Outdoor / Garden"}}},
+        {id:"safety_concern", ar:{label:"هل هذه مشكلة سلامة؟ (شرر، رائحة احتراق، إلخ)",opt:{yes:"نعم — مشكلة سلامة",no:"لا — فقط لا يعمل"}}, en:{label:"Is this a safety concern? (sparks, burning smell, etc.)",opt:{yes:"Yes — safety issue",no:"No — just not working"}}},
+      ]},
+      painting:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال الدهان؟",opt:{interior_full:"داخلي — غرفة/غرف كاملة",exterior_full:"خارجي — واجهة كاملة",touch_up:"تحسينات / إصلاح موضعي",decorative:"زخرفي / جدار مميّز"}}, en:{label:"What type of painting work?",opt:{interior_full:"Interior — Full Room(s)",exterior_full:"Exterior — Full Facade",touch_up:"Touch-up / Spot Repair",decorative:"Decorative / Feature Wall"}}},
+        {id:"rooms", ar:{label:"أي غرف/مناطق؟",opt:{living_room:"غرفة المعيشة",bedroom:"غرفة/غرف النوم",kitchen:"المطبخ",bathroom:"الحمّام/الحمّامات",hallway:"الممر / الدرج",exterior:"الجدران الخارجية"}}, en:{label:"Which rooms/areas?",opt:{living_room:"Living Room",bedroom:"Bedroom(s)",kitchen:"Kitchen",bathroom:"Bathroom(s)",hallway:"Hallway / Stairs",exterior:"Exterior Walls"}}},
+        {id:"surface_condition", ar:{label:"حالة السطح الحالية؟",opt:{good:"جيدة — تحتاج دهانًا فقط",cracks:"بها شقوق — تحتاج إصلاحًا",peeling:"الدهان متقشّر — يحتاج تحضيرًا"}}, en:{label:"Current surface condition?",opt:{good:"Good — just needs paint",cracks:"Has cracks — needs repair",peeling:"Paint peeling — needs prep"}}},
+      ]},
+      hvac:{ probes:[
+        {id:"system_type", ar:{label:"ما نوع النظام؟",opt:{ac:"تكييف",heating:"نظام تدفئة",both:"كلاهما (تدفئة وتكييف)"}}, en:{label:"What type of system?",opt:{ac:"Air Conditioning",heating:"Heating System",both:"Both (HVAC)"}}},
+        {id:"work_needed", ar:{label:"ما العمل المطلوب؟",opt:{maintenance:"صيانة / تنظيف",repair:"إصلاح (لا يعمل)",installation:"تركيب جديد",replacement:"استبدال كامل"}}, en:{label:"What work is needed?",opt:{maintenance:"Maintenance / Cleaning",repair:"Repair (not working)",installation:"New Installation",replacement:"Full Replacement"}}},
+      ]},
+      carpentry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال النجارة؟",opt:{doors:"أبواب (تركيب/إصلاح)",windows:"نوافذ (تركيب/إصلاح)",cabinets:"خزائن / رفوف",furniture:"أثاث مخصّص",flooring:"أرضيات خشبية"}}, en:{label:"What type of carpentry work?",opt:{doors:"Doors (install/repair)",windows:"Windows (install/repair)",cabinets:"Cabinets / Shelving",furniture:"Custom Furniture",flooring:"Wood Flooring"}}},
+        {id:"location", ar:{label:"أين يلزم العمل؟",opt:{kitchen:"المطبخ",bedroom:"غرفة/غرف النوم",living_room:"غرفة المعيشة",bathroom:"الحمّام/الحمّامات",outdoor:"الخارج"}}, en:{label:"Where is the work needed?",opt:{kitchen:"Kitchen",bedroom:"Bedroom(s)",living_room:"Living Room",bathroom:"Bathroom(s)",outdoor:"Outdoor"}}},
+      ]},
+      landscaping:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال تنسيق الحدائق؟",opt:{lawn:"العناية بالعشب / القص",garden:"تصميم حديقة / زراعة",trees:"تقليم / إزالة الأشجار",hardscape:"تنسيق صلب (ممرات، جدران)"}}, en:{label:"What type of landscaping work?",opt:{lawn:"Lawn Care / Mowing",garden:"Garden Design / Planting",trees:"Tree Trimming / Removal",hardscape:"Hardscaping (paths, walls)"}}},
+        {id:"area", ar:{label:"أي منطقة/مناطق؟",opt:{front_yard:"الفناء الأمامي",back_yard:"الفناء الخلفي",side_yard:"الفناء الجانبي",rooftop:"حديقة سطح"}}, en:{label:"Which area(s)?",opt:{front_yard:"Front Yard",back_yard:"Back Yard",side_yard:"Side Yard",rooftop:"Rooftop Garden"}}},
+      ]},
+      roofing:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال الأسقف؟",opt:{leak_repair:"إصلاح تسرّب",maintenance:"صيانة / فحص",partial_replacement:"استبدال جزئي",full_replacement:"استبدال السقف بالكامل"}}, en:{label:"What type of roofing work?",opt:{leak_repair:"Leak Repair",maintenance:"Maintenance / Inspection",partial_replacement:"Partial Replacement",full_replacement:"Full Roof Replacement"}}},
+        {id:"issue_description", free:true, ar:{label:"صف المشكلة (إن وُجدت)",ph:"مثال: تسرّب المياه إلى غرفة المعيشة عند هطول المطر…"}, en:{label:"Describe the issue (if any)",ph:"e.g. Water leaking in living room when it rains…"}},
+      ]},
+      masonry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال البناء؟",opt:{wall_construction:"بناء حائط",crack_repair:"إصلاح شقوق / أضرار",plastering:"قصارة / تلييس",stone_cladding:"تلبيس حجر",concrete_work:"أعمال باطون"}}, en:{label:"What type of masonry work?",opt:{wall_construction:"Building a Wall",crack_repair:"Crack / Damage Repair",plastering:"Plastering",stone_cladding:"Stone Cladding",concrete_work:"Concrete Work"}}},
+        {id:"location", ar:{label:"داخلي أم خارجي؟",opt:{interior:"داخلي",exterior:"خارجي",both:"كلاهما"}}, en:{label:"Interior or exterior?",opt:{interior:"Interior",exterior:"Exterior",both:"Both"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{small_repair:"إصلاح صغير",single_wall:"حائط / منطقة واحدة",room:"غرفة كاملة",whole_property:"العقار كله"}}, en:{label:"How big is the job?",opt:{small_repair:"Small repair",single_wall:"One wall / area",room:"A full room",whole_property:"Whole property"}}},
+      ]},
+      flooring:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال الأرضيات المطلوبة؟",opt:{new_installation:"تركيب جديد",replacement:"استبدال الموجود",repair:"إصلاح"}}, en:{label:"What flooring work do you need?",opt:{new_installation:"New Installation",replacement:"Replace Existing",repair:"Repair"}}},
+        {id:"material", ar:{label:"أي مادة؟",opt:{ceramic:"سيراميك / بورسلان",marble:"رخام / حجر",parquet:"باركيه / خشب",vinyl:"فينيل / لامينيت",undecided:"لم أقرر بعد"}}, en:{label:"Which material?",opt:{ceramic:"Ceramic / Porcelain",marble:"Marble / Stone",parquet:"Parquet / Wood",vinyl:"Vinyl / Laminate",undecided:"Not decided yet"}}},
+        {id:"area_size", ar:{label:"ما حجم المساحة؟",opt:{small_area:"مساحة صغيرة / رقعة",one_room:"غرفة واحدة",two_three_rooms:"غرفتان–3 غرف",whole_floor:"شقة / طابق كامل"}}, en:{label:"How much area?",opt:{small_area:"Small area / patch",one_room:"One room",two_three_rooms:"2–3 rooms",whole_floor:"Whole apartment / floor"}}},
+      ]},
+      tiling:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال التبليط المطلوبة؟",opt:{new_tiling:"تبليط جديد",retiling:"إعادة تبليط (إزالة القديم)",repair_broken:"استبدال بلاط مكسور",grouting:"ترويب / عزل"}}, en:{label:"What tiling work do you need?",opt:{new_tiling:"New Tiling",retiling:"Re-tiling (remove old)",repair_broken:"Replace Broken Tiles",grouting:"Grouting / Sealing"}}},
+        {id:"location", ar:{label:"أين؟",opt:{bathroom:"الحمّام",kitchen:"المطبخ",floors:"الأرضيات",walls:"الجدران",balcony:"البلكون / التراس"}}, en:{label:"Where?",opt:{bathroom:"Bathroom",kitchen:"Kitchen",floors:"Floors",walls:"Walls",balcony:"Balcony / Terrace"}}},
+        {id:"size", ar:{label:"ما حجم المنطقة؟",opt:{small:"صغيرة (بضعة أمتار)",medium:"متوسطة (غرفة واحدة)",large:"كبيرة (عدة غرف)"}}, en:{label:"How big is the area?",opt:{small:"Small (a few m²)",medium:"Medium (one room)",large:"Large (multiple rooms)"}}},
+      ]},
+      pest_control:{ probes:[
+        {id:"pest_type", ar:{label:"ما الآفات الموجودة؟",opt:{cockroaches:"صراصير",rodents:"فئران / جرذان",termites:"نمل أبيض / سوس الخشب",bedbugs:"بقّ الفراش",ants:"نمل",wasps:"دبابير",other_pest:"أخرى"}}, en:{label:"What pests are you dealing with?",opt:{cockroaches:"Cockroaches",rodents:"Mice / Rats",termites:"Termites / Wood Worm",bedbugs:"Bed Bugs",ants:"Ants",wasps:"Wasps / Hornets",other_pest:"Other"}}},
+        {id:"severity", ar:{label:"ما مدى سوء الوضع؟",opt:{occasional:"أراها أحيانًا",frequent:"أراها يوميًا",infestation:"انتشار خطير"}}, en:{label:"How bad is it?",opt:{occasional:"See them occasionally",frequent:"See them daily",infestation:"Serious infestation"}}},
+        {id:"treatment", ar:{label:"أي نوع من المعالجة؟",opt:{one_time:"معالجة لمرة واحدة",recurring:"متكررة / عقد"}}, en:{label:"What kind of treatment?",opt:{one_time:"One-time treatment",recurring:"Recurring / Contract"}}},
+      ]},
+      cleaning:{ probes:[
+        {id:"cleaning_type", ar:{label:"ما نوع التنظيف؟",opt:{regular:"تنظيف عادي",deep:"تنظيف عميق",post_construction:"بعد أعمال البناء",move_in_out:"عند الانتقال (دخول/خروج)"}}, en:{label:"What type of cleaning?",opt:{regular:"Regular Cleaning",deep:"Deep Cleaning",post_construction:"Post-Construction",move_in_out:"Move-in / Move-out"}}},
+        {id:"property_size", ar:{label:"ما حجم المكان؟",opt:{studio:"ستوديو / صغير",apartment_1_2:"شقة (غرفة–غرفتان)",apartment_3_plus:"شقة (3 غرف أو أكثر)",villa:"فيلا / منزل",office:"مكتب / محل"}}, en:{label:"How big is the place?",opt:{studio:"Studio / Small",apartment_1_2:"Apartment (1–2 bedrooms)",apartment_3_plus:"Apartment (3+ bedrooms)",villa:"Villa / House",office:"Office / Shop"}}},
+        {id:"frequency", ar:{label:"كم مرة؟",opt:{one_time:"مرة واحدة",weekly:"أسبوعيًا",biweekly:"كل أسبوعين",monthly:"شهريًا"}}, en:{label:"How often?",opt:{one_time:"One time",weekly:"Weekly",biweekly:"Every two weeks",monthly:"Monthly"}}},
+      ]},
+      appliance_repair:{ probes:[
+        {id:"appliance", ar:{label:"أي جهاز؟",opt:{washing_machine:"غسالة",refrigerator:"برّاد / فريزر",oven_stove:"فرن / غاز",dishwasher:"جلاية صحون",dryer:"نشافة",water_heater:"سخّان مياه",small_appliance:"جهاز صغير"}}, en:{label:"Which appliance?",opt:{washing_machine:"Washing Machine",refrigerator:"Refrigerator / Freezer",oven_stove:"Oven / Stove",dishwasher:"Dishwasher",dryer:"Dryer",water_heater:"Water Heater",small_appliance:"Small Appliance"}}},
+        {id:"problem", ar:{label:"ما المشكلة؟",opt:{not_turning_on:"لا يعمل إطلاقًا",not_working_properly:"يعمل لكن بشكل سيئ",leaking:"تسريب",noisy:"صوت غريب",error_code:"يعرض رمز خطأ"}}, en:{label:"What's the problem?",opt:{not_turning_on:"Won't turn on",not_working_properly:"Works but not properly",leaking:"Leaking",noisy:"Strange noise",error_code:"Showing error code"}}},
+        {id:"brand_age", free:true, ar:{label:"الماركة والعمر (إن عرفت)",ph:"مثال: LG، عمره حوالي 5 سنوات…"}, en:{label:"Brand and age (if known)",ph:"e.g. LG, about 5 years old…"}},
+      ]},
+      security_systems:{ probes:[
+        {id:"system_type", ar:{label:"ما النظام المطلوب؟",opt:{cameras:"كاميرات مراقبة",alarm:"نظام إنذار",intercom:"إنتركم / جرس فيديو",smart_locks:"أقفال ذكية",full_system:"نظام متكامل"}}, en:{label:"What system do you need?",opt:{cameras:"Cameras (CCTV)",alarm:"Alarm System",intercom:"Intercom / Video Door",smart_locks:"Smart Locks",full_system:"Complete System"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",upgrade:"ترقية / توسيع",maintenance:"صيانة"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",upgrade:"Upgrade / Expand",maintenance:"Maintenance"}}},
+        {id:"property_type", ar:{label:"ما نوع العقار؟",opt:{apartment:"شقة",house_villa:"منزل / فيلا",shop_office:"محل / مكتب",building:"مبنى كامل"}}, en:{label:"What kind of property?",opt:{apartment:"Apartment",house_villa:"House / Villa",shop_office:"Shop / Office",building:"Whole Building"}}},
+      ]},
+      solar_installation:{ probes:[
+        {id:"system_type", ar:{label:"ما نظام الطاقة الشمسية؟",opt:{water_heater:"سخّان مياه شمسي",pv_panels:"ألواح شمسية (كهرباء)",full_system:"نظام كامل + بطاريات",batteries_only:"بطاريات / إنفرتر فقط"}}, en:{label:"What solar system?",opt:{water_heater:"Solar Water Heater",pv_panels:"Solar Panels (electricity)",full_system:"Full System + Batteries",batteries_only:"Batteries / Inverter Only"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",maintenance:"صيانة / تنظيف",expansion:"توسيع النظام الحالي"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",maintenance:"Maintenance / Cleaning",expansion:"Expand Existing System"}}},
+        {id:"current_setup", ar:{label:"ماذا لديك اليوم؟",opt:{nothing_yet:"لا شيء بعد",existing_solar:"نظام شمسي موجود",generator_only:"مولّد / UPS فقط"}}, en:{label:"What do you have today?",opt:{nothing_yet:"Nothing yet",existing_solar:"Existing solar setup",generator_only:"Generator / UPS only"}}},
+      ]},
+      general_maintenance:{ probes:[
+        {id:"work_needed", ar:{label:"ما المطلوب إنجازه؟",opt:{plumbing_small:"أعمال سباكة صغيرة",electrical_small:"أعمال كهرباء صغيرة",painting_small:"رتوش دهان",fixtures:"تثبيت / تركيب",assembly:"تجميع",other_tasks:"مهام صغيرة أخرى"}}, en:{label:"What needs doing?",opt:{plumbing_small:"Small Plumbing Jobs",electrical_small:"Small Electrical Jobs",painting_small:"Touch-up Painting",fixtures:"Fixtures / Mounting",assembly:"Assembly",other_tasks:"Other Small Tasks"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{single_task:"مهمة واحدة",few_tasks:"بضع مهام",full_day:"يوم عمل كامل",ongoing:"ترتيب مستمر"}}, en:{label:"How much work is it?",opt:{single_task:"One task",few_tasks:"A few tasks",full_day:"A full day's work",ongoing:"Ongoing arrangement"}}},
+      ]},
+      renovation:{ probes:[
+        {id:"scope", ar:{label:"ماذا تجدّد؟",opt:{single_room:"غرفة واحدة",kitchen:"المطبخ",bathroom:"الحمّام",full_apartment:"شقة / منزل كامل",exterior:"الواجهة الخارجية"}}, en:{label:"What are you renovating?",opt:{single_room:"One Room",kitchen:"Kitchen",bathroom:"Bathroom",full_apartment:"Full Apartment / House",exterior:"Exterior / Facade"}}},
+        {id:"depth", ar:{label:"ما عمق التجديد؟",opt:{cosmetic:"تجميلي (دهان وتشطيبات)",partial:"جزئي (بعض الهدم)",complete:"كامل (تجديد جذري)"}}, en:{label:"How deep does it go?",opt:{cosmetic:"Cosmetic (paint, finishes)",partial:"Partial (some demolition)",complete:"Complete (gut renovation)"}}},
+        {id:"design_status", ar:{label:"هل لديك تصميم؟",opt:{have_design:"نعم — لديّ مخططات/تصميم",need_design:"لا — أحتاج مساعدة بالتصميم",open_to_ideas:"منفتح على الأفكار"}}, en:{label:"Do you have a design?",opt:{have_design:"Yes — have plans/design",need_design:"No — need design help",open_to_ideas:"Open to ideas"}}},
+      ]},
+      construction:{ probes:[
+        {id:"project_type", ar:{label:"ما نوع المشروع؟",opt:{new_building:"بناء جديد",extension:"توسعة / إضافة",structural_work:"أعمال إنشائية",finishing_works:"أعمال تشطيب"}}, en:{label:"What type of project?",opt:{new_building:"New Construction",extension:"Extension / Addition",structural_work:"Structural Work",finishing_works:"Finishing Works"}}},
+        {id:"stage", ar:{label:"في أي مرحلة أنت؟",opt:{planning:"ما زلت أخطط",have_permits:"لديّ تراخيص / مخططات",ready_to_start:"جاهز للبدء",in_progress:"العمل جارٍ"}}, en:{label:"What stage are you at?",opt:{planning:"Still planning",have_permits:"Have permits / plans",ready_to_start:"Ready to start",in_progress:"Work in progress"}}},
+        {id:"size", ar:{label:"ما الحجم تقريبًا؟",opt:{under_100:"أقل من 100 م²",from_100_300:"100–300 م²",over_300:"أكثر من 300 م²"}}, en:{label:"Roughly how big?",opt:{under_100:"Under 100 m²",from_100_300:"100–300 m²",over_300:"Over 300 m²"}}},
+      ]},
+      smart_home:{ probes:[
+        {id:"system", ar:{label:"ماذا تريد أن تؤتمت؟",opt:{lighting:"الإضاءة",security:"الأمان / الكاميرات",climate:"التكييف / المناخ",entertainment:"التلفزيون / الصوت",full_automation:"أتمتة المنزل بالكامل"}}, en:{label:"What do you want to automate?",opt:{lighting:"Lighting",security:"Security / Cameras",climate:"AC / Climate",entertainment:"TV / Audio",full_automation:"Whole-home Automation"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",expand_existing:"توسيع الموجود",repair_configure:"إصلاح / إعادة ضبط"}}, en:{label:"What service?",opt:{new_installation:"New Installation",expand_existing:"Expand Existing Setup",repair_configure:"Fix / Reconfigure"}}},
+        {id:"ecosystem", ar:{label:"النظام المفضّل؟",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"لا تفضيل"}}, en:{label:"Preferred ecosystem?",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"No preference"}}},
+      ]},
+      moving:{ probes:[
+        {id:"move_size", ar:{label:"كم تنقل من أغراض؟",opt:{few_items:"بضعة أغراض",studio:"ستوديو / غرفة نوم واحدة",apartment_2_3:"منزل بغرفتين–3 غرف",large_home:"منزل كبير / فيلا"}}, en:{label:"How much are you moving?",opt:{few_items:"A few items",studio:"Studio / 1 bedroom",apartment_2_3:"2–3 bedroom home",large_home:"Large home / Villa"}}},
+        {id:"floors", ar:{label:"درج أم مصعد؟",opt:{ground:"طابق أرضي",elevator:"يوجد مصعد",stairs_1_3:"درج — حتى الطابق الثالث",stairs_4_plus:"درج — الطابق الرابع أو أعلى"}}, en:{label:"Stairs or elevator?",opt:{ground:"Ground floor(s)",elevator:"Elevator available",stairs_1_3:"Stairs — up to 3rd floor",stairs_4_plus:"Stairs — 4th floor or higher"}}},
+        {id:"services", ar:{label:"خدمات إضافية؟",opt:{packing:"تغليف",disassembly:"فكّ الأثاث",storage:"تخزين مؤقت",just_transport:"نقل فقط"}}, en:{label:"Extra services needed?",opt:{packing:"Packing",disassembly:"Furniture Disassembly",storage:"Temporary Storage",just_transport:"Just Transport"}}},
+        {id:"distance", ar:{label:"ما مسافة النقل؟",opt:{same_area:"نفس المنطقة",same_governorate:"نفس المحافظة",cross_governorate:"محافظة أخرى"}}, en:{label:"How far is the move?",opt:{same_area:"Same area",same_governorate:"Same governorate",cross_governorate:"Another governorate"}}},
+      ]},
+      furniture:{ probes:[
+        {id:"service", ar:{label:"ما خدمة الأثاث المطلوبة؟",opt:{assembly:"تجميع",repair_restoration:"إصلاح / ترميم",custom_made:"أثاث حسب الطلب",upholstery:"تنجيد / أقمشة"}}, en:{label:"What furniture service?",opt:{assembly:"Assembly",repair_restoration:"Repair / Restoration",custom_made:"Custom-made Furniture",upholstery:"Upholstery / Fabric"}}},
+        {id:"items", ar:{label:"كم قطعة؟",opt:{single_item:"قطعة واحدة",few_items:"بضع قطع",full_room:"غرفة كاملة",full_home:"المنزل كله"}}, en:{label:"How many pieces?",opt:{single_item:"One piece",few_items:"A few pieces",full_room:"A full room",full_home:"Whole home"}}},
+      ]},
+      aluminum_and_glass:{ probes:[
+        {id:"work_type", ar:{label:"ماذا تحتاج؟",opt:{windows:"نوافذ",doors:"أبواب",balcony_enclosure:"تسكير بلكون",shower_glass:"زجاج دوش",storefront:"واجهة محل",mosquito_nets:"ناموسيات"}}, en:{label:"What do you need?",opt:{windows:"Windows",doors:"Doors",balcony_enclosure:"Balcony Enclosure",shower_glass:"Shower Glass",storefront:"Storefront / Facade",mosquito_nets:"Mosquito Nets"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",replacement:"استبدال",repair:"إصلاح"}}, en:{label:"What service?",opt:{new_installation:"New Installation",replacement:"Replacement",repair:"Repair"}}},
+        {id:"measurements", ar:{label:"هل لديك القياسات؟",opt:{have_measurements:"نعم — القياسات جاهزة",need_measuring:"لا — يلزم زيارة قياس"}}, en:{label:"Do you have measurements?",opt:{have_measurements:"Yes — have measurements",need_measuring:"No — needs measuring visit"}}},
+      ]},
+      other:{ probes:[
+        {id:"work_nature", ar:{label:"ما طبيعة العمل؟",opt:{repair_fix:"إصلاح شيء ما",install_new:"تركيب شيء جديد",maintain_service:"صيانة / خدمة",build_create:"بناء / إنشاء شيء"}}, en:{label:"What kind of work is it?",opt:{repair_fix:"Repair / Fix something",install_new:"Install something new",maintain_service:"Maintenance / Service",build_create:"Build / Create something"}}},
+        {id:"extra_info", free:true, ar:{label:"هل من شيء آخر يجب أن يعرفه المزوّدون؟",ph:"الوصول، التوقيت، متطلبات خاصة…"}, en:{label:"Anything else providers should know?",ph:"Access, timing, special requirements…"}},
+      ]},
+    };
+    const NOT_SURE = { ar:"مش متأكد", en:"I'm not sure" };
+
+    // ── Visit-needed services (🟡 → inspect-then-quote) — ported ──
+    const VISIT_NEEDED = new Set(["renovation","construction"]);
+
+    // ── MEDIA OVERLAYS — tied to SPECIFIC probes (5 deep + default) — ported verbatim ──
+    const OVERLAYS = {
+      plumbing:[
+        {after:"location", kind:"photo", ar:{ask:"صوّرلي وصلة الأنبوب تحت المغسلة — هيك المحترف بيعرف القطع بالضبط ويسعّر صح. 📷", thumb:"صورة — تحت المغسلة", tx:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل والخشب تحت بلّش يتفشّخ."}, en:{ask:"Snap the fitting under the sink — that lets the pro see the exact parts and price it right. 📷", thumb:"Photo — under-sink", tx:"[Photo] The under-sink fitting; the trap is wet and the cabinet wood below has started to swell."}},
+        {after:"issue_type", kind:"video", ar:{ask:"إذا في تسريب شغّال، صوّرلي 5 ثواني فيديو وهو عم يقطّر — بيوضّح أديش الوضع مستعجل. 🎥", thumb:"فيديو — التسريب شغّال 0:05", tx:"[فيديو] المياه عم تقطّر نقطة نقطة من الوصلة، ومع كل دقيقة في بركة صغيرة عالأرض."}, en:{ask:"If it's leaking now, take a 5-sec video of it running — it shows how urgent it is. 🎥", thumb:"Video — leak running 0:05", tx:"[Video] Water dripping steadily from the fitting; a small puddle forms on the floor each minute."}},
+      ],
+      hvac:[
+        {after:"system_type", kind:"photo", ar:{ask:"صوّرلي الوحدة وملصق الموديل/الرقم التسلسلي عليها — بيساعد المحترف يجيب القطعة الصح. 📷", thumb:"صورة — الوحدة + الموديل", tx:"[صورة] وحدة سبليت، الملصق مكتوب عليه الموديل والرقم التسلسلي بوضوح."}, en:{ask:"Snap the unit and its model/serial label — helps the pro bring the right part. 📷", thumb:"Photo — unit + model", tx:"[Photo] A split unit; the label clearly shows the model and serial number."}},
+        {after:"work_needed", kind:"audio", ar:{ask:"احكيلي الصوت الغريب بدل ما تكتبه — سجّل رسالة صوتية وصِف شو عم تسمع. 🎤", thumb:"رسالة صوتية — الصوت 0:14", tx:"[تفريغ صوتي] «المكيّف عم يطلّع صوت طقطقة لما يشتغل، وريحة محروقة خفيفة بأول 5 دقايق.»"}, en:{ask:"Describe the noise instead of typing it — record a quick voice note. 🎤", thumb:"Voice note — the noise 0:14", tx:"[Voice transcript] \"The AC makes a rattling sound when it starts, and there's a faint burning smell in the first 5 minutes.\""}},
+      ],
+      painting:[
+        {after:"work_type", kind:"video", ar:{ask:"لِفّ 5 ثواني فيديو بالغرفة وفرجينا الحيطان — بيخلّي العرض أدق من أي وصف. 🎥", thumb:"فيديو — جولة بالغرفة 0:06", tx:"[فيديو] جولة بغرفة الجلوس؛ حيطان فاتحة، تشقّق خفيف عند الشباك، سقف نظيف."}, en:{ask:"Pan a 5-sec video around the room and show the walls — makes the quote far tighter than any description. 🎥", thumb:"Video — room pan 0:06", tx:"[Video] A pan of the living room; light walls, minor cracking by the window, clean ceiling."}},
+        {after:"rooms", kind:"photo", ar:{ask:"صورة وحدة للحائط اللي بدّك تشتغل عليه + قدّيش مساحته تقريبًا بتفيد كتير. 📷", thumb:"صورة — الحائط", tx:"[صورة] حائط غرفة الجلوس، تقريبًا 4×3 م، دهان قديم متقشّر بمكانين."}, en:{ask:"One photo of the wall you want done + a rough size really helps. 📷", thumb:"Photo — the wall", tx:"[Photo] Living-room wall, roughly 4×3 m, old paint peeling in two spots."}},
+      ],
+      cleaning:[
+        {after:"cleaning_type", kind:"photo", ar:{ask:"صوّرلي المكان وقدّيش الوسخ — بيساعد المحترف يقدّر الوقت والسعر صح. 📷", thumb:"صورة — المكان", tx:"[صورة] مطبخ + صالون، أرضيات تحتاج جلي، شباك مغبّر، الوضع متوسّط."}, en:{ask:"Snap the space and how dirty it is — helps the pro judge the time and price. 📷", thumb:"Photo — the space", tx:"[Photo] Kitchen + living room; floors need scrubbing, dusty windows, moderate condition."}},
+        {after:"property_size", kind:"audio", ar:{ask:"إذا في تفاصيل (غرف، حمّامات، شي خاص) احكيها صوتيًا أسهل من ما تكتبها. 🎤", thumb:"رسالة صوتية — التفاصيل 0:11", tx:"[تفريغ صوتي] «شقة 3 غرف وحمّامين، بدّي جلي عميق قبل ما فل من البيت آخر الشهر.»"}, en:{ask:"If there are details (rooms, bathrooms, anything special) it's easier to say than type. 🎤", thumb:"Voice note — details 0:11", tx:"[Voice transcript] \"3-bedroom apartment, two bathrooms, I want a deep clean before I move out at month-end.\""}},
+      ],
+      electrical:[
+        {after:"issue_type", kind:"photo", ar:{ask:"صوّرلي اللوحة الكهربائية أو الفيشة/التجهيز اللي فيه المشكلة — بيساعد المحترف يجهّز الأدوات الصح. 📷", thumb:"صورة — اللوحة/الفيشة", tx:"[صورة] لوحة القواطع، قاطع واحد عم يفصل، وفيشة المطبخ محروقة من طرفها."}, en:{ask:"Snap the panel or the outlet/fixture with the issue — helps the pro bring the right tools. 📷", thumb:"Photo — panel/outlet", tx:"[Photo] Breaker panel; one breaker keeps tripping, and the kitchen outlet is scorched on one edge."}},
+        {after:"safety_concern", kind:"audio", ar:{ask:"إذا في شرر أو ريحة احتراق، احكي شو صار صوتيًا — أوضح من الكتابة وبيبيّن خطورة الوضع. 🎤", thumb:"رسالة صوتية — الوصف 0:09", tx:"[تفريغ صوتي] «طلع شرر من الفيشة لما شبكت الغسالة، وفصلت الكهربا عن نص البيت.»"}, en:{ask:"If there are sparks or a burning smell, say what happened in a voice note — clearer than typing and shows the risk. 🎤", thumb:"Voice note — the issue 0:09", tx:"[Voice transcript] \"There were sparks from the outlet when I plugged in the washer, and power cut to half the house.\""}},
+      ],
+    };
+    function defaultOverlay(svc){
+      return [
+        {after:"__first__", kind:"photo", ar:{ask:"صوّرلي المشكلة أو المكان — صورة وحدة بتخلّي العرض أدق بكتير من الكتابة. 📷", thumb:"صورة — المكان/المشكلة", tx:"[صورة] لقطة عامة للمكان والمشكلة، بتعطي المحترف فكرة واضحة عن الشغل."}, en:{ask:"Snap the issue or the area — one photo makes the quote far tighter than text. 📷", thumb:"Photo — area/issue", tx:"[Photo] A general shot of the area and the issue, giving the pro a clear sense of the work."}},
+        {after:"__last__", kind:"audio", ar:{ask:"إذا بدّك تزيد تفاصيل، احكيها صوتيًا بدل ما تكتب — أسرع وأوضح. 🎤", thumb:"رسالة صوتية — تفاصيل 0:10", tx:"[تفريغ صوتي] وصف صوتي قصير للشغل المطلوب وأي تفاصيل دخول أو توقيت."}, en:{ask:"If you want to add details, record them instead of typing — faster and clearer. 🎤", thumb:"Voice note — details 0:10", tx:"[Voice transcript] A short spoken description of the work and any access or timing details."}},
+      ];
+    }
+
+    // ── OFFER FORECAST lookup per domain (price band + provider count + reply time) — mocked but realistic ──
+    // tier: routable(🟠) / quotable(🟢) / visit(🟡). band = $ low–high; n = providers nearby; reply = time-to-first.
+    const FORECAST = {
+      plumb:  {tier:"quotable", lo:40,  hi:120,  n:6, rating:"4.7", reply:"ساعة",   replyEn:"an hour", trade:"سبّاك",        tradeEn:"plumbers"},
+      elec:   {tier:"quotable", lo:35,  hi:150,  n:5, rating:"4.6", reply:"ساعة",   replyEn:"an hour", trade:"كهربجي",       tradeEn:"electricians"},
+      cool:   {tier:"quotable", lo:30,  hi:140,  n:5, rating:"4.6", reply:"ساعتين", replyEn:"2 hours", trade:"فنّي تكييف",   tradeEn:"HVAC pros"},
+      surf:   {tier:"quotable", lo:80,  hi:400,  n:7, rating:"4.7", reply:"ساعتين", replyEn:"2 hours", trade:"دهّين",        tradeEn:"painters"},
+      wood:   {tier:"quotable", lo:60,  hi:350,  n:4, rating:"4.6", reply:"3 ساعات",replyEn:"3 hours", trade:"نجّار",        tradeEn:"carpenters"},
+      build:  {tier:"visit",    lo:300, hi:3000, n:4, rating:"4.5", reply:"يوم",    replyEn:"a day",   trade:"مقاول",        tradeEn:"contractors"},
+      clean:  {tier:"quotable", lo:30,  hi:120,  n:8, rating:"4.8", reply:"ساعة",   replyEn:"an hour", trade:"فريق تنظيف",  tradeEn:"cleaners"},
+      garden: {tier:"quotable", lo:40,  hi:200,  n:4, rating:"4.6", reply:"3 ساعات",replyEn:"3 hours", trade:"بستاني",       tradeEn:"gardeners"},
+      move:   {tier:"quotable", lo:80,  hi:500,  n:5, rating:"4.6", reply:"ساعتين", replyEn:"2 hours", trade:"شركة نقل",    tradeEn:"movers"},
+      other:  {tier:"routable", lo:30,  hi:200,  n:5, rating:"4.6", reply:"ساعتين", replyEn:"2 hours", trade:"محترف",        tradeEn:"pros"},
+    };
+    // region labels (for forecast/provider "near {area}")
+    const AREA_SHORT = { region_beirut:{ar:"الأشرفية",en:"Achrafieh"}, region_mtleb:{ar:"جونية",en:"Jounieh"}, region_north:{ar:"طرابلس",en:"Tripoli"}, region_south:{ar:"صيدا",en:"Saida"} };
+
+    // ── STATIC i18n dictionary (chrome + non-chat strings) — ported + D2 additions ──
+    const I18N = {
+      ar:{
+        brand_mark:"د", brand:"دبّرها", signin_secondary:"عندك حساب؟ سجّل الدخول",
+        tagline:"احكِ معنا — وطلبك بيتكوّن قدّامك خطوة خطوة.",
+        hero_title:"قلّنا شو في…<br/>وشوف طلبك بيتكوّن.",
+        hero_sub:"منحكي سوا، وكل جواب بتعطيه بيتعبّى فوق ببطاقة طلبك — صورة، موقع، تفاصيل. كل ما تعطينا أكتر، العروض بتجي أدقّ وأسرع.",
+        start_chat:"ابدأ — وشوف طلبك بيتكوّن", free_note:"ببلاش · بلا حساب لتبلّش · بتفرجينا بدل ما تكتب",
+        how_it_works:"كيف بتمشي؟",
+        preview_q1:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟", preview_a1:"لبيت", preview_q2:"تمام. شو بدّك مساعدة فيه؟",
+        preview_note:"كل جواب منه بينحفر ببطاقة طلبك فوق — وفيك تدوس عأي خانة تعدّلها أو تكمّلها وقت ما بدّك.",
+        trust_t:"محترفين مقيَّمين", trust_d:"تقييمات حقيقية من ناس وظّفوهم قبلك.",
+        add_media_aria:"أضف صورة أو صوت أو فيديو",
+        composer_ph:"اكتب جوابك… أو دوس على خيار", send_aria:"ابعت",
+        be_media_capture:"[BE] — التقاط/تفريغ الوسائط (واجهة فقط)",
+        // gate
+        gate_title:"طلبك جاهز ✅", gate_sub:"اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.",
+        gate_back:"رجوع للطلب",
+        name_label:"اسمك", name_ph:"متلاً: سامر", phone_label:"رقم تلفونك", otp_note:"منبعتلك رمز تأكيد عالرسائل.",
+        gate_send:"اعمل حساب وابعت", be_otp:"[BE] — تسجيل/تأكيد عبر OTP",
+        back_to_list:"رجوع للقائمة ↩",
+        // ── canvas (the living request) ──
+        canvas_title:"طلبك — عم يتكوّن", canvas_title_posted:"طلبك — منشور ✅",
+        lbl_service:"الخدمة", lbl_property:"العقار", lbl_media:"صور · فيديو · صوت", lbl_facts:"تفاصيل الطلب",
+        empty_service:"اختار شو بدّك", empty_property:"— بيت/محل",
+        facts_empty:"رح تتعبّى مع كل جواب…",
+        map_empty:"📍 دوس لتحدّد الموقع",
+        edit_request:"عدّل الطلب",
+        resume_t:"تابِع طلبك المحفوظ", resume_d:"رجّعناك من وين وقفت.", resume_clear:"ابدأ من جديد",
+        posted_status:"منشور · مفتوح للعروض",
+        // ── forecast tiers (live value preview) ──
+        // built dynamically with numbers — see forecastCopy()
+        prov_label_empty:"",
+        // dock
+        dock_photo:"صورة", dock_video:"فيديو", dock_voice:"صوت", dock_gallery:"المعرض",
+        dock_photo_aria:"أضف صورة", dock_video_aria:"أضف فيديو", dock_voice_aria:"سجّل رسالة صوتية", dock_gallery_aria:"اختار من المعرض",
+        // FRAME copy (ported)
+        q_sector:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟",
+        chip_residential:"🏠 لبيت", chip_commercial:"🏢 لشغل / محل",
+        q_subtype_res:"تمام. أي نوع بيت؟", q_subtype_com:"تمام. أي نوع محل/شغل؟",
+        sub_apartment:"شقة", sub_condo:"كومباوند", sub_villa:"فيلا / منزل",
+        sub_shop:"محل", sub_restaurant:"مطعم", sub_office:"مكتب", sub_warehouse:"مستودع",
+        q_domain:"شو بدّك مساعدة فيه؟", q_servicetype:"تمام. أي نوع بالضبط؟",
+        q_area:"وين العقار؟ (وين بدّك المحترف يجي)",
+        region_beirut:"بيروت — الأشرفية", region_mtleb:"جبل لبنان — جونية", region_north:"الشمال — طرابلس", region_south:"الجنوب — صيدا",
+        q_urgency:"أديش مستعجل؟",
+        urg_emergency:"طوارئ — اليوم", urg_week:"خلال الأسبوع", urg_flexible:"مرن / ما في استعجال",
+        q_offers:"كم عرض بتحب تقارن؟",
+        offers_23:"<bdi>2–3</bdi> عروض", offers_35:"<bdi>3–5</bdi> عروض", offers_max:"أكبر عدد ممكن",
+        q_budget:"عندك فكرة عن الميزانية؟ (تقريبي بالدولار)",
+        budget_lt100:"أقل من ‎$100", budget_100_300:"‎$100–300", budget_300_1000:"‎$300–1000", budget_1000:"‎$1000+",
+        q_timewindow:"أي وقت بيناسبك للزيارة؟",
+        tw_morning:"صباحًا بأيام الأسبوع", tw_afternoon:"بعد الظهر", tw_evening:"مساءً", tw_weekend:"عطلة نهاية الأسبوع", tw_flexible:"مرن",
+        not_sure:"مش متأكد", show_instead:"فرجينا بدل ما تكتب", record_instead:"سجّل بدل ما تكتب", skip_step:"تخطّى",
+        // pivot
+        pivot_bot:"ما في مشكلة — أسهل تفرجينا بدل ما تحزر. صوّر أو سجّل ونحنا منفهم. 📷🎥",
+        pivot_logged:"سجّلنا إنك مش متأكد — المحترف بيعتمد على اللي فرجيتنا، وغالبًا منرتّب زيارة سريعة ليأكّد.",
+        media_skip:"كمّل بلا ما أفرجي", media_added_more:"فرجينا شي تاني",
+        chat_ready:"تمام، صار عندي كل شي اللازم! 🙌 طلبك متكوّن فوق — راجعو وابعتو.",
+        cta_review:"تمام — ابعت الطلب",
+        rec_label:"عم يسجّل…", rec_stop:"إيقاف ⏹", sim_tag:"محاكاة", added_word:"انضافت",
+        media_count_photos:"صور", media_count_videos:"فيديو", media_count_audio:"رسالة صوتية",
+        kind_photo:"صورة", kind_video:"فيديو", kind_audio:"رسالة صوتية",
+        none_word:"—",
+        // jump-back-to-question prompt
+        jump_back:"تمام — رجعنا لهالسؤال:",
+      },
+      en:{
+        brand_mark:"D", brand:"Dabbira", signin_secondary:"Have an account? Sign in",
+        tagline:"Talk to us — your request builds itself in front of you.",
+        hero_title:"Tell us what's up…<br/>and watch your request build.",
+        hero_sub:"We chat, and every answer fills in above on your request card — photo, location, details. The more you give, the tighter and faster the offers.",
+        start_chat:"Start — watch it build", free_note:"Free · No account to start · Show us instead of typing",
+        how_it_works:"How it works",
+        preview_q1:"Hi! 👋 Is this for a home or a business?", preview_a1:"A home", preview_q2:"Got it. What do you need help with?",
+        preview_note:"Every answer is etched into your request card above — and you can tap any slot to edit or fill it whenever you want.",
+        trust_t:"Rated pros", trust_d:"Real reviews from people who hired them before you.",
+        add_media_aria:"Add a photo, voice, or video",
+        composer_ph:"Type your answer… or tap an option", send_aria:"Send",
+        be_media_capture:"[BE] — Media capture / transcription (UI only)",
+        gate_title:"Your request is ready ✅", gate_sub:"Make a quick account to send it — pros review it, send you offers, and you choose.",
+        gate_back:"Back to request",
+        name_label:"Your name", name_ph:"e.g. Samer", phone_label:"Your phone number", otp_note:"We'll text you a confirmation code.",
+        gate_send:"Create account & send", be_otp:"[BE] — Sign-up / verify via OTP",
+        back_to_list:"Back to list ↩",
+        canvas_title:"Your request — building", canvas_title_posted:"Your request — live ✅",
+        lbl_service:"Service", lbl_property:"Property", lbl_media:"Photos · video · voice", lbl_facts:"Request details",
+        empty_service:"Pick what you need", empty_property:"— Home/Business",
+        facts_empty:"They'll fill in as you answer…",
+        map_empty:"📍 Tap to set the location",
+        edit_request:"Edit request",
+        resume_t:"Resume your saved request", resume_d:"We brought you back where you left off.", resume_clear:"Start over",
+        posted_status:"Live · Open for offers",
+        prov_label_empty:"",
+        dock_photo:"Photo", dock_video:"Video", dock_voice:"Voice", dock_gallery:"Gallery",
+        dock_photo_aria:"Add a photo", dock_video_aria:"Add a video", dock_voice_aria:"Record a voice note", dock_gallery_aria:"Pick from gallery",
+        q_sector:"Hi! 👋 Is this for a home or a business?",
+        chip_residential:"🏠 A home", chip_commercial:"🏢 A business / shop",
+        q_subtype_res:"Got it. What kind of home?", q_subtype_com:"Got it. What kind of place?",
+        sub_apartment:"Apartment", sub_condo:"Condo", sub_villa:"Villa / House",
+        sub_shop:"Shop", sub_restaurant:"Restaurant", sub_office:"Office", sub_warehouse:"Warehouse",
+        q_domain:"What do you need help with?", q_servicetype:"Got it. Which one exactly?",
+        q_area:"Where's the place? (where should the pro come)",
+        region_beirut:"Beirut — Achrafieh", region_mtleb:"Mount Lebanon — Jounieh", region_north:"North — Tripoli", region_south:"South — Saida",
+        q_urgency:"How urgent is it?",
+        urg_emergency:"Emergency — today", urg_week:"This week", urg_flexible:"Flexible / no rush",
+        q_offers:"How many offers do you want to compare?",
+        offers_23:"2–3 offers", offers_35:"3–5 offers", offers_max:"As many as I can get",
+        q_budget:"Any idea on budget? (rough, in USD)",
+        budget_lt100:"Under $100", budget_100_300:"$100–300", budget_300_1000:"$300–1000", budget_1000:"$1000+",
+        q_timewindow:"What time window works for a visit?",
+        tw_morning:"Weekday mornings", tw_afternoon:"Afternoons", tw_evening:"Evenings", tw_weekend:"Weekends", tw_flexible:"Flexible",
+        not_sure:"I'm not sure", show_instead:"Show us instead of typing", record_instead:"Record instead of typing", skip_step:"Skip",
+        pivot_bot:"No problem — easier to just show me than guess. Snap or record and we'll figure it out. 📷🎥",
+        pivot_logged:"We logged that you're unsure — the pro will rely on what you showed, and we'll likely set up a quick visit to confirm.",
+        media_skip:"Continue without showing", media_added_more:"Show something else",
+        chat_ready:"Done — I've got everything I need! 🙌 Your request is built above — review it and send.",
+        cta_review:"Looks good — send the request",
+        rec_label:"Recording…", rec_stop:"Stop ⏹", sim_tag:"Simulated", added_word:"added",
+        media_count_photos:"photos", media_count_videos:"video", media_count_audio:"voice note",
+        kind_photo:"photo", kind_video:"video", kind_audio:"voice note",
+        none_word:"—",
+        jump_back:"Sure — back to this question:",
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-i18n-title]").forEach(node=>{ const k=node.getAttribute("data-i18n-title"); if(d[k]!=null) node.setAttribute("title",d[k]); });
+    }
+
+    // relocalize already-rendered chat bubbles + chips + THE CARD (dynamic).
+    function relocalizeChat(){
+      document.querySelectorAll("[data-tkey]").forEach(node=>{ node.innerHTML = t(node.getAttribute("data-tkey")); });
+      document.querySelectorAll("[data-tar]").forEach(node=>{
+        node.innerHTML = (LANG==="en") ? node.getAttribute("data-ten") : node.getAttribute("data-tar");
+      });
+      // dynamic CARD + forecast + provider preview + progress rebuild in the user's language
+      renderCanvas();
+    }
+
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      const arrow=document.getElementById("send-arrow");
+      if(arrow) arrow.style.transform = (LANG==="en") ? "none" : "scaleX(-1)";
+      applyStaticI18n();
+      relocalizeChat();
+      buildDevSvc();
+    }
+
+    // ════════════════════ NAV ════════════════════
+    const screens={ landing:"screen-landing", build:"screen-build", signup:"screen-signup" };
+    function setScreen(id, on){ const n=document.getElementById(id); if(!n) return; n.style.display = on ? (id==="screen-build"?"flex":"block") : "none"; n.classList.toggle("is-active", on); }
+    function goto(name){
+      Object.values(screens).forEach(id=>setScreen(id,false));
+      setScreen(screens[name], true);
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      document.getElementById("pub-header").style.display=(name==="landing")?"none":"flex";
+      if(name==="signup") renderGateForecast();
+      window.scrollTo(0,0);
+    }
+
+    // ════════════════════ STATE ════════════════════
+    let S = {};
+    function resetState(){
+      S = { sector:null, subtype:null, domain:null, service:null, area:null, urgency:null,
+            probes:{}, media:[], notSure:false, offers:null, budget:null, timewindow:null,
+            mediaAsks:0, posted:false };
+    }
+
+    // ════════════════════ PERSISTENCE (localStorage — file://-safe) ════════════════════
+    const SAVE_KEY = "dabbira_d2_living_v1";
+    function saveState(){
+      try{ localStorage.setItem(SAVE_KEY, JSON.stringify({ S, step:STEP, probeIdx, ts:Date.now() })); }catch(e){}
+    }
+    function loadSaved(){
+      try{ const raw=localStorage.getItem(SAVE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+    }
+    function clearSaved(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+    function hasMeaningfulSave(s){ return s && s.S && (s.S.service || s.S.sector || (s.S.media&&s.S.media.length)); }
+
+    // ════════════════════ CHAT ENGINE (ported) ════════════════════
+    function el(html){ const tpl=document.createElement("template"); tpl.innerHTML=html.trim(); return tpl.content.firstChild; }
+    function scrollChat(){ const log=document.getElementById("chat-log"); if(log) log.scrollTop=log.scrollHeight; }
+    function clearZone(){ document.getElementById("quick-zone").innerHTML=""; }
+    function esc(s){ return String(s).replace(/"/g,"&quot;"); }
+
+    function botSay(arHtml, enHtml, cb){
+      const log=document.getElementById("chat-log");
+      const typing=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" style="margin-inline-start:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(typing); scrollChat();
+      setTimeout(()=>{
+        typing.remove();
+        const cur = (LANG==="en") ? enHtml : arHtml;
+        const bubble=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}" style="margin-inline-start:8px;">${cur}</div></div>`);
+        log.appendChild(bubble); scrollChat(); if(cb) cb();
+      }, 520);
+    }
+    function botSayKey(key, cb){ botSay(I18N.ar[key], I18N.en[key], cb); }
+    function userSay(arHtml, enHtml){
+      const log=document.getElementById("chat-log");
+      const cur=(LANG==="en")?enHtml:arHtml;
+      log.appendChild(el(`<div class="row user"><div class="bubble-user" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}">${cur}</div></div>`)); scrollChat();
+    }
+    function userSayRaw(html){
+      document.getElementById("chat-log").appendChild(el(`<div class="row user"><div class="bubble-user">${html}</div></div>`)); scrollChat();
+    }
+    function chip(arLabel, enLabel, onClick, cls){
+      const b=el(`<button class="qchip ${cls||""}" data-tar="${esc(arLabel)}" data-ten="${esc(enLabel)}">${LANG==="en"?enLabel:arLabel}</button>`);
+      b.onclick=onClick; return b;
+    }
+
+    let STEP = null;
+    let probeIdx = 0;
+
+    // freshStart = always reset (used by "Start over" + dev). startChat() is resume-aware (defined below).
+    function freshStart(){ resetState(); clearSaved(); document.getElementById("chat-log").innerHTML=""; clearZone();
+      document.getElementById("resume-banner").style.display="none";
+      document.getElementById("assistant").style.display="flex";
+      document.getElementById("canvas-wrap").style.maxHeight="48dvh";
+      const pr0=document.getElementById("canvas-progress"); if(pr0) pr0.setAttribute("data-tdyn","progress");
+      goto("build"); renderCanvas(); askSector(); }
+    function startOver(){ freshStart(); }
+
+    // FRAME 1 — sector
+    function askSector(){
+      STEP="sector"; clearZone();
+      botSayKey("q_sector", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.appendChild(chip(I18N.ar.chip_residential,I18N.en.chip_residential, ()=>chooseSector("residential")));
+        z.appendChild(chip(I18N.ar.chip_commercial,I18N.en.chip_commercial, ()=>chooseSector("commercial")));
+      });
+    }
+    function chooseSector(sec){
+      S.sector=sec; clearZone();
+      userSay(sec==="residential"?I18N.ar.chip_residential:I18N.ar.chip_commercial, sec==="residential"?I18N.en.chip_residential:I18N.en.chip_commercial);
+      renderCanvas(); popSlot("slot-property"); saveState(); askSubtype();
+    }
+    // FRAME 2 — subtype
+    function askSubtype(){
+      STEP="subtype"; clearZone();
+      const isRes=S.sector==="residential";
+      const subs = isRes ? ["apartment","condo","villa"] : ["shop","restaurant","office","warehouse"];
+      botSayKey(isRes?"q_subtype_res":"q_subtype_com", ()=>{
+        const z=document.getElementById("quick-zone");
+        subs.forEach(s=> z.appendChild(chip(I18N.ar["sub_"+s],I18N.en["sub_"+s], ()=>chooseSubtype(s))));
+      });
+    }
+    function chooseSubtype(sub){
+      S.subtype=sub; clearZone();
+      userSay(I18N.ar["sub_"+sub],I18N.en["sub_"+sub]); renderCanvas(); popSlot("slot-property"); saveState(); askDomain();
+    }
+    // FRAME 3 — domain
+    function askDomain(){
+      STEP="domain"; clearZone();
+      botSayKey("q_domain", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.className="px-4 pb-1.5 grid grid-cols-2 gap-2";
+        DOMAINS.forEach(d=>{
+          const b=el(`<button class="dchip" data-dom="${d.id}"><span>${d.emoji}</span><span data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
+          b.onclick=()=>chooseDomain(d.id); z.appendChild(b);
+        });
+      });
+    }
+    function chooseDomain(domId){
+      const d=DOMAINS.find(x=>x.id===domId); S.domain=domId; resetZoneClass();
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en);
+      renderCanvas();
+      if(d.services.length===1){ chooseService(d.services[0], true); }
+      else askServiceType(d);
+    }
+    function resetZoneClass(){ const z=document.getElementById("quick-zone"); z.className="px-4 pb-1.5 flex flex-wrap gap-2"; z.style.flexDirection=""; }
+    // FRAME 4 — service type
+    function askServiceType(d){
+      STEP="service"; clearZone();
+      botSayKey("q_servicetype", ()=>{
+        const z=document.getElementById("quick-zone");
+        d.services.forEach(svc=> z.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
+      });
+    }
+    function chooseService(svc, echoed){
+      S.service=svc; if(!S.domain){ const d=domainForService(svc); S.domain=d?d.id:null; } clearZone();
+      if(!echoed) userSay(CAT.ar[svc],CAT.en[svc]);
+      renderCanvas(); popSlot("slot-service"); saveState();
+      startDrill();
+    }
+
+    // ── DRILL ──
+    function startDrill(){ probeIdx=0; askProbe(); }
+    function askProbe(){
+      STEP="drill"; clearZone();
+      const probes=Q[S.service].probes;
+      if(probeIdx>=probes.length){ afterDrill(); return; }
+      const p=probes[probeIdx];
+      const ar=p.ar, en=p.en;
+      botSay(ar.label, en.label, ()=>{
+        const z=document.getElementById("quick-zone");
+        if(p.free){
+          z.appendChild(chip("🎤 "+I18N.ar.record_instead, "🎤 "+I18N.en.record_instead, ()=>recordAudioForProbe(p), "is-media"));
+          z.appendChild(chip(I18N.ar.skip_step,I18N.en.skip_step, ()=>answerProbeSkip(p)));
+          z.appendChild(notSureChip());
+        } else {
+          Object.keys(p.ar.opt).forEach(k=>{
+            z.appendChild(chip(p.ar.opt[k], p.en.opt[k], ()=>answerProbeOpt(p,k)));
+          });
+          z.appendChild(notSureChip());
+        }
+        maybeOfferOverlayChip(p);
+      });
+    }
+    function notSureChip(){ return chip(NOT_SURE.ar, NOT_SURE.en, ()=>pivotToMedia(), "is-notsure"); }
+
+    function answerProbeOpt(p, optKey){
+      S.probes[p.id]={ value:optKey, type:"opt" };
+      userSay(p.ar.opt[optKey], p.en.opt[optKey]);
+      clearZone(); renderCanvas(); popFactFor(p.id); saveState(); probeIdx++; askProbe();
+    }
+    function answerProbeSkip(p){ S.probes[p.id]={ value:null, type:"skip" }; clearZone(); renderCanvas(); saveState(); probeIdx++; askProbe(); }
+    function answerProbeFree(p, txt){
+      S.probes[p.id]={ value:txt, type:"free" };
+      userSayRaw(txt); clearZone(); renderCanvas(); popFactFor(p.id); saveState(); probeIdx++; askProbe();
+    }
+
+    function recordAudioForProbe(p){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:06</bdi></div></div>`);
+      log.appendChild(rec); scrollChat();
+      setTimeout(()=>{
+        rec.remove();
+        const arTx = `<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.ar.media_count_audio} <bdi>0:06</bdi></span>`;
+        const enTx = `<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.en.media_count_audio} <bdi>0:06</bdi></span>`;
+        userSay(arTx, enTx);
+        S.probes[p.id]={ value:"__audio__", type:"audio" };
+        S.media.push({kind:"audio", thumbAr:I18N.ar.media_count_audio+" 0:06", thumbEn:I18N.en.media_count_audio+" 0:06"});
+        clearZone(); renderCanvas(); popLastTile(); saveState(); probeIdx++; askProbe();
+      }, 1100);
+    }
+
+    // overlay chip tied to current probe
+    function kindEmoji(kind){ return kind==="video"?"🎥 ":kind==="audio"?"🎤 ":"📷 "; }
+    function maybeOfferOverlayChip(p){
+      if(S.mediaAsks>=2) return;
+      const ov=overlayForProbe(S.service, p.id, probeIdx);
+      if(!ov) return;
+      const em=kindEmoji(ov.kind);
+      botSay(ov.ar.ask, ov.en.ask, ()=>{
+        const z=document.getElementById("quick-zone");
+        const mc=chip(em+ov.ar.thumb, em+ov.en.thumb, ()=>captureOverlay(ov), "is-media");
+        z.prepend(mc);
+      });
+    }
+    function overlayForProbe(svc, probeId, idx){
+      const list = OVERLAYS[svc] || defaultOverlay(svc);
+      const probes=Q[svc].probes;
+      return list.find(o=>{
+        if(o.after===probeId) return true;
+        if(o.after==="__first__" && idx===0) return true;
+        if(o.after==="__last__" && idx===probes.length-1) return true;
+        return false;
+      });
+    }
+    const CAM_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+    const VID_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+    const MIC_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg>`;
+    function kindIcon(kind){ return kind==="video"?VID_ICON:kind==="audio"?MIC_ICON:CAM_ICON; }
+
+    function captureOverlay(ov){
+      S.mediaAsks++; clearZone();
+      const log=document.getElementById("chat-log");
+      if(ov.kind==="audio"){
+        const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:09</bdi></div></div>`);
+        log.appendChild(rec); scrollChat();
+        setTimeout(()=>{ rec.remove(); placeMediaBubble(ov); }, 1100);
+      } else {
+        const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+        log.appendChild(cap); scrollChat();
+        setTimeout(()=>{ cap.remove(); placeMediaBubble(ov); }, 800);
+      }
+    }
+    function placeMediaBubble(ov){
+      const icon=kindIcon(ov.kind);
+      const arBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${ov.ar.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.ar.sim_tag}</span></span></span>`;
+      const enBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${ov.en.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.en.sim_tag}</span></span></span>`;
+      userSay(arBody, enBody);
+      botSay(ov.ar.tx, ov.en.tx, ()=>{
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx});
+        renderCanvas(); popLastTile(); saveState();
+        clearZone(); probeIdx++; askProbe();
+      });
+    }
+
+    // ── NOT-SURE pivot ──
+    function pivotToMedia(){
+      S.notSure=true; clearZone();
+      userSay(NOT_SURE.ar, NOT_SURE.en);
+      botSayKey("pivot_bot", ()=>{
+        const z=document.getElementById("quick-zone");
+        const ovPhoto={kind:"photo", ar:{thumb:"صورة — المشكلة", tx:"[صورة] لقطة للمشكلة متل ما هي — المحترف بيحدّد منها."}, en:{thumb:"Photo — the issue", tx:"[Photo] A shot of the issue as-is — the pro will assess from it."}};
+        const ovVideo={kind:"video", ar:{thumb:"فيديو — جولة 0:08", tx:"[فيديو] جولة قصيرة بتفرجي المكان والمشكلة من كل الجهات."}, en:{thumb:"Video — walkthrough 0:08", tx:"[Video] A short walk-around showing the place and the issue from all sides."}};
+        z.appendChild(chip("📷 "+ovPhoto.ar.thumb,"📷 "+ovPhoto.en.thumb, ()=>captureUnsureMedia(ovPhoto), "is-media"));
+        z.appendChild(chip("🎥 "+ovVideo.ar.thumb,"🎥 "+ovVideo.en.thumb, ()=>captureUnsureMedia(ovVideo), "is-media"));
+      });
+      renderCanvas(); // forecast → visit tier
+    }
+    function captureUnsureMedia(ov){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(cap); scrollChat();
+      setTimeout(()=>{
+        cap.remove();
+        const icon=kindIcon(ov.kind);
+        userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.ar.thumb}</span></span>`,
+                `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.en.thumb}</span></span>`);
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx, unsure:true});
+        renderCanvas(); popLastTile();
+        botSayKey("pivot_logged", ()=>{ renderCanvas(); saveState(); finishDrillSkippingRest(); });
+      }, 900);
+    }
+    function finishDrillSkippingRest(){ probeIdx = Q[S.service].probes.length; afterDrill(); }
+
+    // ── after DRILL → routing metadata, then soft extras ──
+    function afterDrill(){
+      if(!S.area){ askArea(); return; }
+      if(!S.urgency){ askUrgency(); return; }
+      if(!S.offers){ askOffers(); return; }
+      if(!S.budget){ askBudget(); return; }
+      if(!S.timewindow){ askTimeWindow(); return; }
+      finishChat();
+    }
+    function askArea(){
+      STEP="area"; clearZone();
+      botSayKey("q_area", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["region_beirut","region_mtleb","region_north","region_south"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.area=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popSlot("slot-map"); saveState(); afterDrill(); })));
+      });
+    }
+    function askUrgency(){
+      STEP="urgency"; clearZone();
+      botSayKey("q_urgency", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["urg_emergency","urg_week","urg_flexible"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.urgency=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popFactFor("urgency"); saveState(); afterDrill(); })));
+      });
+    }
+    function askOffers(){
+      STEP="offers"; clearZone();
+      botSayKey("q_offers", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["offers_23","offers_35","offers_max"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.offers=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popFactFor("offers"); saveState(); afterDrill(); })));
+      });
+    }
+    function askBudget(){
+      STEP="budget"; clearZone();
+      botSayKey("q_budget", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["budget_lt100","budget_100_300","budget_300_1000","budget_1000"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.budget=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popFactFor("budget"); saveState(); afterDrill(); })));
+        z.appendChild(chip(NOT_SURE.ar,NOT_SURE.en, ()=>{ S.budget="not_sure"; userSay(NOT_SURE.ar,NOT_SURE.en); clearZone(); renderCanvas(); popFactFor("budget"); saveState(); afterDrill(); }, "is-notsure"));
+      });
+    }
+    function askTimeWindow(){
+      STEP="timewindow"; clearZone();
+      botSayKey("q_timewindow", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["tw_morning","tw_afternoon","tw_evening","tw_weekend","tw_flexible"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.timewindow=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popFactFor("timewindow"); saveState(); afterDrill(); })));
+      });
+    }
+
+    function finishChat(){
+      STEP="ready"; clearZone();
+      botSayKey("chat_ready", ()=>{
+        const log=document.getElementById("chat-log");
+        const btn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_review")}</button></div>`);
+        log.appendChild(btn); scrollChat();
+        renderCanvas(); saveState();
+      });
+    }
+
+    // free-text composer
+    function sendFree(){
+      const inp=document.getElementById("chat-input"); const v=(inp.value||"").trim();
+      if(!v) return; inp.value="";
+      const clean=v.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      if(STEP==="drill"){
+        const p=Q[S.service].probes[probeIdx];
+        if(p && p.free){ answerProbeFree(p, clean); return; }
+      }
+      userSayRaw(clean);
+    }
+
+    // ════════════════════ MULTIMODAL DOCK (always available) ════════════════════
+    function openDock(){ const d=document.getElementById("dock"); if(d){ d.scrollIntoView({block:"nearest"}); d.querySelector(".dockbtn").focus(); } }
+    function dockCapture(kind){
+      // gallery → treat as photo from library; otherwise the chosen kind. Captures land in the canvas gallery.
+      const k = kind==="gallery" ? "photo" : kind;
+      const labels = {
+        photo:{ar:"صورة — من الكاميرا", en:"Photo — from camera", tx_ar:"[صورة] لقطة للمكان أو المشكلة متل ما هي.", tx_en:"[Photo] A shot of the place or the issue as-is."},
+        video:{ar:"فيديو — جولة 0:07", en:"Video — walkthrough 0:07", tx_ar:"[فيديو] جولة قصيرة بتفرجي المكان والمشكلة.", tx_en:"[Video] A short walkthrough showing the place and the issue."},
+        audio:{ar:"رسالة صوتية 0:08", en:"Voice note 0:08", tx_ar:"[تفريغ صوتي] وصف صوتي قصير للشغل المطلوب.", tx_en:"[Voice transcript] A short spoken description of the work."},
+      };
+      const meta = labels[k] || labels.photo;
+      const ov={kind:k, ar:{thumb:meta.ar, tx:meta.tx_ar}, en:{thumb:meta.en, tx:meta.tx_en}};
+      // simulate capture in chat AND land in gallery
+      clearZone();
+      const log=document.getElementById("chat-log");
+      if(k==="audio"){
+        const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:08</bdi></div></div>`);
+        log.appendChild(rec); scrollChat();
+        setTimeout(()=>{ rec.remove(); landDockMedia(ov); }, 1100);
+      } else {
+        const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+        log.appendChild(cap); scrollChat();
+        setTimeout(()=>{ cap.remove(); landDockMedia(ov); }, 800);
+      }
+    }
+    function landDockMedia(ov){
+      const icon=kindIcon(ov.kind);
+      userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.ar.thumb}</span></span>`,
+              `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.en.thumb}</span></span>`);
+      S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx});
+      renderCanvas(); popLastTile(); saveState();
+    }
+
+    // ════════════════════ THE LIVING CANVAS — render ════════════════════
+    // jump from a canvas slot to a question (talk-or-tap). Drops a bot bubble then re-asks.
+    function jumpTo(target){
+      if(S.posted) return; // posted slots are read-only here
+      goto("build");
+      const map = {
+        sector: askSector, subtype: askSubtype, domain: askDomain, area: askArea, urgency: askUrgency,
+        offers: askOffers, budget: askBudget, timewindow: askTimeWindow,
+      };
+      // service: needs a domain first; route to domain picker
+      if(target==="service" || target==="domain"){ jumpEcho(); askDomain(); return; }
+      if(target==="probe"){ jumpEcho(); /* re-ask current/first probe */ if(S.service){ probeIdx=0; askProbe(); } return; }
+      const fn = map[target];
+      if(fn){ jumpEcho(); fn(); }
+    }
+    function jumpEcho(){ botSayKey("jump_back"); }
+    // edit a specific probe by id
+    function editProbe(probeId){
+      if(S.posted){ uncollapseToEdit(); }
+      goto("build");
+      const probes=Q[S.service].probes; const i=probes.findIndex(p=>p.id===probeId);
+      if(i<0) return; jumpEcho(); probeIdx=i; askProbe();
+    }
+    // un-collapse the posted canvas back into an editable build state (no re-ask — caller drives the question)
+    function uncollapseToEdit(){
+      S.posted=false; saveState();
+      document.getElementById("assistant").style.display="flex";
+      document.getElementById("canvas-wrap").style.maxHeight="48dvh";
+      const pr=document.getElementById("canvas-progress"); if(pr) pr.setAttribute("data-tdyn","progress");
+      const b=document.getElementById("back-to-dash-posted"); if(b) b.style.display="none";
+      renderCanvas();
+    }
+
+    function popSlot(id){ const n=document.getElementById(id); if(!n) return; n.classList.remove("just-filled"); void n.offsetWidth; n.classList.add("just-filled"); }
+    function popFactFor(){ const facts=document.getElementById("canvas-facts"); const last=facts && facts.querySelector(".fact:last-of-type"); if(last){ last.classList.remove("chip-pop"); void last.offsetWidth; last.classList.add("chip-pop"); } }
+    function popLastTile(){ const g=document.getElementById("canvas-gallery"); const tiles=g?g.querySelectorAll(".gtile"):[]; const last=tiles[tiles.length-1]; if(last){ last.classList.remove("chip-pop"); void last.offsetWidth; last.classList.add("chip-pop"); } }
+
+    function progressCount(){
+      let n=0; if(S.service) n++; if(S.subtype) n++;
+      if(S.service){ const ans=Q[S.service].probes.filter(p=>S.probes[p.id]&&S.probes[p.id].type!=="skip").length; if(ans>0) n++; }
+      if(S.media.length) n++; if(S.area) n++; if(S.urgency) n++;
+      return Math.min(n,6);
+    }
+
+    function renderCanvas(){
+      // canvas title (build vs posted)
+      const ct=document.getElementById("canvas-title");
+      if(ct){ const k=S.posted?"canvas_title_posted":"canvas_title"; ct.setAttribute("data-tkey",k); ct.innerHTML=t(k); }
+      // progress
+      const pr=document.getElementById("canvas-progress");
+      if(pr) pr.innerHTML = `<bdi>${progressCount()}</bdi>/<bdi>6</bdi>`;
+
+      // service slot
+      const sIcon=document.getElementById("slot-service-icon"), sVal=document.getElementById("slot-service-val"), sSlot=document.getElementById("slot-service");
+      if(S.service){
+        sIcon.textContent=domEmoji(S.service);
+        sVal.removeAttribute("data-tkey"); sVal.setAttribute("data-tar",esc(CAT.ar[S.service])); sVal.setAttribute("data-ten",esc(CAT.en[S.service]));
+        sVal.innerHTML = catLabel(S.service);
+        sSlot.classList.add("is-filled");
+      } else {
+        sIcon.textContent="🛠️";
+        sVal.setAttribute("data-tkey","empty_service"); sVal.removeAttribute("data-tar"); sVal.removeAttribute("data-ten"); sVal.innerHTML=t("empty_service");
+        sSlot.classList.remove("is-filled");
+      }
+      // property slot
+      const pVal=document.getElementById("slot-property-val"), pSlot=document.getElementById("slot-property");
+      if(S.sector){
+        const secAr=S.sector==="residential"?"🏠":"🏢";
+        const subAr=S.subtype?I18N.ar["sub_"+S.subtype]:""; const subEn=S.subtype?I18N.en["sub_"+S.subtype]:"";
+        pVal.removeAttribute("data-tkey");
+        pVal.setAttribute("data-tar",esc(secAr+" "+subAr)); pVal.setAttribute("data-ten",esc(secAr+" "+subEn));
+        pVal.innerHTML = secAr+" "+(LANG==="en"?subEn:subAr);
+        pSlot.classList.add("is-filled");
+      } else {
+        pVal.setAttribute("data-tkey","empty_property"); pVal.removeAttribute("data-tar"); pVal.removeAttribute("data-ten"); pVal.innerHTML=t("empty_property");
+        pSlot.classList.remove("is-filled");
+      }
+      // map + area
+      const map=document.getElementById("slot-map"), hint=document.getElementById("map-hint");
+      if(S.area){
+        map.classList.remove("no-pin");
+        hint.removeAttribute("data-tkey"); hint.setAttribute("data-tar","📍 "+I18N.ar[S.area]); hint.setAttribute("data-ten","📍 "+I18N.en[S.area]);
+        hint.innerHTML = "📍 "+I18N[LANG][S.area];
+      } else {
+        map.classList.add("no-pin");
+        hint.setAttribute("data-tkey","map_empty"); hint.removeAttribute("data-tar"); hint.removeAttribute("data-ten"); hint.innerHTML=t("map_empty");
+      }
+
+      renderGallery();
+      renderFacts();
+      renderForecast();
+      renderProvPreview();
+
+      // posted block
+      const pb=document.getElementById("posted-block");
+      if(pb) pb.style.display = S.posted ? "block" : "none";
+    }
+
+    function renderGallery(){
+      const g=document.getElementById("canvas-gallery"); if(!g) return;
+      // wipe but keep the add tile
+      g.innerHTML="";
+      S.media.forEach(m=>{
+        const icon=kindIcon(m.kind);
+        const labAr=I18N.ar["kind_"+(m.kind)]||I18N.ar.kind_photo, labEn=I18N.en["kind_"+(m.kind)]||I18N.en.kind_photo;
+        const tile=el(`<div class="gtile" data-tar-lbl="${esc(labAr)}" data-ten-lbl="${esc(labEn)}" title="${esc(m.thumbAr)}">${icon}<span class="lbl">${LANG==="en"?labEn:labAr}</span></div>`);
+        g.appendChild(tile);
+      });
+      if(!S.posted){
+        const add=el(`<button class="gtile-add" onclick="openDock()" aria-label="${esc(t("add_media_aria"))}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>`);
+        g.appendChild(add);
+      }
+      const mc=document.getElementById("media-count");
+      if(mc) mc.innerHTML = S.media.length ? `<bdi>${S.media.length}</bdi>` : "";
+    }
+
+    // probe-id → which jump target an editable fact maps to
+    function renderFacts(){
+      const host=document.getElementById("canvas-facts"); if(!host) return;
+      host.innerHTML="";
+      const PEN=`<svg class="pen" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
+      const add=(arVal,enVal,onClick,extraAr,extraEn)=>{
+        const b=el(`<button class="fact" data-tar="${esc((extraAr?extraAr+' ':'')+arVal)}" data-ten="${esc((extraEn?extraEn+' ':'')+enVal)}">${(extraAr?(LANG==='en'?extraEn:extraAr)+' ':'')}${LANG==='en'?enVal:arVal} ${S.posted?'':PEN}</button>`);
+        if(!S.posted && onClick) b.onclick=onClick; if(S.posted) b.style.cursor="default";
+        host.appendChild(b);
+      };
+      // probe answers
+      if(S.service) Q[S.service].probes.forEach(p=>{
+        const a=S.probes[p.id]; if(!a || a.type==="skip") return;
+        let arVal,enVal;
+        if(a.type==="opt"){ arVal=p.ar.opt[a.value]; enVal=p.en.opt[a.value]; }
+        else if(a.type==="free"){ arVal=a.value; enVal=a.value; }
+        else if(a.type==="audio"){ arVal=I18N.ar.media_count_audio; enVal=I18N.en.media_count_audio; }
+        else return;
+        add(arVal,enVal, ()=>editProbe(p.id));
+      });
+      // urgency / offers / budget / timewindow facts
+      if(S.urgency) add(I18N.ar[S.urgency], I18N.en[S.urgency], ()=>jumpTo("urgency"), "⏱", "⏱");
+      if(S.offers) add(I18N.ar[S.offers], I18N.en[S.offers], ()=>jumpTo("offers"), "👥","👥");
+      if(S.budget) add(S.budget==="not_sure"?NOT_SURE.ar:I18N.ar[S.budget], S.budget==="not_sure"?NOT_SURE.en:I18N.en[S.budget], ()=>jumpTo("budget"), "💲","💲");
+      if(S.timewindow) add(I18N.ar[S.timewindow], I18N.en[S.timewindow], ()=>jumpTo("timewindow"), "🗓","🗓");
+
+      // empty placeholder + add-detail affordances for unanswered soft slots
+      if(!host.children.length){
+        host.appendChild(el(`<span class="t-caption text-faint" data-tkey="facts_empty">${t("facts_empty")}</span>`));
+      } else if(!S.posted){
+        if(!S.urgency) host.appendChild(addDetailChip("urgency","⏱"));
+        if(!S.budget) host.appendChild(addDetailChip("budget","💲"));
+        if(!S.timewindow) host.appendChild(addDetailChip("timewindow","🗓"));
+      }
+    }
+    function addDetailChip(target, emoji){
+      const labK = {urgency:"q_urgency", budget:"q_budget", timewindow:"q_timewindow"}[target];
+      const b=el(`<button class="fact is-empty" data-tdyn="add-${target}"><span>+ ${emoji}</span></button>`);
+      b.title = t(labK); b.onclick=()=>jumpTo(target);
+      return b;
+    }
+
+    // ── OFFER FORECAST: tier + value line + meter ──
+    function effectiveTier(){
+      if(!S.service) return null;
+      const fc=FORECAST[S.domain] || FORECAST.other;
+      // plumbing/electrical → visit-needed only when user pivots to "not sure"; renovation/construction always visit.
+      if(VISIT_NEEDED.has(S.service) || S.notSure) return "visit";
+      // before area is known we can only promise "routable"
+      if(!S.area) return "routable";
+      return fc.tier;
+    }
+    function forecastCopy(){
+      const fc=FORECAST[S.domain] || FORECAST.other;
+      const tier=effectiveTier();
+      const areaAr = S.area ? AREA_SHORT[S.area].ar : "منطقتك";
+      const areaEn = S.area ? AREA_SHORT[S.area].en : "your area";
+      const reply = LANG==="en"?fc.replyEn:fc.reply;
+      const trade = LANG==="en"?fc.tradeEn:fc.trade;
+      if(tier==="visit"){
+        return {
+          tier,
+          ar:`محترف رح يزورك ليسعّر — توقّع ~<bdi>2</bdi> عروض زيارة`,
+          en:`A pro will visit to quote — expect ~<bdi>2</bdi> visit offers`,
+          subAr:`الشغلات الكبيرة بدها معاينة عالأرض ليطلع سعر نهائي.`,
+          subEn:`Bigger jobs need an on-site look for a firm price.`,
+        };
+      }
+      if(tier==="routable"){
+        return {
+          tier,
+          ar:`توقّع ~<bdi>${fc.n}</bdi> عروض قربك — سعر تقريبي بين <bdi>$${fc.lo}</bdi> و<bdi>$${fc.hi}</bdi>`,
+          en:`Expect ~<bdi>${fc.n}</bdi> offers near you — rough range <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>`,
+          subAr:`حدّد الموقع وزيد صورة لتجي العروض أدقّ وأسرع.`,
+          subEn:`Set the location and add a photo so offers come tighter and faster.`,
+        };
+      }
+      // quotable 🟢
+      return {
+        tier,
+        ar:`~<bdi>3–5</bdi> عروض من ${trade} بـ${areaAr}، غالبًا <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>، أول ردّ ~خلال ${reply}`,
+        en:`~<bdi>3–5</bdi> offers from ${trade} in ${areaEn}, usually <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>, first reply ~within ${reply}`,
+        subAr:`طلبك صار واضح — العروض رح تكون دقيقة.`,
+        subEn:`Your request is clear — offers will be accurate.`,
+      };
+    }
+    function paintFcMeter(meterEl, tier){
+      const segs=meterEl.querySelectorAll(".fc-seg");
+      segs.forEach((s,i)=>{
+        s.classList.remove("on-routable","on-quotable","on-visit");
+        if(tier==="visit"){ if(i<3) s.classList.add("on-visit"); }
+        else if(tier==="quotable"){ s.classList.add("on-quotable"); }
+        else { if(i<3) s.classList.add("on-routable"); } // routable = ~3/5
+      });
+    }
+    function renderForecast(){
+      const box=document.getElementById("forecast"); if(!box) return;
+      if(!S.service){ box.style.display="none"; return; }
+      box.style.display="block";
+      const c=forecastCopy();
+      const dot=document.getElementById("fc-dot"), line=document.getElementById("fc-line"), sub=document.getElementById("fc-sub");
+      dot.className="fc-dot "+(c.tier==="visit"?"fc-visit":c.tier==="quotable"?"fc-quotable":"fc-routable");
+      line.innerHTML = LANG==="en"?c.en:c.ar; line.setAttribute("data-tdyn","forecast");
+      sub.innerHTML = LANG==="en"?c.subEn:c.subAr;
+      paintFcMeter(document.getElementById("fc-meter"), c.tier);
+    }
+    function renderGateForecast(){
+      const c=forecastCopy();
+      const dot=document.getElementById("gate-fc-dot"), line=document.getElementById("gate-fc-line"), sub=document.getElementById("gate-fc-sub");
+      if(!dot) return;
+      dot.className="fc-dot "+(c.tier==="visit"?"fc-visit":c.tier==="quotable"?"fc-quotable":"fc-routable");
+      line.innerHTML = LANG==="en"?c.en:c.ar;
+      sub.innerHTML = LANG==="en"?c.subEn:c.subAr;
+      paintFcMeter(document.getElementById("gate-fc-meter"), c.tier);
+    }
+    // ── PROVIDER PREVIEW (shown once service + area exist) ──
+    function renderProvPreview(){
+      const box=document.getElementById("provprev"); if(!box) return;
+      if(!(S.service && S.area)){ box.style.display="none"; return; }
+      box.style.display="flex";
+      const fc=FORECAST[S.domain] || FORECAST.other;
+      const reply=LANG==="en"?fc.replyEn:fc.reply;
+      const line=document.getElementById("prov-line");
+      const ar=`<bdi>${fc.n}</bdi> محترفين قربك · متوسط <bdi>${fc.rating}</bdi>★ · بيردّوا عادة <bdi>&lt;${fc.reply}</bdi>`;
+      const en=`<bdi>${fc.n}</bdi> pros near you · avg <bdi>${fc.rating}</bdi>★ · usually reply <bdi>&lt;${fc.replyEn}</bdi>`;
+      line.innerHTML = LANG==="en"?en:ar; line.setAttribute("data-tdyn","prov");
+    }
+
+    // ════════════════════ REGISTER → POSTED (canvas IS the request page) ════════════════════
+    function postRequest(){
+      S.posted=true; saveState();
+      goto("build");
+      renderCanvas();
+      // collapse the assistant; the canvas becomes the request page in a posted state
+      document.getElementById("assistant").style.display="none";
+      const cw=document.getElementById("canvas-wrap"); cw.style.maxHeight="none";
+      // posted status chip into the canvas header area (replace progress with status)
+      const pr=document.getElementById("canvas-progress");
+      if(pr){ pr.removeAttribute("data-tdyn"); pr.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px;color:#0f8a5f;font-weight:700;"><span class="size-1.5 rounded-full" style="background:#0f8a5f;width:6px;height:6px;border-radius:999px;"></span><span data-tkey="posted_status">${t("posted_status")}</span></span>`; }
+      // show back-to-dash if clean mode
+      if(/(?:^|[?&])clean(?:=|&|$)/.test(location.search)){
+        const b=document.getElementById("back-to-dash-posted"); if(b) b.style.display="block";
+      }
+      window.scrollTo(0,0);
+      // re-enable the dock by NOT showing it (assistant hidden) — posted page is read-only + "edit"
+    }
+    function reopenFromPosted(){
+      uncollapseToEdit();
+      goto("build");
+      // route the assistant to edit-friendly state: re-ask first probe (or domain if none)
+      if(S.service){ jumpEcho(); probeIdx=0; askProbe(); }
+      else askDomain();
+    }
+
+    // ════════════════════ DEV: jump to any service (verifies all 23 reachable) ════════════════════
+    function buildDevSvc(){
+      const sel=document.getElementById("dev-svc"); if(!sel) return;
+      const cur=sel.value; sel.innerHTML="";
+      const blank=document.createElement("option"); blank.value=""; blank.textContent="— service —"; sel.appendChild(blank);
+      DOMAINS.forEach(d=>{
+        const og=document.createElement("optgroup"); og.label=domLabel(d);
+        d.services.forEach(svc=>{ const o=document.createElement("option"); o.value=svc; o.textContent=catLabel(svc); og.appendChild(o); });
+        sel.appendChild(og);
+      });
+      sel.value=cur;
+    }
+    function devJumpService(svc){
+      if(!svc) return;
+      resetState(); clearSaved();
+      const d=domainForService(svc);
+      S.sector="residential"; S.subtype="apartment"; S.domain=d.id; S.service=svc;
+      document.getElementById("assistant").style.display="flex";
+      document.getElementById("chat-log").innerHTML=""; clearZone(); goto("build"); renderCanvas();
+      userSay(I18N.ar.chip_residential,I18N.en.chip_residential);
+      userSay(I18N.ar.sub_apartment,I18N.en.sub_apartment);
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en);
+      userSay(CAT.ar[svc],CAT.en[svc]);
+      startDrill();
+    }
+    function devPostPreview(){
+      // seed a representative state then post (for moderator to inspect the posted canvas)
+      resetState();
+      S.sector="residential"; S.subtype="apartment"; S.domain="plumb"; S.service="plumbing";
+      S.probes={ issue_type:{value:"leak",type:"opt"}, location:{value:"bathroom",type:"opt"} };
+      S.media=[{kind:"photo",thumbAr:"صورة — تحت المغسلة",thumbEn:"Photo — under-sink",txAr:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل.",txEn:"[Photo] The under-sink fitting; the trap is wet."}];
+      S.area="region_beirut"; S.urgency="urg_emergency"; S.offers="offers_35"; S.budget="budget_100_300"; S.timewindow="tw_morning";
+      goto("build"); postRequest();
+    }
+
+    // ════════════════════ wire canvas slot clicks (talk-or-tap) ════════════════════
+    function wireSlots(){
+      document.querySelectorAll("[data-jump]").forEach(n=>{
+        n.addEventListener("click", ()=>{ if(!n.classList.contains("is-filled") || n.id==="slot-map" || n.id==="slot-service" || n.id==="slot-property"){ jumpTo(n.getAttribute("data-jump")); } });
+      });
+    }
+
+    // ════════════════════ INIT ════════════════════
+    resetState();
+    buildDevSvc();
+    wireSlots();
+    setLang("ar");
+    renderCanvas();
+    goto("landing");
+
+    // landing CTA "ابدأ" → resume-aware: restore a saved (non-destructive) build, else fresh start.
+    function startChat(){
+      const saved=loadSaved();
+      if(hasMeaningfulSave(saved)){
+        S = saved.S || S; STEP = saved.step || STEP; probeIdx = (saved.probeIdx!=null?saved.probeIdx:0);
+        document.getElementById("chat-log").innerHTML=""; clearZone();
+        document.getElementById("assistant").style.display="flex";
+        document.getElementById("canvas-wrap").style.maxHeight="48dvh";
+        const pr0=document.getElementById("canvas-progress"); if(pr0) pr0.setAttribute("data-tdyn","progress");
+        goto("build");
+        document.getElementById("resume-banner").style.display = S.posted ? "none" : "block";
+        renderCanvas();
+        if(S.posted){ postRequest(); return; }
+        rehydrateAssistant(); // re-ask the question we were on so the chat is usable again
+        return;
+      }
+      freshStart();
+    }
+    function rehydrateAssistant(){
+      if(!S.service){ askSector(); return; }
+      const probes=Q[S.service].probes;
+      if(probeIdx < probes.length){ askProbe(); }
+      else { afterDrill(); }
+    }
+
+    // ── CLEAN MODE (moderator demo) ─────────────────────────────────────
+    (function(){
+      if(!/(?:^|[?&])clean(?:=|&|$)/.test(location.search)) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      var backPosted=document.getElementById("back-to-dash-posted"); /* shown on post in clean mode */
+    })();
+  </script>
+
+  <!--
+  ════════════════════════ JOURNEY D2 — ACCEPTANCE CRITERIA (numbered, testable) ════════════════════════
+   1. SPLIT SURFACE present: sticky TOP = live Request Canvas (#canvas-wrap), BOTTOM = Assistant (#assistant).
+      Each assistant answer renders into the canvas above with a fill/scale pop (.just-filled / .chip-pop).
+   2. WATCH-IT-BUILD: service slot, property slot, mock map+area, media gallery, fact chips, forecast, and
+      provider preview all populate live from the same state S as the chat advances.
+   3. TALK-OR-TAP: every empty slot is a button that jumps the assistant to that question (jumpTo / data-jump);
+      every filled fact chip is a button that re-asks/edits (editProbe / jumpTo). Non-linear, drive from either surface.
+   4. OFFER FORECAST: live tiered line — 🟠 routable / 🟢 quotable / 🟡 visit — from a per-domain FORECAST lookup
+      (price band, provider count, reply time); Western numerals, <bdi>-isolated; meter recolors per tier.
+   5. PROVIDER PREVIEW: "N محترفين قربك · متوسط 4.7★ · بيردّوا عادة <ساعة" shown once service + area exist; mocked from FORECAST.
+   6. MULTIMODAL DOCK always available above the composer (📷 🎥 🎤 🖼️) → captures land in the canvas gallery.
+   7. SAVE & RESUME: build state persists to localStorage (file://-safe); a "تابِع طلبك المحفوظ · Resume" banner +
+      "ابدأ من جديد · Start over" appear when a saved build exists; start is resume-aware.
+   8. REGISTER-LATE gate (value-framed, shows forecast snapshot) → posted request = the SAME canvas in a «منشور» state,
+      assistant collapsed; "عدّل الطلب" reopens the assistant (the canvas IS the request page; no separate detail screen).
+   9. Ported VERBATIM from D1.0: Q (all 23 services), DOMAINS (10), OVERLAYS (5 deep + default), I18N/t, setLang +
+      in-flight relocalize, not-sure→media pivot, metadata steps (area/urgency/#offers/budget/time-window), gate copy,
+      ?clean mode, simulated media/audio. All 23 ServiceCategory reachable; dev «jump svc» verifies.
+  10. COLOR = DEEP TEAL (#0f766e / #115e59) — D2 identity, deeper than D1.0's #0e7490. FONT LOCKED: IBM Plex Sans Arabic.
+
+  ──────────────────────── THE 3 REQUIRED CHECKS (design-handoff) ────────────────────────
+   • RTL pass — lang=ar/dir=rtl default; chat reads right→left: BOT bubbles inline-START tail border-start-start,
+     USER bubbles inline-END tail border-end-end; avatar margin-inline-start; the SEND arrow is directional and
+     FLIPS in RTL (scaleX(-1)), un-flips in LTR via setLang; check/shield are non-directional, do NOT flip; canvas
+     slots, gallery, dock, facts, forecast, map use logical properties (ps/pe/ms/me/inset-inline/min-inline-size,
+     text-align:start). Provider avatar overlap uses margin-inline-start (mirrors correctly). No physical ml/mr/pl/pr/left/right.
+   • Real-Arabic-content pass — every probe + label is REAL copy from messages/service_questions (no Lorem Ipsum); the
+     5 featured overlays use real Levantine asks/transcripts; canvas labels, forecast lines, provider preview, resume
+     banner, posted status all real Arabic. Holds at 390px; long transcripts/forecast lines wrap, don't clip.
+   • Arabic-typography check — body 16px / lh 1.7 / weight 500 / letter-spacing 0 on bubbles, chips, prompts; canvas
+     labels use the type scale (caption 13 / small 15 / h3 19); NO tracking-* on any Arabic node; loaded IBM Plex Sans
+     Arabic webfont (400/500/600/700); Western numerals; durations/counts/prices/ratings <bdi>-isolated.
+
+  NOTE: English column is DERIVED (messages + brief) and has NOT passed the native-Lebanese review bar.
+  -->
+</body>
+</html>
