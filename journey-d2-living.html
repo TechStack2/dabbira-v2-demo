@@ -164,15 +164,28 @@
     .rec-dot{width:9px;height:9px;border-radius:999px;background:#ff5c5c;animation:recblink 1s infinite;}
     @keyframes recblink{0%,100%{opacity:1}50%{opacity:.25}}
 
-    /* ════════════════════ THE LIVING CANVAS (top surface) ════════════════════ */
+    /* ════════════════════ THE LIVING CANVAS (bottom surface, collapsible) ════════════════════ */
+    #assistant{ order:1; }
     .canvas-wrap{
-      position:sticky; inset-block-start:0; z-index:15;
-      background:linear-gradient(180deg,#ffffff 0%,#f6fbfb 100%);
-      border-block-end:1px solid #cfe2e0; box-shadow:0 8px 18px -14px rgba(10,40,50,.4);
-      max-height:48dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      order:2; flex-shrink:0;
+      position:sticky; inset-block-end:0; z-index:15;
+      background:linear-gradient(0deg,#ffffff 0%,#f6fbfb 100%);
+      border-block-start:1px solid #cfe2e0; box-shadow:0 -10px 22px -16px rgba(10,40,50,.45);
+      max-height:42dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
     }
+    .canvas-wrap.collapsed{ overflow:visible; }
+    .canvas-wrap.collapsed .canvas-pad > *:not(.canvas-head){ display:none !important; }
     .canvas-wrap::-webkit-scrollbar{width:0;}
-    .canvas-pad{padding:12px 14px 14px;}
+    .canvas-pad{padding:8px 14px 14px;}
+    /* collapsible header */
+    .canvas-head{ display:flex;align-items:center;gap:8px;width:100%;background:transparent;border:none;cursor:pointer;padding:6px 0 9px;text-align:start;position:relative; }
+    .canvas-head::before{ content:"";position:absolute;inset-block-start:0;inset-inline:0;margin-inline:auto;width:34px;height:4px;border-radius:999px;background:#cfe2e0; }
+    .ch-chev{ color:#0b5a54; transition:transform .18s ease; flex-shrink:0; }
+    .canvas-wrap.collapsed .ch-chev{ transform:rotate(180deg); }
+    .fc-pill{ font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap; }
+    .fc-pill.t-quotable{ background:#e7f5ec;color:#1a7f46; }
+    .fc-pill.t-routable{ background:#fdf3e3;color:#9a6a00; }
+    .fc-pill.t-visit{ background:#fff8e8;color:#b08400; }
     /* slot = a tappable region of the artifact */
     .slot{ border:1.5px dashed #c2dad6; border-radius:14px; background:#fbfdfd; cursor:pointer; transition:background .12s ease,border-color .12s ease,box-shadow .15s ease; text-align:start; width:100%; }
     .slot:hover{ background:#eef7f6; border-color:#9ccbc4; }
@@ -322,11 +335,14 @@
       <!-- ─────────── TOP SURFACE: the Living Request Canvas (sticky) ─────────── -->
       <div class="canvas-wrap" id="canvas-wrap">
         <div class="canvas-pad" id="canvas">
-          <!-- header line -->
-          <div class="flex items-center justify-between gap-2 mb-2.5">
-            <p class="t-caption" style="font-weight:700;color:#0b5a54;" data-tkey="canvas_title">طلبك — عم يتكوّن</p>
-            <span class="t-caption text-faint" id="canvas-progress" data-tdyn="progress"><bdi>0</bdi>/<bdi>6</bdi></span>
-          </div>
+          <!-- header line (tap to collapse/expand) -->
+          <button class="canvas-head" id="canvas-head" onclick="toggleCanvas()" aria-expanded="true" aria-label="طلبك">
+            <span class="t-caption" style="font-weight:700;color:#0b5a54;" id="canvas-title" data-tkey="canvas_title">طلبك — عم يتكوّن</span>
+            <span class="t-caption text-faint" id="canvas-progress" data-tdyn="progress"><bdi>0/6</bdi></span>
+            <span class="fc-pill" id="fc-pill" style="display:none;"></span>
+            <span style="flex:1;"></span>
+            <svg class="ch-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
 
           <!-- service + property row -->
           <div class="flex items-stretch gap-2 mb-2.5">
@@ -673,6 +689,48 @@
     // region labels (for forecast/provider "near {area}")
     const AREA_SHORT = { region_beirut:{ar:"الأشرفية",en:"Achrafieh"}, region_mtleb:{ar:"جونية",en:"Jounieh"}, region_north:{ar:"طرابلس",en:"Tripoli"}, region_south:{ar:"صيدا",en:"Saida"} };
 
+    // Lebanon location hierarchy — governorate (محافظة) → district (قضاء) → area, simplified.
+    // area entries: [key, AR, EN]
+    const LEB = {
+      beirut:   {ar:"بيروت", en:"Beirut", districts:{
+        beirut:{ar:"بيروت", en:"Beirut", areas:[["achrafieh","الأشرفية","Achrafieh"],["hamra","الحمرا","Hamra"],["verdun","فردان","Verdun"],["mazraa","المزرعة","Mazraa"],["ras_beirut","رأس بيروت","Ras Beirut"]]},
+      }},
+      mtleb:    {ar:"جبل لبنان", en:"Mount Lebanon", districts:{
+        matn:{ar:"المتن", en:"Matn", areas:[["jdeideh","الجديدة","Jdeideh"],["antelias","أنطلياس","Antelias"],["dekwaneh","الدكوانة","Dekwaneh"],["bikfaya","بكفيا","Bikfaya"]]},
+        baabda:{ar:"بعبدا", en:"Baabda", areas:[["hazmieh","الحازمية","Hazmieh"],["chiyah","الشياح","Chiyah"],["hadath","الحدث","Hadath"]]},
+        keserwan:{ar:"كسروان", en:"Keserwan", areas:[["jounieh","جونية","Jounieh"],["zouk","ذوق مكايل","Zouk Mikael"],["kaslik","الكسليك","Kaslik"]]},
+        chouf:{ar:"الشوف", en:"Chouf", areas:[["beiteddine","بيت الدين","Beiteddine"],["deir_qamar","دير القمر","Deir el Qamar"],["damour","الدامور","Damour"]]},
+        aley:{ar:"عاليه", en:"Aley", areas:[["aley","عاليه","Aley"],["bhamdoun","بحمدون","Bhamdoun"],["souk_gharb","سوق الغرب","Souk el Gharb"]]},
+        jbeil:{ar:"جبيل", en:"Jbeil", areas:[["jbeil","جبيل","Jbeil (Byblos)"],["amchit","عمشيت","Amchit"]]},
+      }},
+      north:    {ar:"الشمال", en:"North", districts:{
+        tripoli:{ar:"طرابلس", en:"Tripoli", areas:[["tripoli","طرابلس","Tripoli"],["mina","الميناء","El Mina"]]},
+        koura:{ar:"الكورة", en:"Koura", areas:[["amioun","أميون","Amioun"],["chekka","شكا","Chekka"]]},
+        batroun:{ar:"البترون", en:"Batroun", areas:[["batroun","البترون","Batroun"]]},
+        zgharta:{ar:"زغرتا", en:"Zgharta", areas:[["zgharta","زغرتا","Zgharta"],["ehden","إهدن","Ehden"]]},
+      }},
+      akkar:    {ar:"عكار", en:"Akkar", districts:{
+        akkar:{ar:"عكار", en:"Akkar", areas:[["halba","حلبا","Halba"],["qoubaiyat","القبيات","Qoubaiyat"]]},
+      }},
+      beqaa:    {ar:"البقاع", en:"Beqaa", districts:{
+        zahle:{ar:"زحلة", en:"Zahle", areas:[["zahle","زحلة","Zahle"],["chtaura","شتورة","Chtaura"]]},
+        west_beqaa:{ar:"البقاع الغربي", en:"West Beqaa", areas:[["jeb_jannine","جب جنين","Jeb Jannine"]]},
+      }},
+      baalbek:  {ar:"بعلبك-الهرمل", en:"Baalbek-Hermel", districts:{
+        baalbek:{ar:"بعلبك", en:"Baalbek", areas:[["baalbek","بعلبك","Baalbek"]]},
+        hermel:{ar:"الهرمل", en:"Hermel", areas:[["hermel","الهرمل","Hermel"]]},
+      }},
+      south:    {ar:"الجنوب", en:"South", districts:{
+        saida:{ar:"صيدا", en:"Saida", areas:[["saida","صيدا","Saida"],["ghazieh","الغازية","Ghazieh"]]},
+        tyre:{ar:"صور", en:"Tyre", areas:[["tyre","صور","Tyre"]]},
+        jezzine:{ar:"جزين", en:"Jezzine", areas:[["jezzine","جزين","Jezzine"]]},
+      }},
+      nabatieh: {ar:"النبطية", en:"Nabatieh", districts:{
+        nabatieh:{ar:"النبطية", en:"Nabatieh", areas:[["nabatieh","النبطية","Nabatieh"],["kfar_roummane","كفر رمان","Kfar Roummane"]]},
+        marjeyoun:{ar:"مرجعيون", en:"Marjeyoun", areas:[["marjeyoun","مرجعيون","Marjeyoun"]]},
+      }},
+    };
+
     // ── STATIC i18n dictionary (chrome + non-chat strings) — ported + D2 additions ──
     const I18N = {
       ar:{
@@ -717,6 +775,7 @@
         sub_shop:"محل", sub_restaurant:"مطعم", sub_office:"مكتب", sub_warehouse:"مستودع",
         q_domain:"شو بدّك مساعدة فيه؟", q_servicetype:"تمام. أي نوع بالضبط؟",
         q_area:"وين العقار؟ (وين بدّك المحترف يجي)",
+        q_gov:"بأي محافظة؟", q_dist:"بأي قضاء؟", q_areaname:"بأي منطقة بالضبط؟", back_step:"رجوع",
         region_beirut:"بيروت — الأشرفية", region_mtleb:"جبل لبنان — جونية", region_north:"الشمال — طرابلس", region_south:"الجنوب — صيدا",
         q_urgency:"أديش مستعجل؟",
         urg_emergency:"طوارئ — اليوم", urg_week:"خلال الأسبوع", urg_flexible:"مرن / ما في استعجال",
@@ -776,6 +835,7 @@
         sub_shop:"Shop", sub_restaurant:"Restaurant", sub_office:"Office", sub_warehouse:"Warehouse",
         q_domain:"What do you need help with?", q_servicetype:"Got it. Which one exactly?",
         q_area:"Where's the place? (where should the pro come)",
+        q_gov:"Which governorate?", q_dist:"Which district?", q_areaname:"Which area exactly?", back_step:"Back",
         region_beirut:"Beirut — Achrafieh", region_mtleb:"Mount Lebanon — Jounieh", region_north:"North — Tripoli", region_south:"South — Saida",
         q_urgency:"How urgent is it?",
         urg_emergency:"Emergency — today", urg_week:"This week", urg_flexible:"Flexible / no rush",
@@ -1113,12 +1173,38 @@
       if(!S.timewindow){ askTimeWindow(); return; }
       finishChat();
     }
-    function askArea(){
+    // LOCATION CASCADE: governorate (محافظة) → district (قضاء) → area
+    function askArea(){ askGov(); }
+    function backChip(onBack){ return chip("↩ "+I18N.ar.back_step, "↩ "+I18N.en.back_step, onBack, "is-notsure"); }
+    function askGov(){
       STEP="area"; clearZone();
-      botSayKey("q_area", ()=>{
+      botSayKey("q_gov", ()=>{
         const z=document.getElementById("quick-zone");
-        ["region_beirut","region_mtleb","region_north","region_south"].forEach(k=>
-          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.area=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderCanvas(); popSlot("slot-map"); saveState(); afterDrill(); })));
+        Object.keys(LEB).forEach(g=>{ const gv=LEB[g];
+          z.appendChild(chip(gv.ar, gv.en, ()=>{ userSay(gv.ar,gv.en); clearZone(); askDist(g); })); });
+      });
+    }
+    function askDist(g){
+      STEP="area"; clearZone();
+      const gv=LEB[g];
+      botSayKey("q_dist", ()=>{
+        const z=document.getElementById("quick-zone");
+        Object.keys(gv.districts).forEach(d=>{ const dt=gv.districts[d];
+          z.appendChild(chip(dt.ar, dt.en, ()=>{ userSay(dt.ar,dt.en); clearZone(); askAreaName(g,d); })); });
+        z.appendChild(backChip(()=>{ clearZone(); askGov(); }));
+      });
+    }
+    function askAreaName(g,d){
+      STEP="area"; clearZone();
+      const gv=LEB[g], dt=gv.districts[d];
+      botSayKey("q_areaname", ()=>{
+        const z=document.getElementById("quick-zone");
+        dt.areas.forEach(a=>{ const [key,ar,en]=a;
+          z.appendChild(chip(ar, en, ()=>{
+            S.area={ gov:g, dist:d, area:key, govAr:gv.ar, govEn:gv.en, distAr:dt.ar, distEn:dt.en, areaAr:ar, areaEn:en };
+            userSay(ar,en); clearZone(); renderCanvas(); popSlot("slot-map"); saveState(); afterDrill();
+          })); });
+        z.appendChild(backChip(()=>{ clearZone(); askDist(g); }));
       });
     }
     function askUrgency(){
@@ -1247,6 +1333,11 @@
     function popFactFor(){ const facts=document.getElementById("canvas-facts"); const last=facts && facts.querySelector(".fact:last-of-type"); if(last){ last.classList.remove("chip-pop"); void last.offsetWidth; last.classList.add("chip-pop"); } }
     function popLastTile(){ const g=document.getElementById("canvas-gallery"); const tiles=g?g.querySelectorAll(".gtile"):[]; const last=tiles[tiles.length-1]; if(last){ last.classList.remove("chip-pop"); void last.offsetWidth; last.classList.add("chip-pop"); } }
 
+    function toggleCanvas(){
+      const w=document.getElementById("canvas-wrap"); if(!w) return;
+      const collapsed=w.classList.toggle("collapsed");
+      const head=document.getElementById("canvas-head"); if(head) head.setAttribute("aria-expanded", String(!collapsed));
+    }
     function progressCount(){
       let n=0; if(S.service) n++; if(S.subtype) n++;
       if(S.service){ const ans=Q[S.service].probes.filter(p=>S.probes[p.id]&&S.probes[p.id].type!=="skip").length; if(ans>0) n++; }
@@ -1260,7 +1351,7 @@
       if(ct){ const k=S.posted?"canvas_title_posted":"canvas_title"; ct.setAttribute("data-tkey",k); ct.innerHTML=t(k); }
       // progress
       const pr=document.getElementById("canvas-progress");
-      if(pr) pr.innerHTML = `<bdi>${progressCount()}</bdi>/<bdi>6</bdi>`;
+      if(pr) pr.innerHTML = `<bdi>${progressCount()}/6</bdi>`;
 
       // service slot
       const sIcon=document.getElementById("slot-service-icon"), sVal=document.getElementById("slot-service-val"), sSlot=document.getElementById("slot-service");
@@ -1291,8 +1382,9 @@
       const map=document.getElementById("slot-map"), hint=document.getElementById("map-hint");
       if(S.area){
         map.classList.remove("no-pin");
-        hint.removeAttribute("data-tkey"); hint.setAttribute("data-tar","📍 "+I18N.ar[S.area]); hint.setAttribute("data-ten","📍 "+I18N.en[S.area]);
-        hint.innerHTML = "📍 "+I18N[LANG][S.area];
+        const arTxt="📍 "+S.area.areaAr+" — "+S.area.govAr, enTxt="📍 "+S.area.areaEn+" — "+S.area.govEn;
+        hint.removeAttribute("data-tkey"); hint.setAttribute("data-tar",arTxt); hint.setAttribute("data-ten",enTxt);
+        hint.innerHTML = LANG==="en"?enTxt:arTxt;
       } else {
         map.classList.add("no-pin");
         hint.setAttribute("data-tkey","map_empty"); hint.removeAttribute("data-tar"); hint.removeAttribute("data-ten"); hint.innerHTML=t("map_empty");
@@ -1381,8 +1473,8 @@
     function forecastCopy(){
       const fc=FORECAST[S.domain] || FORECAST.other;
       const tier=effectiveTier();
-      const areaAr = S.area ? AREA_SHORT[S.area].ar : "منطقتك";
-      const areaEn = S.area ? AREA_SHORT[S.area].en : "your area";
+      const areaAr = S.area ? S.area.areaAr : "منطقتك";
+      const areaEn = S.area ? S.area.areaEn : "your area";
       const reply = LANG==="en"?fc.replyEn:fc.reply;
       const trade = LANG==="en"?fc.tradeEn:fc.trade;
       if(tier==="visit"){
@@ -1398,7 +1490,7 @@
         return {
           tier,
           ar:`توقّع ~<bdi>${fc.n}</bdi> عروض قربك — سعر تقريبي بين <bdi>$${fc.lo}</bdi> و<bdi>$${fc.hi}</bdi>`,
-          en:`Expect ~<bdi>${fc.n}</bdi> offers near you — rough range <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>`,
+          en:`Expect ~<bdi>${fc.n}</bdi> offers near you — rough range <bdi>$${fc.lo}–$${fc.hi}</bdi>`,
           subAr:`حدّد الموقع وزيد صورة لتجي العروض أدقّ وأسرع.`,
           subEn:`Set the location and add a photo so offers come tighter and faster.`,
         };
@@ -1406,8 +1498,8 @@
       // quotable 🟢
       return {
         tier,
-        ar:`~<bdi>3–5</bdi> عروض من ${trade} بـ${areaAr}، غالبًا <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>، أول ردّ ~خلال ${reply}`,
-        en:`~<bdi>3–5</bdi> offers from ${trade} in ${areaEn}, usually <bdi>$${fc.lo}</bdi>–<bdi>$${fc.hi}</bdi>, first reply ~within ${reply}`,
+        ar:`~<bdi>3–5</bdi> عروض من ${trade} بـ${areaAr}، غالبًا <bdi>$${fc.lo}–$${fc.hi}</bdi>، أول ردّ ~خلال ${reply}`,
+        en:`~<bdi>3–5</bdi> offers from ${trade} in ${areaEn}, usually <bdi>$${fc.lo}–$${fc.hi}</bdi>, first reply ~within ${reply}`,
         subAr:`طلبك صار واضح — العروض رح تكون دقيقة.`,
         subEn:`Your request is clear — offers will be accurate.`,
       };
@@ -1431,6 +1523,16 @@
       line.innerHTML = LANG==="en"?c.en:c.ar; line.setAttribute("data-tdyn","forecast");
       sub.innerHTML = LANG==="en"?c.subEn:c.subAr;
       paintFcMeter(document.getElementById("fc-meter"), c.tier);
+      // collapsed-header pill (so the forecast stays glanceable when the card is collapsed)
+      const pill=document.getElementById("fc-pill");
+      if(pill){
+        const fc=FORECAST[S.domain]||FORECAST.other;
+        const txt = c.tier==="visit" ? (LANG==="en"?"🟡 visit":"🟡 زيارة")
+          : c.tier==="quotable" ? (LANG==="en"?`🟢 ~3–5 offers`:`🟢 ~3–5 عروض`)
+          : (LANG==="en"?`🟠 ~${fc.n} offers`:`🟠 ~${fc.n} عروض`);
+        pill.className="fc-pill t-"+c.tier; pill.textContent=txt; pill.style.display="";
+        pill.setAttribute("data-tdyn","fcpill");
+      }
     }
     function renderGateForecast(){
       const c=forecastCopy();
@@ -1511,7 +1613,7 @@
       S.sector="residential"; S.subtype="apartment"; S.domain="plumb"; S.service="plumbing";
       S.probes={ issue_type:{value:"leak",type:"opt"}, location:{value:"bathroom",type:"opt"} };
       S.media=[{kind:"photo",thumbAr:"صورة — تحت المغسلة",thumbEn:"Photo — under-sink",txAr:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل.",txEn:"[Photo] The under-sink fitting; the trap is wet."}];
-      S.area="region_beirut"; S.urgency="urg_emergency"; S.offers="offers_35"; S.budget="budget_100_300"; S.timewindow="tw_morning";
+      S.area={gov:"beirut",dist:"beirut",area:"achrafieh",govAr:"بيروت",govEn:"Beirut",distAr:"بيروت",distEn:"Beirut",areaAr:"الأشرفية",areaEn:"Achrafieh"}; S.urgency="urg_emergency"; S.offers="offers_35"; S.budget="budget_100_300"; S.timewindow="tw_morning";
       goto("build"); postRequest();
     }
 
