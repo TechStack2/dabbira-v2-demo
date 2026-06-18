@@ -82,8 +82,9 @@
     .c .badge{background:#4338ca;} .c .run{background:#4338ca;} .c .accent{color:#312a9c;}
     .d .badge{background:#0e7490;} .d .run{background:#0e7490;} .d .accent{color:#0a586e;}
     .d2 .badge{background:#0f766e;} .d2 .run{background:#0f766e;} .d2 .accent{color:#0b5a54;}
+    .c1 .badge{background:#0f766e;} .c1 .run{background:#0f766e;} .c1 .accent{color:#0b5a54;}
 
-    /* featured "lead direction" card — D2 (deep teal) */
+    /* featured "lead direction" card — C1 (teal · calm) */
     .card.lead{border:2px solid #0f766e;box-shadow:0 10px 30px -16px rgba(15,118,110,.5);position:relative;}
     .leadtag{
       display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;
@@ -126,10 +127,10 @@
   <main class="wrap py-7">
 
     <!-- intro -->
-    <h1 class="t-display mb-2">جلسة تجربة الرحلات (D2 · D1/A/B/C)</h1>
+    <h1 class="t-display mb-2">جلسة تجربة الرحلات (C1 · D2/D1/A/B/C)</h1>
     <p class="t-body text-[#5b554d] mb-6">
       هاي لوحة لإدارة جلسة التجربة. اختار رحلة، اضغط «شغّل من البداية»، وسلّم التلفون لصاحب العقار يجرّبها لحالو.
-      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. <strong>D2 (الطلب الحيّ) هي الاتجاه الرئيسي</strong> — تطوّر D؛ تحتها D1/A/B/C للمقارنة.
+      لمّا يخلّص، بيضغط «رجوع للقائمة» لترجع لهون. <strong>C1 (حكي مُركّز) هي الاتجاه الرئيسي</strong> — تصحيح مسار لـ D2 (أهدأ، سؤال سؤال، بلا بطاقة حيّة)؛ تحتها D2/D1/A/B/C للمقارنة.
     </p>
 
     <!-- cross-link to the PROVIDER session launcher (one shared link covers both sessions) -->
@@ -139,32 +140,51 @@
       جلسة أصحاب العقارات ↔ جلسة المحترفين
     </a>
 
-    <!-- ════════════════ FEATURED LEAD DIRECTION — D2 (Living Request) ════════════════ -->
+    <!-- ════════════════ FEATURED LEAD DIRECTION — C1 (Focused chat) ════════════════ -->
     <section class="mb-4">
-      <div class="card lead d2">
+      <div class="card lead c1">
         <div class="mb-3"><span class="leadtag">★ الاتجاه الرئيسي · Lead</span></div>
+        <div class="flex items-start gap-3.5 mb-3">
+          <span class="badge">C1</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="t-h3">حكي مُركّز <span class="t-caption text-[#8a857c]">· Focused chat</span></h2>
+              <button class="donebtn" data-j="C1" onclick="toggleDone(this)" aria-pressed="false">
+                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span class="lbl">تمّت</span>
+              </button>
+            </div>
+            <p class="t-small text-[#5b554d] mt-1">تصحيح مسار لـ D2: الحكي هو الشاشة — سؤال سؤال، متل الواتساب. الـ ٦ صنايع الأساسية إلها أسئلة متفرّعة عميقة (جوهري ثمّ «هيك كفّى» ثمّ تفاصيل اختيارية)، وتوجيه صادق للمعاينة لمّا ما ينفع نسعّر عن بُعد. الوحيد اللي ثابت فوق: سطر حالة صغير بيلخّص شو حكينا. بلا بطاقة حيّة، بلا توقّع عروض. أهدأ.</p>
+          </div>
+        </div>
+        <a class="run" href="journey-c1-conversational.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
+        <a class="preview" href="journey-c1-conversational.html">معاينة (مع المبدّل) · Preview with switcher</a>
+      </div>
+    </section>
+
+    <!-- ════════════════ JOURNEY CARDS (D2 / D1 / A / B / C — for comparison) ════════════════ -->
+    <section class="space-y-4">
+
+      <!-- D2 — Living Request (demoted from lead → kept for comparison vs C1) -->
+      <div class="card d2">
         <div class="flex items-start gap-3.5 mb-3">
           <span class="badge">D2</span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-2">
-              <h2 class="t-h3">الطلب الحيّ <span class="t-caption text-[#8a857c]">· Living Request</span></h2>
+              <h2 class="t-h3">الطلب الحيّ <span class="t-caption text-[#8a857c]">· Living Request <span style="color:#0b5a54;">(للمقارنة · for comparison)</span></span></h2>
               <button class="donebtn" data-j="D2" onclick="toggleDone(this)" aria-pressed="false">
                 <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
                 <span class="lbl">تمّت</span>
               </button>
             </div>
-            <p class="t-small text-[#5b554d] mt-1">تطوّر D: مش بس حكي بالشاتبوكس — طلبك بيتكوّن قدّامك ببطاقة حيّة فوق (خدمة، خريطة، صور، تفاصيل)، وفيك تدوس عأي خانة تعدّلها. مع «توقّع العروض» + معاينة المحترفين + حفظ ومتابعة.</p>
+            <p class="t-small text-[#5b554d] mt-1">طلبك بيتكوّن قدّامك ببطاقة حيّة فوق (خدمة، خريطة، صور، تفاصيل)، مع «توقّع العروض» + معاينة المحترفين. مرجع للمقارنة مع C1 (اللي خفّف الازدحام).</p>
           </div>
         </div>
         <a class="run" href="journey-d2-living.html?clean">شغّل من البداية ▶ <span class="t-caption opacity-90">Run from start</span></a>
         <a class="preview" href="journey-d2-living.html">معاينة (مع المبدّل) · Preview with switcher</a>
       </div>
-    </section>
 
-    <!-- ════════════════ JOURNEY CARDS (D1 / A / B / C — for comparison) ════════════════ -->
-    <section class="space-y-4">
-
-      <!-- D1 — Adaptive chat (demoted from lead → kept for comparison vs D2) -->
+      <!-- D1 — Adaptive chat (demoted from lead → kept for comparison vs C1/D2) -->
       <div class="card d">
         <div class="flex items-start gap-3.5 mb-3">
           <span class="badge">D1</span>

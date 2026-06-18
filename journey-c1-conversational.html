@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<!--
+  Dabbira V2 — JOURNEY C1 · «حكي مُركّز · Focused chat» (TEAL — calm)
+  ════════════════════════════════════════════════════════════════════════════
+  DESIGN ARTIFACT — NOT PRODUCTION CODE. Lives under /design only.
+  Spec:    design/flows/journey-c1-conversational.md
+
+  ── THE RECALIBRATION (founder critique of D2: "too crowded, drifted from principles") ──
+  D2 = a chatbox PLUS a living canvas + forecast + provider-preview + always-on dock (a dashboard).
+  C1 = the conversation IS the screen. ONE question at a time, chat bubbles + quick-reply chips,
+  WhatsApp-native. Composer + a SMALL photo/voice button at the bottom. The ONLY persistent extra
+  is a SLIM STATUS LINE pinned under the header (e.g. «سباكة · تسريب · الأشرفية ▾») whose ▾ expands
+  to a compact review/edit summary sheet. Calm > features.
+
+  ── THE BACKBONE (the core of C1.0) ──
+  6 trades (plumbing, aluminum_and_glass, electrical, hvac, painting, cleaning) get DEEP,
+  trade-authoritative, BRANCHING drill trees: q1 → branch → CORE (always asked) → a persistent
+  «✓ هيك كفّى — تابِع · That's enough» chip after CORE → DEEPER (skippable refinements) → honest
+  visit-routing when it can't be priced remotely. Contextual media prompt fires at the decisive
+  question of each branch. The OTHER 17 services use the baseline flat Q probes (ported from D-family).
+
+  FONT LOCKED to IBM Plex Sans Arabic (validated by all 3 testers 2026-06-17).
+  Phone viewport (≤430px; looks right at 390). Authored RTL/lang=ar, logical properties only. Brand «دبّرها».
+  Western numerals (0-9), <bdi>-isolated. C-family TEAL.
+  NOTE: English column is DERIVED and has NOT passed the native-Lebanese review bar.
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>دبّرها — رحلة C1 (حكي مُركّز) · نموذج تصميم</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- LOCKED Arabic face: IBM Plex Sans Arabic — held CONSTANT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { arabic: ["'IBM Plex Sans Arabic'", "system-ui", "sans-serif"] },
+          colors: {
+            ink:"#0e1f24", soft:"#46585e", faint:"#7c8e94", line:"#d7e5e7",
+            bg:"#eef5f6", card:"#ffffff",
+            teal:"#0f766e", tealink:"#0b5a54", teald:"#115e59", wash:"#e1f0ee", tealln:"#bce0db",
+            amber:"#9a6a00", amberbg:"#fdf4dd", amberln:"#efddb0",
+          },
+          borderRadius: { xl2:"18px" },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root { --ar-lh:1.7; }
+    html, body {
+      margin:0; background:var(--bg,#eef5f6);
+      font-family:"IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing:0 !important; -webkit-text-size-adjust:100%;
+    }
+    html[lang="en"], html[lang="en"] body { font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html[lang="en"] { --ar-lh:1.55; }
+    .lang-switch{display:inline-flex;align-items:center;border:1px solid #bce0db;border-radius:999px;overflow:hidden;background:#fff;}
+    .lang-switch button{font-size:13px;font-weight:600;line-height:1;padding:6px 11px;background:transparent;color:#46585e;border:none;cursor:pointer;min-width:38px;}
+    .lang-switch button.is-on{background:#0f766e;color:#fff;}
+    .t-display{font-size:32px;line-height:1.4;font-weight:700;}
+    .t-h1{font-size:26px;line-height:1.5;font-weight:700;}
+    .t-h2{font-size:22px;line-height:1.5;font-weight:600;}
+    .t-h3{font-size:19px;line-height:1.55;font-weight:600;}
+    .t-body{font-size:16px;line-height:var(--ar-lh);font-weight:500;}
+    .t-strong{font-size:16px;line-height:var(--ar-lh);font-weight:700;}
+    .t-small{font-size:15px;line-height:1.6;font-weight:500;}
+    .t-caption{font-size:13px;line-height:1.6;font-weight:500;}
+    .t-button{font-size:16px;line-height:1.3;font-weight:600;}
+    *{letter-spacing:0 !important;}
+    bdi,.ltr-num{direction:ltr;unicode-bidi:isolate;}
+
+    .phone{
+      max-width:390px; margin-inline:auto; min-height:100dvh; background:var(--bg);
+      box-shadow:0 0 0 1px #d2e3e5, 0 24px 60px -28px rgba(10,40,50,.25); position:relative; overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+
+    /* ════════ chat bubbles ════════ */
+    .bubble-bot{
+      max-width:86%; align-self:flex-start;
+      background:#fff; border:1px solid #d7e5e7; color:#0e1f24;
+      border-radius:18px; border-start-start-radius:6px;
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+      box-shadow:0 1px 2px rgba(10,40,50,.04);
+    }
+    .bubble-user{
+      max-width:86%; align-self:flex-end;
+      background:#0f766e; color:#fff;
+      border-radius:18px; border-end-end-radius:6px;
+      padding:11px 14px; font-size:16px; line-height:1.7; font-weight:500;
+    }
+    .row{display:flex;}
+    .row.bot{justify-content:flex-start;}
+    .row.user{justify-content:flex-end;}
+    .avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:#0f766e;color:#fff;flex-shrink:0;font-weight:700;font-size:14px;}
+
+    .typing{display:inline-flex;gap:4px;align-items:center;}
+    .typing span{width:7px;height:7px;border-radius:999px;background:#a5cbc6;animation:blink 1.2s infinite ease-in-out;}
+    .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+    @keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+
+    /* quick-reply / probe chips */
+    .qchip{
+      display:inline-flex;align-items:center;gap:6px;font-size:15px;line-height:1.3;font-weight:600;
+      border:1.5px solid #bce0db;border-radius:999px;background:#fff;color:#0b5a54;padding:9px 14px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .qchip:hover{background:#e1f0ee;}
+    .qchip.is-sel{background:#0f766e;color:#fff;border-color:#0f766e;}
+    .qchip.is-media{border-style:dashed;color:#0f766e;}
+    .qchip.is-notsure{border-style:dashed;border-color:#cdb88a;color:#9a6a00;background:#fdfaf2;}
+    .qchip.is-done{background:#0b5a54;color:#fff;border-color:#0b5a54;}
+    .qchip.is-enough{border-style:dashed;border-color:#9ccbc4;color:#0b5a54;background:#f0faf8;font-weight:700;}
+    .qchip.is-enough:hover{background:#e1f0ee;}
+
+    .dchip{
+      display:inline-flex;align-items:center;gap:7px;font-size:15px;line-height:1.25;font-weight:600;
+      border:1.5px solid #bce0db;border-radius:14px;background:#fff;color:#0b5a54;padding:11px 13px;cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;text-align:start;
+    }
+    .dchip:hover{background:#e1f0ee;}
+
+    /* composer + small inline media button */
+    .composer{display:flex;align-items:center;gap:8px;}
+    .composer input{flex:1;font-size:16px;line-height:1.5;font-weight:500;border:1px solid #d7e5e7;border-radius:999px;background:#fff;padding:11px 16px;outline:none;}
+    .composer input:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16);}
+    .icon-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;border:1px solid #d7e5e7;background:#fff;color:#0f766e;cursor:pointer;flex-shrink:0;}
+    .icon-btn:hover{background:#eef7f6;}
+    .send-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:#0f766e;color:#fff;border:none;cursor:pointer;flex-shrink:0;}
+
+    .backbtn{ display:inline-flex;align-items:center;gap:6px;margin-block-end:8px;font-size:13px;font-weight:600;color:#5b6b66;background:#fff;border:1px solid #d7e5e7;border-radius:999px;padding:6px 12px;cursor:pointer; }
+    .backbtn:hover{ background:#eef7f6;color:#0b5a54;border-color:#9ccbc4; }
+    [dir="rtl"] .bb-arrow{ transform:scaleX(-1); }
+    .svc-search{ width:100%;font-size:15px;font-weight:500;border:1.5px solid #d7e5e7;border-radius:999px;background:#fff;padding:10px 15px;outline:none; }
+    .svc-search:focus{ border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16); }
+
+    .field{font-size:16px;line-height:1.5;font-weight:500;width:100%;border:1px solid #d7e5e7;border-radius:12px;background:#fff;padding:12px 14px;outline:none;}
+    .field:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.16);}
+
+    .cta-primary{font-size:16px;line-height:1.3;font-weight:600;background:#0f766e;color:#fff;border:none;border-radius:14px;padding:14px 16px;cursor:pointer;min-height:48px;width:100%;transition:transform .12s ease,box-shadow .15s ease;}
+    .cta-primary:disabled{background:#a6cdc8;cursor:not-allowed;}
+    .cta-primary.is-ready{animation:cta-pop .42s ease;box-shadow:0 6px 18px -6px rgba(15,118,110,.55);}
+    @keyframes cta-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+    .cta-ghost{font-size:16px;line-height:1.3;font-weight:600;background:#fff;color:#0b5a54;border:1px solid #bce0db;border-radius:14px;padding:13px 16px;cursor:pointer;min-height:48px;width:100%;}
+    .picker{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;opacity:.7;font-size:12px;}
+    .picker.is-sel{background:#fff;color:#0e1f24;opacity:1;}
+
+    .media-thumb{display:grid;place-items:center;width:64px;height:64px;border-radius:12px;background:rgba(255,255,255,.18);color:#fff;flex-shrink:0;}
+    .rec-dot{width:9px;height:9px;border-radius:999px;background:#ff5c5c;animation:recblink 1s infinite;}
+    @keyframes recblink{0%,100%{opacity:1}50%{opacity:.25}}
+
+    /* ════════════════════ THE SLIM STATUS LINE (the only persistent extra) ════════════════════ */
+    .statusbar{
+      position:sticky; inset-block-start:0; z-index:20;
+      background:#f4fafa; border-block-end:1px solid #d7e5e7;
+    }
+    .status-line{
+      display:flex; align-items:center; gap:8px; width:100%;
+      background:transparent; border:none; cursor:pointer; text-align:start;
+      padding:8px 14px;
+    }
+    .status-text{
+      flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-size:13px; font-weight:600; color:#0b5a54; line-height:1.4;
+    }
+    .status-text .sep{ color:#9ccbc4; padding-inline:5px; }
+    .status-text .empty{ color:#7c8e94; font-weight:500; }
+    .status-chev{ color:#0b5a54; flex-shrink:0; transition:transform .18s ease; }
+    .statusbar.open .status-chev{ transform:rotate(180deg); }
+
+    /* the compact summary sheet (expands from the status line) */
+    .summary-sheet{ display:none; padding:4px 14px 14px; background:#f4fafa; border-block-end:1px solid #d7e5e7; }
+    .statusbar.open + .summary-sheet{ display:block; }
+    .sum-row{
+      display:flex; align-items:flex-start; gap:9px; padding:9px 11px;
+      border:1px solid #dbeae8; border-radius:12px; background:#fff; margin-block-end:7px; text-align:start; width:100%; cursor:pointer;
+      transition:background .12s ease,border-color .12s ease;
+    }
+    .sum-row:hover{ background:#eef7f6; border-color:#9ccbc4; }
+    .sum-row.is-empty{ border-style:dashed; background:#fbfdfd; }
+    .sum-ico{ flex-shrink:0; font-size:18px; line-height:1.2; margin-block-start:1px; }
+    .sum-k{ font-size:11px; font-weight:600; color:#7c8e94; line-height:1.3; }
+    .sum-v{ font-size:14px; font-weight:600; color:#0e1f24; line-height:1.45; }
+    .sum-v.empty{ color:#9aa9ad; font-weight:500; }
+    .sum-edit{ flex-shrink:0; color:#0b5a54; opacity:.55; margin-block-start:2px; }
+    .sum-empty-hint{ font-size:12px; color:#9aa9ad; }
+
+    /* media chips on summary */
+    .sum-media{ display:flex; gap:6px; flex-wrap:wrap; margin-block-start:4px; }
+    .sum-mtile{ display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border:1px solid #cfe2e0;border-radius:999px;background:#f0faf8;color:#0b5a54;padding:4px 9px; }
+
+    /* posted "what happens next" block */
+    .nextcard{ border:1px solid #d7e5e7;border-radius:14px;background:#f6fbfb;padding:14px 15px; }
+
+    @media (prefers-reduced-motion:reduce){ .cta-primary.is-ready,.typing span,.rec-dot{animation:none;} }
+  </style>
+</head>
+
+<body class="text-ink">
+  <div class="phone">
+
+    <!-- ════════════════ TOP CHROME ════════════════ -->
+    <div id="artifact-banner" class="bg-amberbg text-amber border-b border-amberln px-4 py-1.5 text-center" dir="ltr" style="font-size:11px;line-height:1.4;">
+      DESIGN ARTIFACT — not production · OWNER JOURNEY C1 (Focused chat) · font LOCKED: IBM Plex Sans Arabic
+    </div>
+
+    <!-- Floating AR|EN language switcher — always visible (incl. clean mode). -->
+    <div class="lang-switch" style="position:absolute;inset-block-start:38px;inset-inline-end:12px;z-index:60;box-shadow:0 2px 8px -2px rgba(0,0,0,.18);" id="lang-switch" aria-label="Language">
+      <button id="lang-ar" class="is-on" onclick="setLang('ar')">AR</button>
+      <button id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
+
+    <header id="pub-header" class="sticky top-0 z-30 flex items-center justify-between gap-2 bg-card/95 backdrop-blur px-4 py-3 border-b border-line">
+      <div class="flex items-center gap-2">
+        <span class="grid place-items-center size-8 rounded-lg bg-teal text-white t-strong" data-i18n="brand_mark">د</span>
+        <span class="t-h3" data-i18n="brand">دبّرها</span>
+      </div>
+      <a href="#" onclick="return false" class="t-caption text-soft underline underline-offset-4" data-i18n="signin_secondary">عندك حساب؟ سجّل الدخول</a>
+    </header>
+
+    <!-- ════════════════════════════ SCREEN 0 — LANDING ════════════════════════════ -->
+    <section id="screen-landing" class="screen is-active">
+      <div class="px-5 pt-8 pb-7 bg-wash">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 text-tealink px-3 py-1 t-caption mb-4">
+          <span class="size-1.5 rounded-full bg-teal"></span> <span data-i18n="tagline">احكِ معنا — سؤال سؤال، عالراحة.</span>
+        </span>
+        <h1 class="t-display mb-3" data-i18n="hero_title">قلّنا شو في…<br/>ونحنا منكمّل معك.</h1>
+        <p class="t-body text-soft mb-6" data-i18n="hero_sub">منحكي سوا متل ما تراسل حدا بتعرفو — سؤال سؤال، بلا تعمير. وإذا أسهل تفرجينا، صوّر أو سجّل صوت بأي لحظة.</p>
+        <button class="cta-primary" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
+        <p class="t-caption text-soft mt-3 text-center" data-i18n="free_note">ببلاش · بلا حساب لتبلّش · سؤال سؤال</p>
+      </div>
+
+      <div class="px-5 py-7">
+        <h2 class="t-h2 mb-4" data-i18n="how_it_works">كيف بتمشي؟</h2>
+        <div class="rounded-xl2 border border-line bg-card p-4 space-y-2.5">
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q1">أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟</div></div>
+          <div class="row user"><div class="bubble-user" data-i18n="preview_a1">لبيت</div></div>
+          <div class="row bot"><div class="bubble-bot" style="max-width:90%;" data-i18n="preview_q2">تمام. شو بدّك مساعدة فيه؟</div></div>
+        </div>
+        <p class="t-small text-soft mt-3" data-i18n="preview_note">سؤال واحد بالمرّة، عالراحة. وفوق في سطر صغير بيلخّص شو حكينا — تدوس عليه إذا بدّك تراجع أو تعدّل.</p>
+      </div>
+
+      <div class="px-5 pb-8">
+        <div class="rounded-xl2 border border-line bg-card p-4 flex items-center gap-3">
+          <span class="grid place-items-center size-10 rounded-xl bg-wash text-tealink shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div class="min-w-0"><p class="t-strong" data-i18n="trust_t">محترفين مقيَّمين</p><p class="t-small text-soft" data-i18n="trust_d">تقييمات حقيقية من ناس وظّفوهم قبلك.</p></div>
+        </div>
+        <button class="cta-primary mt-5" onclick="startChat()" data-i18n="start_chat">ابدأ الحكي</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 1 — THE FOCUSED CHAT ════════════════════════════ -->
+    <section id="screen-build" class="screen" style="display:none;flex-direction:column;min-height:0;flex:1;">
+
+      <!-- ─────────── THE SLIM STATUS LINE (the only persistent extra) ─────────── -->
+      <div class="statusbar" id="statusbar">
+        <button class="status-line" id="status-line" onclick="toggleSummary()" aria-expanded="false" aria-controls="summary-sheet" aria-label="ملخّص طلبك">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b5a54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.7;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+          <span class="status-text" id="status-text"><span class="empty" data-tkey="status_empty">طلبك — عم يتكوّن</span></span>
+          <svg class="status-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+      <!-- the compact summary sheet (review/edit) -->
+      <div class="summary-sheet" id="summary-sheet"></div>
+
+      <!-- ─────────── THE CONVERSATION ─────────── -->
+      <div id="assistant" class="flex flex-col" style="flex:1;min-height:0;">
+        <div id="chat-log" class="px-4 pt-3 pb-2 flex flex-col gap-2.5" style="overflow-y:auto;flex:1;min-height:120px;"></div>
+
+        <!-- dynamic answer zone -->
+        <div id="quick-zone" class="px-4 pb-1.5 flex flex-wrap gap-2"></div>
+
+        <!-- composer (sticky) with a SMALL inline photo/voice button -->
+        <div class="sticky bottom-0 z-10 bg-bg/95 backdrop-blur border-t border-line px-4 pt-2" style="padding-bottom:calc(9px + env(safe-area-inset-bottom));">
+          <button id="back-btn" class="backbtn" onclick="goBack()" style="display:none;">
+            <svg class="bb-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+            <span data-tkey="back_step_one">رجوع خطوة</span>
+          </button>
+          <div class="composer">
+            <button class="icon-btn" onclick="quickMedia()" data-i18n-aria="quick_media_aria" aria-label="أضف صورة أو صوت" title="صورة · صوت">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/><path d="M21 15V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10"/><circle cx="9" cy="9" r="1.6"/></svg>
+            </button>
+            <input id="chat-input" type="text" inputmode="text" placeholder="اكتب جوابك… أو دوس على خيار" data-i18n-ph="composer_ph" onkeydown="if(event.key==='Enter')sendFree()" />
+            <button class="send-btn" onclick="sendFree()" data-i18n-aria="send_aria" aria-label="ابعت">
+              <svg id="send-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </div>
+          <p class="t-caption text-amber mt-1" dir="ltr" style="text-align:start;" data-i18n="be_media_capture">[BE] — التقاط/تفريغ الوسائط (واجهة فقط)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 2 — REGISTER-LATE GATE ════════════════════════════ -->
+    <section id="screen-signup" class="screen px-4 pb-28 pt-8" style="display:none;">
+      <div class="text-center mb-5">
+        <span class="inline-grid place-items-center size-16 rounded-full bg-wash text-teal mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1" data-i18n="gate_title">طلبك جاهز ✅</h1>
+        <p class="t-body text-soft" data-i18n="gate_sub">اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.</p>
+      </div>
+
+      <!-- a compact read-only snapshot of what was captured (no forecast) -->
+      <div class="rounded-xl2 border border-line bg-card p-3.5 mb-5" id="gate-snapshot"></div>
+
+      <label class="block mb-4"><span class="t-small text-ink" data-i18n="name_label">اسمك</span><input dir="auto" class="field mt-1.5" placeholder="متلاً: سامر" data-i18n-ph="name_ph" /></label>
+      <label class="block mb-5">
+        <span class="t-small text-ink" data-i18n="phone_label">رقم تلفونك</span>
+        <input dir="ltr" inputmode="tel" class="field mt-1.5" style="text-align:start;" placeholder="+961 …" />
+        <span class="t-caption text-soft mt-1 block" data-i18n="otp_note">منبعتلك رمز تأكيد عالرسائل.</span>
+      </label>
+
+      <button class="cta-primary" onclick="postRequest()" data-i18n="gate_send">اعمل حساب وابعت</button>
+      <button class="cta-ghost mt-2.5" onclick="goto('build')" data-i18n="gate_back">رجوع للطلب</button>
+      <p class="t-caption text-amber mt-2 text-center" dir="ltr" style="text-align:start;" data-i18n="be_otp">[BE] — تسجيل/تأكيد عبر OTP</p>
+    </section>
+
+    <!-- ════════════════════════════ SCREEN 3 — POSTED (final request page) ════════════════════════════ -->
+    <section id="screen-posted" class="screen px-4 pb-10 pt-7" style="display:none;">
+      <div class="text-center mb-5">
+        <span class="inline-grid place-items-center size-14 rounded-full bg-wash text-teal mb-3"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <h1 class="t-h1 mb-1" data-tkey="posted_title">طلبك انبعت ✅</h1>
+        <p class="t-body text-soft" id="posted-status" data-tkey="posted_status">منشور · مفتوح للعروض</p>
+      </div>
+
+      <!-- the posted request summary -->
+      <div class="rounded-xl2 border border-line bg-card p-4 mb-5" id="posted-summary"></div>
+
+      <!-- the ONLY expectation UI in the whole flow: one honest "what happens next" line -->
+      <div class="nextcard mb-5">
+        <p class="t-small text-ink" style="font-weight:700;margin-block-end:7px;" data-tkey="next_t">شو بيصير هلّق؟</p>
+        <p class="t-body text-soft" id="next-line" data-tkey="next_line_quote">المحترفون بمنطقتك رح يشوفوا طلبك ويبعتولك عروض — بتقارن وبتختار.</p>
+      </div>
+
+      <button class="cta-ghost" onclick="reopenFromPosted()" data-tkey="edit_request">عدّل الطلب</button>
+      <a id="back-to-dash-posted" href="demo-dashboard.html" class="cta-ghost mt-2.5 text-center" style="display:none;text-decoration:none;" data-i18n="back_to_list">رجوع للقائمة ↩</a>
+    </section>
+
+    <!-- ════════════════ SCREEN PICKER + dev jumps (moderator nav only) ════════════════ -->
+    <nav class="bg-ink text-white px-3 py-2 flex items-center gap-1.5 justify-center flex-wrap relative z-20" dir="ltr" style="font-size:12px;">
+      <span class="opacity-60">C1:</span>
+      <button class="picker is-sel" data-s="landing" onclick="goto('landing')">0·landing</button>
+      <button class="picker"        data-s="build"   onclick="goto('build')">1·chat</button>
+      <button class="picker"        data-s="signup"  onclick="goto('signup')">2·register</button>
+      <button class="picker"        onclick="devPostPreview()">3·posted</button>
+      <span class="opacity-60 ms-2">jump svc:</span>
+      <select id="dev-svc" onchange="devJumpService(this.value)" style="background:#13282d;color:#fff;border:1px solid #244249;border-radius:6px;padding:3px 6px;font-size:11px;max-width:150px;"></select>
+    </nav>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  i18n — self-contained AR⇄EN switcher (file://-safe; no libs, no fetch)
+    //  Arabic canonical/default. EN derived, NOT review-passed.
+    // ════════════════════════════════════════════════════════════════════════
+    let LANG = "ar";
+
+    // ── REAL service-category labels (messages/service_categories) — ported verbatim ──
+    const CAT = {
+      ar:{plumbing:"سباكة",electrical:"كهرباء",hvac:"تكييف وتدفئة",carpentry:"نجارة",painting:"دهان",masonry:"أعمال حجر وبناء",roofing:"أسقف وعزل",flooring:"أرضيات",tiling:"بلاط وسيراميك",landscaping:"تنسيق حدائق",pest_control:"مكافحة حشرات",cleaning:"تنظيف",appliance_repair:"إصلاح أجهزة كهربائية",security_systems:"أنظمة أمان ومراقبة",solar_installation:"تركيب وصيانة طاقة شمسية",general_maintenance:"صيانة عامة",renovation:"تجديد وترميم",construction:"بناء وتشييد",smart_home:"منزل ذكي",moving:"خدمات نقل",furniture:"خدمات أثاث",aluminum_and_glass:"ألمنيوم وزجاج",other:"أخرى"},
+      en:{plumbing:"Plumbing",electrical:"Electrical",hvac:"HVAC",carpentry:"Carpentry",painting:"Painting",masonry:"Masonry",roofing:"Roofing",flooring:"Flooring",tiling:"Tiling",landscaping:"Landscaping",pest_control:"Pest Control",cleaning:"Cleaning",appliance_repair:"Appliance Repair",security_systems:"Security Systems",solar_installation:"Solar Installation & Maintenance",general_maintenance:"General Maintenance",renovation:"Renovation",construction:"Construction",smart_home:"Smart Home",moving:"Moving Services",furniture:"Furniture Services",aluminum_and_glass:"Aluminum & Glass",other:"Other"}
+    };
+    function catLabel(id){ return (CAT[LANG] && CAT[LANG][id]) || CAT.ar[id] || id; }
+
+    // ── DOMAIN → SERVICE-TYPE grouping (all 23 reachable; domain-first) — ported verbatim ──
+    const DOMAINS = [
+      { id:"plumb",  emoji:"🚰", ar:"سباكة ومياه",                   en:"Plumbing & water",                         services:["plumbing"] },
+      { id:"elec",   emoji:"⚡", ar:"كهرباء وأنظمة",                  en:"Electrical & systems",                     services:["electrical","solar_installation","smart_home","security_systems"] },
+      { id:"cool",   emoji:"❄️", ar:"تبريد وتدفئة وأجهزة",           en:"Cooling, heating & appliances",            services:["hvac","appliance_repair"] },
+      { id:"surf",   emoji:"🎨", ar:"دهان وأرضيات وأسطح",            en:"Paint, floors & surfaces",                 services:["painting","tiling","flooring"] },
+      { id:"wood",   emoji:"🪟", ar:"نجارة وأثاث وألمنيوم وزجاج",    en:"Carpentry, furniture, aluminum & glass",   services:["carpentry","furniture","aluminum_and_glass"] },
+      { id:"build",  emoji:"🧱", ar:"بناء وترميم وأسقف",            en:"Building, renovation & roofing",           services:["renovation","construction","masonry","roofing","general_maintenance"] },
+      { id:"clean",  emoji:"🧽", ar:"تنظيف ومكافحة حشرات",          en:"Cleaning & pest control",                  services:["cleaning","pest_control"] },
+      { id:"garden", emoji:"🌿", ar:"حدائق وخارج",                  en:"Outdoor & garden",                         services:["landscaping"] },
+      { id:"move",   emoji:"🚚", ar:"نقل",                          en:"Moving",                                   services:["moving"] },
+      { id:"other",  emoji:"❓", ar:"غير هيك / مش متأكد",            en:"Other / not sure",                         services:["other"] },
+    ];
+    function domLabel(d){ return LANG==="en" ? d.en : d.ar; }
+    const ALL_SERVICES = DOMAINS.reduce((a,d)=>a.concat(d.services),[]);
+    const SVC_SYN = {
+      plumbing:"تسريب تنقيط انسداد ماي مي مجلى حنفية مرحاض سخان leak drip clog pipe water faucet sewage",
+      electrical:"كهربا فيش طفي قاطع تمديدات اباجور wiring outlet breaker power switch tripping",
+      hvac:"مكيف تكييف اي سي تبريد تدفئة سبليت ac air condition heating cooling split",
+      appliance_repair:"براد غسالة فرن جلاية تصليح اجهزة fridge washer oven appliance",
+      carpentry:"خشب نجار باب خزانة موبيليا wood door cabinet furniture",
+      painting:"دهان طلاء بوية صبغ paint wall رطوبة",
+      masonry:"باطون حجر اسمنت بناء concrete stone cement",
+      roofing:"سطح عزل تسريب سقف roof waterproof insulation",
+      flooring:"ارضية باركيه parquet floor",
+      tiling:"بلاط سيراميك قرميد tile ceramic",
+      landscaping:"حديقة زرع تنسيق نجيل garden plants landscape",
+      pest_control:"حشرات صراصير فئران رش pest insects mice cockroach",
+      cleaning:"تنظيف جلي تنضيف تعفير clean wash deep",
+      security_systems:"كاميرا انذار مراقبة camera cctv alarm security",
+      solar_installation:"شمسي طاقة الواح solar panels",
+      general_maintenance:"صيانة تصليح هاندي maintenance handyman fix",
+      renovation:"ترميم تجديد ديكور renovation remodel",
+      construction:"بناء تشييد مقاول construction build contractor",
+      smart_home:"سمارت ذكي اتمتة smart home automation",
+      moving:"نقل عفش شحن move moving transport",
+      furniture:"اثاث تركيب فك موبيليا furniture assembly",
+      aluminum_and_glass:"املنيوم المنيوم زجاج قزاز شباك بلكون تسكير سيكوريت aluminum glass window balcony enclosure",
+      other:"غير هيك تاني other else",
+    };
+    function domainForService(svc){ return DOMAINS.find(d=>d.services.includes(svc)); }
+    function domEmoji(svc){ const d=domainForService(svc); return d?d.emoji:"🛠️"; }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  BASELINE flat probes (messages/service_questions) — for the 17 non-deep services
+    //  (the 6 deep trades use TREE below; baseline Q is the fallback engine)
+    // ════════════════════════════════════════════════════════════════════════
+    const Q = {
+      carpentry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال النجارة؟",opt:{doors:"أبواب (تركيب/إصلاح)",windows:"نوافذ (تركيب/إصلاح)",cabinets:"خزائن / رفوف",furniture:"أثاث مخصّص",flooring:"أرضيات خشبية"}}, en:{label:"What type of carpentry work?",opt:{doors:"Doors (install/repair)",windows:"Windows (install/repair)",cabinets:"Cabinets / Shelving",furniture:"Custom Furniture",flooring:"Wood Flooring"}}},
+        {id:"location", ar:{label:"أين يلزم العمل؟",opt:{kitchen:"المطبخ",bedroom:"غرفة/غرف النوم",living_room:"غرفة المعيشة",bathroom:"الحمّام/الحمّامات",outdoor:"الخارج"}}, en:{label:"Where is the work needed?",opt:{kitchen:"Kitchen",bedroom:"Bedroom(s)",living_room:"Living Room",bathroom:"Bathroom(s)",outdoor:"Outdoor"}}},
+      ]},
+      tiling:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال التبليط المطلوبة؟",opt:{new_tiling:"تبليط جديد",retiling:"إعادة تبليط (إزالة القديم)",repair_broken:"استبدال بلاط مكسور",grouting:"ترويب / عزل"}}, en:{label:"What tiling work do you need?",opt:{new_tiling:"New Tiling",retiling:"Re-tiling (remove old)",repair_broken:"Replace Broken Tiles",grouting:"Grouting / Sealing"}}},
+        {id:"location", ar:{label:"أين؟",opt:{bathroom:"الحمّام",kitchen:"المطبخ",floors:"الأرضيات",walls:"الجدران",balcony:"البلكون / التراس"}}, en:{label:"Where?",opt:{bathroom:"Bathroom",kitchen:"Kitchen",floors:"Floors",walls:"Walls",balcony:"Balcony / Terrace"}}},
+        {id:"size", ar:{label:"ما حجم المنطقة؟",opt:{small:"صغيرة (بضعة أمتار)",medium:"متوسطة (غرفة واحدة)",large:"كبيرة (عدة غرف)"}}, en:{label:"How big is the area?",opt:{small:"Small (a few m²)",medium:"Medium (one room)",large:"Large (multiple rooms)"}}},
+      ]},
+      flooring:{ probes:[
+        {id:"work_type", ar:{label:"ما أعمال الأرضيات المطلوبة؟",opt:{new_installation:"تركيب جديد",replacement:"استبدال الموجود",repair:"إصلاح"}}, en:{label:"What flooring work do you need?",opt:{new_installation:"New Installation",replacement:"Replace Existing",repair:"Repair"}}},
+        {id:"material", ar:{label:"أي مادة؟",opt:{ceramic:"سيراميك / بورسلان",marble:"رخام / حجر",parquet:"باركيه / خشب",vinyl:"فينيل / لامينيت",undecided:"لم أقرر بعد"}}, en:{label:"Which material?",opt:{ceramic:"Ceramic / Porcelain",marble:"Marble / Stone",parquet:"Parquet / Wood",vinyl:"Vinyl / Laminate",undecided:"Not decided yet"}}},
+        {id:"area_size", ar:{label:"ما حجم المساحة؟",opt:{small_area:"مساحة صغيرة / رقعة",one_room:"غرفة واحدة",two_three_rooms:"غرفتان–3 غرف",whole_floor:"شقة / طابق كامل"}}, en:{label:"How much area?",opt:{small_area:"Small area / patch",one_room:"One room",two_three_rooms:"2–3 rooms",whole_floor:"Whole apartment / floor"}}},
+      ]},
+      masonry:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال البناء؟",opt:{wall_construction:"بناء حائط",crack_repair:"إصلاح شقوق / أضرار",plastering:"قصارة / تلييس",stone_cladding:"تلبيس حجر",concrete_work:"أعمال باطون"}}, en:{label:"What type of masonry work?",opt:{wall_construction:"Building a Wall",crack_repair:"Crack / Damage Repair",plastering:"Plastering",stone_cladding:"Stone Cladding",concrete_work:"Concrete Work"}}},
+        {id:"location", ar:{label:"داخلي أم خارجي؟",opt:{interior:"داخلي",exterior:"خارجي",both:"كلاهما"}}, en:{label:"Interior or exterior?",opt:{interior:"Interior",exterior:"Exterior",both:"Both"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{small_repair:"إصلاح صغير",single_wall:"حائط / منطقة واحدة",room:"غرفة كاملة",whole_property:"العقار كله"}}, en:{label:"How big is the job?",opt:{small_repair:"Small repair",single_wall:"One wall / area",room:"A full room",whole_property:"Whole property"}}},
+      ]},
+      roofing:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال الأسقف؟",opt:{leak_repair:"إصلاح تسرّب",maintenance:"صيانة / فحص",partial_replacement:"استبدال جزئي",full_replacement:"استبدال السقف بالكامل"}}, en:{label:"What type of roofing work?",opt:{leak_repair:"Leak Repair",maintenance:"Maintenance / Inspection",partial_replacement:"Partial Replacement",full_replacement:"Full Roof Replacement"}}},
+        {id:"issue_description", free:true, ar:{label:"صف المشكلة (إن وُجدت)",ph:"مثال: تسرّب المياه إلى غرفة المعيشة عند هطول المطر…"}, en:{label:"Describe the issue (if any)",ph:"e.g. Water leaking in living room when it rains…"}},
+      ]},
+      landscaping:{ probes:[
+        {id:"work_type", ar:{label:"ما نوع أعمال تنسيق الحدائق؟",opt:{lawn:"العناية بالعشب / القص",garden:"تصميم حديقة / زراعة",trees:"تقليم / إزالة الأشجار",hardscape:"تنسيق صلب (ممرات، جدران)"}}, en:{label:"What type of landscaping work?",opt:{lawn:"Lawn Care / Mowing",garden:"Garden Design / Planting",trees:"Tree Trimming / Removal",hardscape:"Hardscaping (paths, walls)"}}},
+        {id:"area", ar:{label:"أي منطقة/مناطق؟",opt:{front_yard:"الفناء الأمامي",back_yard:"الفناء الخلفي",side_yard:"الفناء الجانبي",rooftop:"حديقة سطح"}}, en:{label:"Which area(s)?",opt:{front_yard:"Front Yard",back_yard:"Back Yard",side_yard:"Side Yard",rooftop:"Rooftop Garden"}}},
+      ]},
+      pest_control:{ probes:[
+        {id:"pest_type", ar:{label:"ما الآفات الموجودة؟",opt:{cockroaches:"صراصير",rodents:"فئران / جرذان",termites:"نمل أبيض / سوس الخشب",bedbugs:"بقّ الفراش",ants:"نمل",wasps:"دبابير",other_pest:"أخرى"}}, en:{label:"What pests are you dealing with?",opt:{cockroaches:"Cockroaches",rodents:"Mice / Rats",termites:"Termites / Wood Worm",bedbugs:"Bed Bugs",ants:"Ants",wasps:"Wasps / Hornets",other_pest:"Other"}}},
+        {id:"severity", ar:{label:"ما مدى سوء الوضع؟",opt:{occasional:"أراها أحيانًا",frequent:"أراها يوميًا",infestation:"انتشار خطير"}}, en:{label:"How bad is it?",opt:{occasional:"See them occasionally",frequent:"See them daily",infestation:"Serious infestation"}}},
+        {id:"treatment", ar:{label:"أي نوع من المعالجة؟",opt:{one_time:"معالجة لمرة واحدة",recurring:"متكررة / عقد"}}, en:{label:"What kind of treatment?",opt:{one_time:"One-time treatment",recurring:"Recurring / Contract"}}},
+      ]},
+      appliance_repair:{ probes:[
+        {id:"appliance", ar:{label:"أي جهاز؟",opt:{washing_machine:"غسالة",refrigerator:"برّاد / فريزر",oven_stove:"فرن / غاز",dishwasher:"جلاية صحون",dryer:"نشافة",water_heater:"سخّان مياه",small_appliance:"جهاز صغير"}}, en:{label:"Which appliance?",opt:{washing_machine:"Washing Machine",refrigerator:"Refrigerator / Freezer",oven_stove:"Oven / Stove",dishwasher:"Dishwasher",dryer:"Dryer",water_heater:"Water Heater",small_appliance:"Small Appliance"}}},
+        {id:"problem", ar:{label:"ما المشكلة؟",opt:{not_turning_on:"لا يعمل إطلاقًا",not_working_properly:"يعمل لكن بشكل سيئ",leaking:"تسريب",noisy:"صوت غريب",error_code:"يعرض رمز خطأ"}}, en:{label:"What's the problem?",opt:{not_turning_on:"Won't turn on",not_working_properly:"Works but not properly",leaking:"Leaking",noisy:"Strange noise",error_code:"Showing error code"}}},
+        {id:"brand_age", free:true, ar:{label:"الماركة والعمر (إن عرفت)",ph:"مثال: LG، عمره حوالي 5 سنوات…"}, en:{label:"Brand and age (if known)",ph:"e.g. LG, about 5 years old…"}},
+      ]},
+      security_systems:{ probes:[
+        {id:"system_type", ar:{label:"ما النظام المطلوب؟",opt:{cameras:"كاميرات مراقبة",alarm:"نظام إنذار",intercom:"إنتركم / جرس فيديو",smart_locks:"أقفال ذكية",full_system:"نظام متكامل"}}, en:{label:"What system do you need?",opt:{cameras:"Cameras (CCTV)",alarm:"Alarm System",intercom:"Intercom / Video Door",smart_locks:"Smart Locks",full_system:"Complete System"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",upgrade:"ترقية / توسيع",maintenance:"صيانة"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",upgrade:"Upgrade / Expand",maintenance:"Maintenance"}}},
+        {id:"property_type", ar:{label:"ما نوع العقار؟",opt:{apartment:"شقة",house_villa:"منزل / فيلا",shop_office:"محل / مكتب",building:"مبنى كامل"}}, en:{label:"What kind of property?",opt:{apartment:"Apartment",house_villa:"House / Villa",shop_office:"Shop / Office",building:"Whole Building"}}},
+      ]},
+      solar_installation:{ probes:[
+        {id:"system_type", ar:{label:"ما نظام الطاقة الشمسية؟",opt:{water_heater:"سخّان مياه شمسي",pv_panels:"ألواح شمسية (كهرباء)",full_system:"نظام كامل + بطاريات",batteries_only:"بطاريات / إنفرتر فقط"}}, en:{label:"What solar system?",opt:{water_heater:"Solar Water Heater",pv_panels:"Solar Panels (electricity)",full_system:"Full System + Batteries",batteries_only:"Batteries / Inverter Only"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",repair:"إصلاح",maintenance:"صيانة / تنظيف",expansion:"توسيع النظام الحالي"}}, en:{label:"What service?",opt:{new_installation:"New Installation",repair:"Repair",maintenance:"Maintenance / Cleaning",expansion:"Expand Existing System"}}},
+        {id:"current_setup", ar:{label:"ماذا لديك اليوم؟",opt:{nothing_yet:"لا شيء بعد",existing_solar:"نظام شمسي موجود",generator_only:"مولّد / UPS فقط"}}, en:{label:"What do you have today?",opt:{nothing_yet:"Nothing yet",existing_solar:"Existing solar setup",generator_only:"Generator / UPS only"}}},
+      ]},
+      general_maintenance:{ probes:[
+        {id:"work_needed", ar:{label:"ما المطلوب إنجازه؟",opt:{plumbing_small:"أعمال سباكة صغيرة",electrical_small:"أعمال كهرباء صغيرة",painting_small:"رتوش دهان",fixtures:"تثبيت / تركيب",assembly:"تجميع",other_tasks:"مهام صغيرة أخرى"}}, en:{label:"What needs doing?",opt:{plumbing_small:"Small Plumbing Jobs",electrical_small:"Small Electrical Jobs",painting_small:"Touch-up Painting",fixtures:"Fixtures / Mounting",assembly:"Assembly",other_tasks:"Other Small Tasks"}}},
+        {id:"scale", ar:{label:"ما حجم العمل؟",opt:{single_task:"مهمة واحدة",few_tasks:"بضع مهام",full_day:"يوم عمل كامل",ongoing:"ترتيب مستمر"}}, en:{label:"How much work is it?",opt:{single_task:"One task",few_tasks:"A few tasks",full_day:"A full day's work",ongoing:"Ongoing arrangement"}}},
+      ]},
+      renovation:{ probes:[
+        {id:"scope", ar:{label:"ماذا تجدّد؟",opt:{single_room:"غرفة واحدة",kitchen:"المطبخ",bathroom:"الحمّام",full_apartment:"شقة / منزل كامل",exterior:"الواجهة الخارجية"}}, en:{label:"What are you renovating?",opt:{single_room:"One Room",kitchen:"Kitchen",bathroom:"Bathroom",full_apartment:"Full Apartment / House",exterior:"Exterior / Facade"}}},
+        {id:"depth", ar:{label:"ما عمق التجديد؟",opt:{cosmetic:"تجميلي (دهان وتشطيبات)",partial:"جزئي (بعض الهدم)",complete:"كامل (تجديد جذري)"}}, en:{label:"How deep does it go?",opt:{cosmetic:"Cosmetic (paint, finishes)",partial:"Partial (some demolition)",complete:"Complete (gut renovation)"}}},
+        {id:"design_status", ar:{label:"هل لديك تصميم؟",opt:{have_design:"نعم — لديّ مخططات/تصميم",need_design:"لا — أحتاج مساعدة بالتصميم",open_to_ideas:"منفتح على الأفكار"}}, en:{label:"Do you have a design?",opt:{have_design:"Yes — have plans/design",need_design:"No — need design help",open_to_ideas:"Open to ideas"}}},
+      ]},
+      construction:{ probes:[
+        {id:"project_type", ar:{label:"ما نوع المشروع؟",opt:{new_building:"بناء جديد",extension:"توسعة / إضافة",structural_work:"أعمال إنشائية",finishing_works:"أعمال تشطيب"}}, en:{label:"What type of project?",opt:{new_building:"New Construction",extension:"Extension / Addition",structural_work:"Structural Work",finishing_works:"Finishing Works"}}},
+        {id:"stage", ar:{label:"في أي مرحلة أنت؟",opt:{planning:"ما زلت أخطط",have_permits:"لديّ تراخيص / مخططات",ready_to_start:"جاهز للبدء",in_progress:"العمل جارٍ"}}, en:{label:"What stage are you at?",opt:{planning:"Still planning",have_permits:"Have permits / plans",ready_to_start:"Ready to start",in_progress:"Work in progress"}}},
+        {id:"size", ar:{label:"ما الحجم تقريبًا؟",opt:{under_100:"أقل من 100 م²",from_100_300:"100–300 م²",over_300:"أكثر من 300 م²"}}, en:{label:"Roughly how big?",opt:{under_100:"Under 100 m²",from_100_300:"100–300 m²",over_300:"Over 300 m²"}}},
+      ]},
+      smart_home:{ probes:[
+        {id:"system", ar:{label:"ماذا تريد أن تؤتمت؟",opt:{lighting:"الإضاءة",security:"الأمان / الكاميرات",climate:"التكييف / المناخ",entertainment:"التلفزيون / الصوت",full_automation:"أتمتة المنزل بالكامل"}}, en:{label:"What do you want to automate?",opt:{lighting:"Lighting",security:"Security / Cameras",climate:"AC / Climate",entertainment:"TV / Audio",full_automation:"Whole-home Automation"}}},
+        {id:"service", ar:{label:"ما الخدمة؟",opt:{new_installation:"تركيب جديد",expand_existing:"توسيع الموجود",repair_configure:"إصلاح / إعادة ضبط"}}, en:{label:"What service?",opt:{new_installation:"New Installation",expand_existing:"Expand Existing Setup",repair_configure:"Fix / Reconfigure"}}},
+        {id:"ecosystem", ar:{label:"النظام المفضّل؟",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"لا تفضيل"}}, en:{label:"Preferred ecosystem?",opt:{google:"Google Home",apple:"Apple HomeKit",alexa:"Amazon Alexa",no_preference:"No preference"}}},
+      ]},
+      moving:{ probes:[
+        {id:"move_size", ar:{label:"كم تنقل من أغراض؟",opt:{few_items:"بضعة أغراض",studio:"ستوديو / غرفة نوم واحدة",apartment_2_3:"منزل بغرفتين–3 غرف",large_home:"منزل كبير / فيلا"}}, en:{label:"How much are you moving?",opt:{few_items:"A few items",studio:"Studio / 1 bedroom",apartment_2_3:"2–3 bedroom home",large_home:"Large home / Villa"}}},
+        {id:"floors", ar:{label:"درج أم مصعد؟",opt:{ground:"طابق أرضي",elevator:"يوجد مصعد",stairs_1_3:"درج — حتى الطابق الثالث",stairs_4_plus:"درج — الطابق الرابع أو أعلى"}}, en:{label:"Stairs or elevator?",opt:{ground:"Ground floor(s)",elevator:"Elevator available",stairs_1_3:"Stairs — up to 3rd floor",stairs_4_plus:"Stairs — 4th floor or higher"}}},
+        {id:"services", ar:{label:"خدمات إضافية؟",opt:{packing:"تغليف",disassembly:"فكّ الأثاث",storage:"تخزين مؤقت",just_transport:"نقل فقط"}}, en:{label:"Extra services needed?",opt:{packing:"Packing",disassembly:"Furniture Disassembly",storage:"Temporary Storage",just_transport:"Just Transport"}}},
+        {id:"distance", ar:{label:"ما مسافة النقل؟",opt:{same_area:"نفس المنطقة",same_governorate:"نفس المحافظة",cross_governorate:"محافظة أخرى"}}, en:{label:"How far is the move?",opt:{same_area:"Same area",same_governorate:"Same governorate",cross_governorate:"Another governorate"}}},
+      ]},
+      furniture:{ probes:[
+        {id:"service", ar:{label:"ما خدمة الأثاث المطلوبة؟",opt:{assembly:"تجميع",repair_restoration:"إصلاح / ترميم",custom_made:"أثاث حسب الطلب",upholstery:"تنجيد / أقمشة"}}, en:{label:"What furniture service?",opt:{assembly:"Assembly",repair_restoration:"Repair / Restoration",custom_made:"Custom-made Furniture",upholstery:"Upholstery / Fabric"}}},
+        {id:"items", ar:{label:"كم قطعة؟",opt:{single_item:"قطعة واحدة",few_items:"بضع قطع",full_room:"غرفة كاملة",full_home:"المنزل كله"}}, en:{label:"How many pieces?",opt:{single_item:"One piece",few_items:"A few pieces",full_room:"A full room",full_home:"Whole home"}}},
+      ]},
+      other:{ probes:[
+        {id:"work_nature", ar:{label:"ما طبيعة العمل؟",opt:{repair_fix:"إصلاح شيء ما",install_new:"تركيب شيء جديد",maintain_service:"صيانة / خدمة",build_create:"بناء / إنشاء شيء"}}, en:{label:"What kind of work is it?",opt:{repair_fix:"Repair / Fix something",install_new:"Install something new",maintain_service:"Maintenance / Service",build_create:"Build / Create something"}}},
+        {id:"extra_info", free:true, ar:{label:"هل من شيء آخر يجب أن يعرفه المزوّدون؟",ph:"الوصول، التوقيت، متطلبات خاصة…"}, en:{label:"Anything else providers should know?",ph:"Access, timing, special requirements…"}},
+      ]},
+    };
+    const NOT_SURE = { ar:"مش متأكد", en:"I'm not sure" };
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  THE BACKBONE — 6 deep, trade-authoritative BRANCHING trees.
+    //  TREE[service] = { q1:{probe}, branches:{ key:{ core:[probes], deeper:[probes], visitIf:[branchkeys|"*"|fn], mediaAt:probeId } } }
+    //  Each probe is shaped like a baseline Q probe (id + ar/en {label, opt} OR free:true).
+    //  Some probes carry media:{kind, ar:{ask,thumb,tx}, en:{...}} → fired as a contextual prompt
+    //  AFTER that probe is answered (the decisive question of the branch).
+    //  visitIf entries: when an answer matches, the branch is honestly routed to a site visit.
+    //    - a probe answer match: {probe:"id", in:["opt1","opt2"]}  → routes
+    //    - "always"  → branch always routes (e.g. aluminum measurement, sewage)
+    //  CORE is always asked; after CORE we render a persistent «✓ هيك كفّى — تابِع» chip
+    //  ALONGSIDE the first DEEPER probe (deeper-by-default, lighter one tap away).
+    // ════════════════════════════════════════════════════════════════════════
+
+    // shared media payloads (Levantine asks + simulated transcripts)
+    const M = {
+      plumb_leak_photo:{kind:"photo", ar:{ask:"صوّرلي مكان التسريب — هيك المحترف بيعرف القطع بالضبط ويسعّر صح. 📷", thumb:"صورة — مكان التسريب", tx:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل والخشب تحت بلّش يتفشّخ."}, en:{ask:"Snap where it's leaking — that lets the pro see the exact parts and price it right. 📷", thumb:"Photo — the leak spot", tx:"[Photo] The under-sink fitting; the trap is wet and the cabinet wood below has started to swell."}},
+      plumb_clog_photo:{kind:"photo", ar:{ask:"إذا في ماي واقفة، صوّرها — بتساعد المحترف يعرف أديش الانسداد سيّء. 📷", thumb:"صورة — ماي واقفة", tx:"[صورة] المجلى مليان ماي، عم تنزل ببطء شديد، وفي بقايا طعام عالمصفاة."}, en:{ask:"If there's standing water, snap it — helps the pro judge how bad the clog is. 📷", thumb:"Photo — standing water", tx:"[Photo] The sink is full of water draining very slowly, with food debris at the strainer."}},
+      plumb_heater_photo:{kind:"photo", ar:{ask:"صوّرلي السخّان وملصق الموديل عليه — بيساعد المحترف يجيب القطعة الصح. 📷", thumb:"صورة — السخّان + الموديل", tx:"[صورة] سخّان كهربائي، الملصق مكتوب عليه السعة والموديل، وفي أثر صدأ خفيف تحت."}, en:{ask:"Snap the heater and its model label — helps the pro bring the right part. 📷", thumb:"Photo — heater + model", tx:"[Photo] An electric water heater; the label shows the capacity and model, with light rust underneath."}},
+      plumb_sewage_photo:{kind:"photo", ar:{ask:"صوّرلي المكان (من بعيد منيح) — بنفهم الوضع ومنرتّبلك زيارة سريعة. 📷", thumb:"صورة — مكان الطفح", tx:"[صورة] ماي راجعة من بالوعة الأرض بالحمّام، وريحة قوية — الوضع بدو معاينة."}, en:{ask:"Snap the area (from a safe distance) — we'll understand it and set up a quick visit. 📷", thumb:"Photo — the backup", tx:"[Photo] Water backing up from the bathroom floor drain with a strong smell — needs an inspection."}},
+      plumb_leak_video:{kind:"video", ar:{ask:"إذا التسريب شغّال، صوّرلي 5 ثواني فيديو وهو عم يقطّر — بيوضّح أديش مستعجل. 🎥", thumb:"فيديو — التسريب شغّال 0:05", tx:"[فيديو] المياه عم تقطّر نقطة نقطة من الوصلة، ومع كل دقيقة في بركة صغيرة عالأرض."}, en:{ask:"If it's leaking now, take a 5-sec video of it dripping — it shows how urgent it is. 🎥", thumb:"Video — leak running 0:05", tx:"[Video] Water dripping steadily from the fitting; a small puddle forms on the floor each minute."}},
+      alum_opening_photo:{kind:"photo", ar:{ask:"صوّرلي الفتحة أو البلكون من جوّا ومن برّا — هيك المحترف بيقدّر القياس والشغل صح. 📷", thumb:"صورة — الفتحة/البلكون", tx:"[صورة] بلكون بعرض ~3 م، درابزين قديم، الجار محدّد بإطار باطون — جاهز للتسكير."}, en:{ask:"Snap the opening or balcony from inside and out — so the pro can judge size and scope right. 📷", thumb:"Photo — opening/balcony", tx:"[Photo] A ~3 m balcony with an old railing, framed in concrete — ready for an enclosure."}},
+      alum_repair_photo:{kind:"photo", ar:{ask:"صوّرلي القطعة المكسورة عن قرب — بيساعد المحترف يعرف شو لازم يجيب. 📷", thumb:"صورة — القطعة المكسورة", tx:"[صورة] بكرة شبّاك الجرّار مكسورة والشبّاك عم يعلق، الإطار ألمنيوم أبيض."}, en:{ask:"Snap the broken part up close — helps the pro know what to bring. 📷", thumb:"Photo — the broken part", tx:"[Photo] The sliding window's roller is broken and the sash sticks; white aluminum frame."}},
+      elec_panel_photo:{kind:"photo", ar:{ask:"صوّرلي اللوحة الكهربائية أو الفيشة اللي فيها المشكلة — بيساعد المحترف يجهّز الأدوات الصح. 📷", thumb:"صورة — اللوحة/الفيشة", tx:"[صورة] لوحة القواطع، قاطع واحد عم يفصل، وفيشة المطبخ محروقة من طرفها."}, en:{ask:"Snap the panel or the outlet with the issue — helps the pro bring the right tools. 📷", thumb:"Photo — panel/outlet", tx:"[Photo] Breaker panel; one breaker keeps tripping, and the kitchen outlet is scorched on one edge."}},
+      elec_safety_audio:{kind:"audio", ar:{ask:"إذا في شرر أو ريحة احتراق، احكي شو صار صوتيًا — أوضح من الكتابة وبيبيّن الخطورة. 🎤", thumb:"رسالة صوتية — الوصف 0:09", tx:"[تفريغ صوتي] «طلع شرر من الفيشة لما شبكت الغسالة، وفصلت الكهربا عن نص البيت.»"}, en:{ask:"If there are sparks or a burning smell, say what happened in a voice note — clearer than typing and shows the risk. 🎤", thumb:"Voice note — the issue 0:09", tx:"[Voice transcript] \"There were sparks from the outlet when I plugged in the washer, and power cut to half the house.\""}},
+      hvac_unit_photo:{kind:"photo", ar:{ask:"صوّرلي الوحدة وملصق الموديل/الرقم التسلسلي عليها — بيساعد المحترف يجيب القطعة الصح. 📷", thumb:"صورة — الوحدة + الموديل", tx:"[صورة] وحدة سبليت داخلية، الملصق مكتوب عليه الموديل والرقم التسلسلي بوضوح."}, en:{ask:"Snap the unit and its model/serial label — helps the pro bring the right part. 📷", thumb:"Photo — unit + model", tx:"[Photo] An indoor split unit; the label clearly shows the model and serial number."}},
+      hvac_noise_audio:{kind:"audio", ar:{ask:"احكيلي الصوت الغريب بدل ما تكتبو — سجّل رسالة صوتية وصِف شو عم تسمع. 🎤", thumb:"رسالة صوتية — الصوت 0:14", tx:"[تفريغ صوتي] «المكيّف عم يطلّع صوت طقطقة لما يشتغل، وريحة محروقة خفيفة بأول 5 دقايق.»"}, en:{ask:"Describe the noise instead of typing it — record a quick voice note. 🎤", thumb:"Voice note — the noise 0:14", tx:"[Voice transcript] \"The AC makes a rattling sound when it starts, and there's a faint burning smell in the first 5 minutes.\""}},
+      paint_room_video:{kind:"video", ar:{ask:"لِفّ 5 ثواني فيديو بالغرفة وفرجينا الحيطان — بيخلّي العرض أدق من أي وصف. 🎥", thumb:"فيديو — جولة بالغرفة 0:06", tx:"[فيديو] جولة بغرفة الجلوس؛ حيطان فاتحة، تشقّق خفيف عند الشباك، سقف نظيف."}, en:{ask:"Pan a 5-sec video around the room and show the walls — makes the quote far tighter than any description. 🎥", thumb:"Video — room pan 0:06", tx:"[Video] A pan of the living room; light walls, minor cracking by the window, clean ceiling."}},
+      paint_damp_photo:{kind:"photo", ar:{ask:"صوّرلي مكان الرطوبة أو التشقّق عن قرب — بيساعد المحترف يعرف إذا بدو معالجة قبل الدهان. 📷", thumb:"صورة — الرطوبة/التشقّق", tx:"[صورة] بقعة رطوبة بسقف الحمّام، الدهان متقشّر ومتبقّع، يمكن في تسريب فوق."}, en:{ask:"Snap the damp or cracking up close — helps the pro see if it needs treatment before painting. 📷", thumb:"Photo — damp/cracks", tx:"[Photo] A damp patch on the bathroom ceiling; paint peeling and stained, possibly a leak above."}},
+      clean_space_photo:{kind:"photo", ar:{ask:"صوّرلي المكان وقدّيش الوسخ — بيساعد المحترف يقدّر الوقت والسعر صح. 📷", thumb:"صورة — المكان", tx:"[صورة] مطبخ + صالون، أرضيات تحتاج جلي، شباك مغبّر، الوضع متوسّط."}, en:{ask:"Snap the space and how dirty it is — helps the pro judge the time and price. 📷", thumb:"Photo — the space", tx:"[Photo] Kitchen + living room; floors need scrubbing, dusty windows, moderate condition."}},
+    };
+
+    const TREE = {
+      // ───────────────────────── PLUMBING (locked) ─────────────────────────
+      plumbing:{
+        q1:{ id:"issue", ar:{label:"شو صاير بالضبط بالسباكة؟", opt:{leak:"تسريب / تنقيط", clog:"انسداد", low_water:"ما في ماي / الماي ضعيفة", no_hot:"ما في ماي سخنة", install:"تركيب / استبدال", sewage:"مجاري راجعة / طفح صرف"}},
+                en:{label:"What exactly is going on with the plumbing?", opt:{leak:"Leak / dripping", clog:"Clog / blockage", low_water:"No / low water", no_hot:"No hot water", install:"Install / replace", sewage:"Sewage backup"}}},
+        branches:{
+          leak:{
+            mediaAt:"where_from",
+            core:[
+              {id:"where_from", media:M.plumb_leak_photo, ar:{label:"التسريب من وين؟", opt:{under_sink:"تحت المغسلة", faucet:"الحنفية / الخلاط", toilet:"المرحاض", wall_ceiling:"أنبوب بالحيط أو السقف", heater:"السخّان", main_line:"الخط الرئيسي / العدّاد", outdoor:"برّا / الحديقة"}},
+                              en:{label:"Where is the leak coming from?", opt:{under_sink:"Under the sink", faucet:"Faucet / mixer", toilet:"Toilet", wall_ceiling:"Pipe in a wall or ceiling", heater:"Water heater", main_line:"Main line / meter", outdoor:"Outdoor / garden"}}},
+              {id:"active", media:M.plumb_leak_video, ar:{label:"شو وضعو هلّق؟", opt:{constant:"عم يسيل دايمًا", drips:"عم ينقّط", on_use:"بس لمّا نشغّل شي", stopped:"وقف هلّق"}},
+                          en:{label:"What's it doing right now?", opt:{constant:"Running constantly", drips:"Dripping", on_use:"Only when a fixture runs", stopped:"Stopped for now"}}},
+            ],
+            deeper:[
+              {id:"shutoff", ar:{label:"قدرت تسكّر الماي؟", opt:{main:"سكّرت المحبس الرئيسي", local:"سكّرت محبس المكان", cant:"ما لقيت كيف"}},
+                          en:{label:"Could you shut the water off?", opt:{main:"Closed the main valve", local:"Closed the local valve", cant:"Couldn't find it"}}},
+              {id:"pipe_type", ar:{label:"شو نوع الأنبوب؟ (إذا بتعرف)", opt:{copper:"نحاس", pex:"بلاستيك / PEX", galv:"حديد قديم مجلفن", unsure:"مش متأكد"}},
+                            en:{label:"What's the pipe type? (if you know)", opt:{copper:"Copper", pex:"PEX / plastic", galv:"Old galvanized", unsure:"Not sure"}}},
+              {id:"how_long", ar:{label:"من إيمتى عم يصير؟", opt:{today:"اليوم", days:"كم يوم", weeks:"أسابيع"}},
+                            en:{label:"How long has it been happening?", opt:{today:"Today", days:"A few days", weeks:"Weeks"}}},
+              {id:"access", ar:{label:"الوصول لمكان التسريب؟", opt:{open:"مكشوف (تحت المغسلة مثلاً)", behind_tiles:"ورا بلاط", in_slab:"داخل البلاطة / الأرضية"}},
+                          en:{label:"Access to the leak?", opt:{open:"Open (e.g. under-sink)", behind_tiles:"Behind tiles", in_slab:"Inside the slab / floor"}}},
+              {id:"fix_replace", ar:{label:"تصليح القطعة ولا استبدالها؟", opt:{repair:"تصليح", replace:"استبدال", unsure:"مش متأكد"}},
+                              en:{label:"Repair the part or replace it?", opt:{repair:"Repair", replace:"Replace", unsure:"Not sure"}}},
+            ],
+            visitIf:[ {probe:"where_from", in:["wall_ceiling","main_line"]}, {probe:"access", in:["in_slab"]}, {probe:"fix_replace", in:["unsure"]} ],
+          },
+          clog:{
+            mediaAt:"severity",
+            core:[
+              {id:"what", ar:{label:"وين الانسداد؟", opt:{kitchen_sink:"مجلى المطبخ", bath_sink:"مغسلة الحمّام", toilet:"المرحاض", shower:"الدوش / البانيو", floor_drain:"بالوعة الأرض"}},
+                        en:{label:"Where's the clog?", opt:{kitchen_sink:"Kitchen sink", bath_sink:"Bathroom sink", toilet:"Toilet", shower:"Shower / tub", floor_drain:"Floor drain"}}},
+              {id:"severity", media:M.plumb_clog_photo, ar:{label:"أديش سيّء؟", opt:{slow:"عم ينزل ببطء", blocked:"مسدود كليًا", overflow:"عم يفيض"}},
+                            en:{label:"How bad is it?", opt:{slow:"Draining slowly", blocked:"Fully blocked", overflow:"Overflowing"}}},
+            ],
+            deeper:[
+              {id:"one_several", ar:{label:"مصرف واحد ولا كم واحد؟", opt:{one:"واحد بس", several:"كم مصرف مع بعض"}},
+                              en:{label:"One fixture or several?", opt:{one:"Just one", several:"Several together"}}},
+              {id:"tried", ar:{label:"جرّبت شي؟", opt:{plunger:"بمبة الشفط", cleaner:"مادة تسليك", nothing:"ما جرّبت شي"}},
+                          en:{label:"Tried anything?", opt:{plunger:"A plunger", cleaner:"Drain cleaner", nothing:"Nothing yet"}}},
+              {id:"recurring", ar:{label:"أول مرّة ولا عم يتكرّر؟", opt:{first:"أول مرّة", recurring:"عم يتكرّر"}},
+                            en:{label:"First time or recurring?", opt:{first:"First time", recurring:"Keeps happening"}}},
+            ],
+            visitIf:[ {probe:"one_several", in:["several"]}, {probe:"recurring", in:["recurring"]} ],
+          },
+          no_hot:{
+            mediaAt:"symptom",
+            core:[
+              {id:"heater_type", ar:{label:"شو نوع السخّان؟", opt:{electric:"كهربائي", gas:"غاز", solar:"شمسي", instant:"فوري (تدفئة لحظية)"}},
+                              en:{label:"What kind of heater?", opt:{electric:"Electric", gas:"Gas", solar:"Solar", instant:"Instantaneous"}}},
+              {id:"symptom", media:M.plumb_heater_photo, ar:{label:"شو العارض؟", opt:{none:"ما في ماي سخنة أبدًا", runs_out:"بتخلص بسرعة", lukewarm:"دافية مش سخنة"}},
+                          en:{label:"What's the symptom?", opt:{none:"No hot water at all", runs_out:"Runs out fast", lukewarm:"Lukewarm, not hot"}}},
+            ],
+            deeper:[
+              {id:"age", ar:{label:"قدّيش عمر السخّان؟", opt:{lt2:"أقل من سنتين", y2_5:"سنتين–5", y5_10:"5–10", gt10:"أكتر من 10 سنين"}},
+                      en:{label:"How old is the heater?", opt:{lt2:"Under 2 years", y2_5:"2–5", y5_10:"5–10", gt10:"Over 10 years"}}},
+              {id:"tank_leak", ar:{label:"في تسريب من الخزّان؟", opt:{yes:"إي عم يسرّب", no:"لأ", unsure:"مش متأكد"}},
+                            en:{label:"Is the tank leaking?", opt:{yes:"Yes, leaking", no:"No", unsure:"Not sure"}}},
+              {id:"tank_size", ar:{label:"حجم الخزّان؟", opt:{small:"صغير", medium:"وسط", large:"كبير"}},
+                            en:{label:"Tank size?", opt:{small:"Small", medium:"Medium", large:"Large"}}},
+              {id:"error_light", ar:{label:"في ضوء خطأ / إشعال؟", opt:{error:"ضوء خطأ عم يلمع", pilot:"الإشعال مش شغّال", none:"ما في شي"}},
+                              en:{label:"Any error light / pilot?", opt:{error:"An error light is on", pilot:"Pilot won't light", none:"Nothing"}}},
+            ],
+            visitIf:[ {probe:"tank_leak", in:["yes"]} ],
+          },
+          low_water:{
+            mediaAt:"hot_cold",
+            core:[
+              {id:"scope", ar:{label:"البيت كلّو ولا محبس واحد؟", opt:{whole:"البيت كلّو", one:"محبس / مكان واحد"}},
+                        en:{label:"Whole house or one fixture?", opt:{whole:"Whole house", one:"One fixture"}}},
+              {id:"hot_cold", ar:{label:"بالسخن والبارد ولا واحد منهن؟", opt:{both:"الاتنين", cold:"البارد بس", hot:"السخن بس"}},
+                            en:{label:"Hot and cold, or just one?", opt:{both:"Both", cold:"Cold only", hot:"Hot only"}}},
+            ],
+            deeper:[
+              {id:"since", ar:{label:"من إيمتى؟", opt:{today:"اليوم", days:"كم يوم", gradual:"عم يخفّ بالتدريج"}},
+                      en:{label:"Since when?", opt:{today:"Today", days:"A few days", gradual:"Dropping gradually"}}},
+              {id:"neighbors", ar:{label:"الجيران كمان متأثّرين؟", opt:{yes:"إي", no:"لأ بس عنّا", unsure:"ما بعرف"}},
+                            en:{label:"Are neighbors affected too?", opt:{yes:"Yes", no:"No, just us", unsure:"Don't know"}}},
+              {id:"pump", ar:{label:"في مضخّة ضغط مركّبة؟", opt:{yes:"إي", no:"لأ", unsure:"مش متأكد"}},
+                        en:{label:"Is a pressure pump installed?", opt:{yes:"Yes", no:"No", unsure:"Not sure"}}},
+            ],
+            visitIf:[ {probe:"scope", in:["whole"]} ],
+          },
+          install:{
+            mediaAt:"fixture",
+            core:[
+              {id:"fixture", media:M.plumb_leak_photo, ar:{label:"شو القطعة؟", opt:{faucet:"حنفية / خلاط", toilet:"مرحاض", sink:"مغسلة / مجلى", heater:"سخّان", shower:"دوش", bidet:"شطّاف / بيديه"}},
+                          en:{label:"Which fixture?", opt:{faucet:"Faucet / mixer", toilet:"Toilet", sink:"Sink", heater:"Water heater", shower:"Shower", bidet:"Bidet"}}},
+              {id:"supplying", ar:{label:"بتجيب القطعة بنفسك؟", opt:{i_supply:"إي بجيبها", pro_supply:"بدّي المحترف يجيبها", unsure:"مش متأكد"}},
+                            en:{label:"Are you supplying the part?", opt:{i_supply:"Yes, I'll supply it", pro_supply:"Pro should bring it", unsure:"Not sure"}}},
+              {id:"remove_old", ar:{label:"في قطعة قديمة لازم تنشال؟", opt:{yes:"إي شيلوا القديمة", no:"لأ، تركيب جديد"}},
+                              en:{label:"Is there an old one to remove?", opt:{yes:"Yes, remove the old", no:"No, brand-new install"}}},
+            ],
+            deeper:[
+              {id:"brand", free:true, ar:{label:"الماركة / الموديل إذا بتعرف؟", ph:"متلاً: خلاط Grohe، مرحاض معلّق…"}, en:{label:"Brand / model if you know?", ph:"e.g. a Grohe mixer, a wall-hung toilet…"}},
+            ],
+            visitIf:[],
+          },
+          sewage:{
+            mediaAt:"where",
+            core:[
+              {id:"where", media:M.plumb_sewage_photo, ar:{label:"وين الطفح؟", opt:{bathroom:"الحمّام", kitchen:"المطبخ", floor_drain:"بالوعة الأرض", multiple:"بكذا مكان", outside:"المنهل / برّا"}},
+                        en:{label:"Where's the backup?", opt:{bathroom:"Bathroom", kitchen:"Kitchen", floor_drain:"Floor drain", multiple:"Several spots", outside:"Manhole / outside"}}},
+              {id:"smell", ar:{label:"في ريحة قوية؟", opt:{yes:"إي ريحة قوية", no:"خفيفة / لأ"}},
+                        en:{label:"Is there a strong smell?", opt:{yes:"Yes, strong", no:"Mild / no"}}},
+            ],
+            deeper:[],
+            visitIf:["always"],
+          },
+        },
+      },
+
+      // ───────────────────────── ALUMINUM & GLASS (locked) ─────────────────────────
+      aluminum_and_glass:{
+        q1:{ id:"job", ar:{label:"شو بدّك بالألمنيوم والزجاج؟", opt:{new_install:"تركيب جديد", replace:"استبدال موجود", enclosure:"تسكير بلكون / زجاج", repair:"تصليح"}},
+              en:{label:"What do you need in aluminum & glass?", opt:{new_install:"New install", replace:"Replace existing", enclosure:"Balcony enclosure / glazing", repair:"Repair"}}},
+        branches:{
+          // new_install / replace / enclosure share the SAME measurement-visit tree
+          new_install:{ _alias:"_glaze" },
+          replace:{ _alias:"_glaze" },
+          enclosure:{ _alias:"_glaze" },
+          _glaze:{
+            mediaAt:"openings",
+            core:[
+              {id:"product", ar:{label:"شو المنتج؟", opt:{windows:"شبابيك", balcony_doors:"أبواب بلكون جرّارة", balcony_glass:"تسكير بلكون بالزجاج", shopfront:"واجهة محل / فيترين", railing:"درابزين / حاجز زجاج", shower:"كابينة دوش"}},
+                          en:{label:"Which product?", opt:{windows:"Windows", balcony_doors:"Balcony sliding doors", balcony_glass:"Balcony glass enclosure", shopfront:"Shopfront / façade", railing:"Glass railing / balustrade", shower:"Shower cabin"}}},
+              {id:"openings", media:M.alum_opening_photo, ar:{label:"كم فتحة؟", opt:{one:"وحدة", two_three:"2–3", four_six:"4–6", whole:"الشقة / الطابق كلّو"}},
+                            en:{label:"How many openings?", opt:{one:"1", two_three:"2–3", four_six:"4–6", whole:"Whole apartment / floor"}}},
+              {id:"new_or_replace", ar:{label:"عم تستبدل قديم ولا فتحة جديدة؟", opt:{replace_alum:"استبدال ألمنيوم قديم", replace_wood:"استبدال خشب قديم", new_opening:"فتحة جديدة"}},
+                                  en:{label:"Replacing old or a new opening?", opt:{replace_alum:"Replacing old aluminum", replace_wood:"Replacing old wood", new_opening:"A new opening"}}},
+            ],
+            deeper:[
+              {id:"system", ar:{label:"شو نظام الفتح؟", opt:{sliding:"جرّار", casement:"مفصلي (يفتح برّا/جوّا)", fixed:"ثابت", folding:"قابل للطيّ", tilt_turn:"قلّاب-دوّار", unsure:"مش متأكد"}},
+                          en:{label:"Which opening system?", opt:{sliding:"Sliding", casement:"Casement / hinged", fixed:"Fixed", folding:"Folding / bi-fold", tilt_turn:"Tilt-turn", unsure:"Not sure"}}},
+              {id:"glass", ar:{label:"شو نوع الزجاج؟", opt:{single:"مفرد", double:"مزدوج (عازل)", lowe:"Low-E حراري", tempered:"مقسّى «سيكوريت»", tinted:"ملوّن / مطفّى", acoustic:"عازل صوت", unsure:"مش متأكد"}},
+                        en:{label:"Which glass?", opt:{single:"Single", double:"Double-glazed (insulated)", lowe:"Low-E thermal", tempered:"Tempered «securit»", tinted:"Tinted / frosted", acoustic:"Acoustic", unsure:"Not sure"}}},
+              {id:"thermal", ar:{label:"إطار بكسر حراري؟", opt:{thermal:"كسر حراري", standard:"عادي", unsure:"مش متأكد"}},
+                          en:{label:"Thermal-break frame?", opt:{thermal:"Thermal break", standard:"Standard", unsure:"Not sure"}}},
+              {id:"finish", ar:{label:"شو اللون / التشطيب؟", opt:{white:"أبيض", black:"أسود", wood:"خشبي", anodized:"أنودايز"}},
+                          en:{label:"Finish / colour?", opt:{white:"White", black:"Black", wood:"Wood-look", anodized:"Anodized"}}},
+              {id:"access", ar:{label:"الطابق والوصول؟", opt:{low:"أرضي / طابق واطي", high:"طابق عالي بدّو رفع"}},
+                          en:{label:"Floor & access?", opt:{low:"Ground / low floor", high:"High floor needs hoisting"}}},
+            ],
+            // a measurement visit is the NORM for new/replace/enclosure → always route
+            visitIf:["always"],
+          },
+          repair:{
+            mediaAt:"broken",
+            core:[
+              {id:"broken", media:M.alum_repair_photo, ar:{label:"شو المكسور / المعطّل؟", opt:{pane:"لوح زجاج", roller:"بكرة / عجلة الجرّار", handle:"يد / قفل", frame:"الإطار", net:"الناموسية"}},
+                          en:{label:"What's broken?", opt:{pane:"Glass pane", roller:"Roller / wheel", handle:"Handle / lock", frame:"Frame", net:"Mosquito net"}}},
+              {id:"which", ar:{label:"عأي فتحة؟", opt:{window:"شبّاك", sliding_door:"باب جرّار", enclosure:"تسكير بلكون"}},
+                        en:{label:"On which opening?", opt:{window:"Window", sliding_door:"Sliding door", enclosure:"Balcony enclosure"}}},
+            ],
+            deeper:[
+              {id:"glass_type", ar:{label:"إذا انكسر لوح: نوعو؟", opt:{single:"مفرد", double:"مزدوج", tempered:"مقسّى «سيكوريت»", unsure:"مش متأكد", na:"مش لوح زجاج"}},
+                            en:{label:"If a pane broke: which type?", opt:{single:"Single", double:"Double", tempered:"Tempered «securit»", unsure:"Not sure", na:"Not a pane"}}},
+              {id:"measured", ar:{label:"القياسات معروفة؟", opt:{yes:"إي معي القياسات", no:"لأ، بدّو قياس"}},
+                            en:{label:"Are measurements known?", opt:{yes:"Yes, I have them", no:"No, needs measuring"}}},
+            ],
+            visitIf:[ {probe:"measured", in:["no"]} ],
+          },
+        },
+      },
+
+      // ───────────────────────── ELECTRICAL (authored to standard) ─────────────────────────
+      electrical:{
+        q1:{ id:"issue", ar:{label:"شو القصّة بالكهربا؟", opt:{not_working:"ما في كهربا / فصلت", add_point:"تركيب / إضافة نقطة", flickering:"يلمع / القاطع عم يفصل", hookup:"توصيل تجهيز / جهاز", rewiring:"إعادة تمديد أسلاك", green:"طاقة شمسية / EV"}},
+              en:{label:"What's the electrical issue?", opt:{not_working:"Not working / outage", add_point:"Install / add a point", flickering:"Flickering / tripping", hookup:"Fixture / appliance hookup", rewiring:"Rewiring", green:"EV / solar tie-in"}}},
+        branches:{
+          not_working:{
+            mediaAt:"where",
+            core:[
+              {id:"where", media:M.elec_panel_photo, ar:{label:"وين ما في كهربا؟", opt:{one_outlet:"فيشة / نقطة وحدة", one_room:"غرفة كاملة", whole:"البيت كلّو", panel:"من اللوحة / القاطع"}},
+                        en:{label:"Where is there no power?", opt:{one_outlet:"One outlet / point", one_room:"A whole room", whole:"The whole home", panel:"From the panel / breaker"}}},
+              {id:"safety", media:M.elec_safety_audio, ar:{label:"في شرر أو ريحة احتراق؟", opt:{yes:"إي — في خطر", no:"لأ، بس مش شغّال"}},
+                          en:{label:"Sparks or burning smell?", opt:{yes:"Yes — there's a risk", no:"No, just not working"}}},
+            ],
+            deeper:[
+              {id:"since", ar:{label:"من إيمتى؟", opt:{just_now:"هلّأ", today:"اليوم", days:"كم يوم"}},
+                      en:{label:"Since when?", opt:{just_now:"Just now", today:"Today", days:"A few days"}}},
+              {id:"breaker", ar:{label:"جرّبت ترجّع القاطع؟", opt:{trips_back:"رجّع وفصل تاني", stays_off:"مش راضي يرجّع", didnt:"ما جرّبت"}},
+                          en:{label:"Tried resetting the breaker?", opt:{trips_back:"Reset and tripped again", stays_off:"Won't stay on", didnt:"Haven't tried"}}},
+            ],
+            visitIf:[ {probe:"safety", in:["yes"]}, {probe:"where", in:["panel","whole"]} ],
+          },
+          add_point:{
+            mediaAt:"what",
+            core:[
+              {id:"what", ar:{label:"شو بدّك تركّب / تزيد؟", opt:{outlet:"فيشة / مقبس", light:"إضاءة / أباجور", switch:"مفتاح", ac_point:"نقطة مكيّف", appliance_point:"نقطة جهاز كبير"}},
+                        en:{label:"What do you want to add?", opt:{outlet:"Outlet / socket", light:"Light / fixture", switch:"Switch", ac_point:"AC point", appliance_point:"Heavy-appliance point"}}},
+              {id:"count", ar:{label:"كم نقطة؟", opt:{one:"وحدة", two_three:"2–3", many:"كذا واحدة / غرفة كاملة"}},
+                        en:{label:"How many points?", opt:{one:"One", two_three:"2–3", many:"Several / a whole room"}}},
+            ],
+            deeper:[
+              {id:"wall_type", ar:{label:"شو نوع الحيط؟", opt:{concrete:"باطون", block:"بلوك / قرميد", drywall:"جبسوم", unsure:"مش متأكد"}},
+                            en:{label:"What's the wall type?", opt:{concrete:"Concrete", block:"Block / brick", drywall:"Drywall", unsure:"Not sure"}}},
+              {id:"surface_buried", ar:{label:"ظاهر ولا مدفون بالحيط؟", opt:{surface:"ظاهر (قنوات)", buried:"مدفون بالحيط", unsure:"مش متأكد"}},
+                                  en:{label:"Surface or buried in the wall?", opt:{surface:"Surface (trunking)", buried:"Buried in the wall", unsure:"Not sure"}}},
+            ],
+            visitIf:[ {probe:"count", in:["many"]} ],
+          },
+          flickering:{
+            mediaAt:"what_trips",
+            core:[
+              {id:"what_trips", media:M.elec_panel_photo, ar:{label:"شو عم يصير بالضبط؟", opt:{lights_flicker:"الإضاءة عم تلمع", breaker_trips:"القاطع عم يفصل", whole_dips:"الكهربا عم تخفّ وترجع", buzzing:"في طنين / صوت"}},
+                              en:{label:"What exactly happens?", opt:{lights_flicker:"Lights flicker", breaker_trips:"Breaker keeps tripping", whole_dips:"Power dips and recovers", buzzing:"Buzzing / noise"}}},
+              {id:"safety", media:M.elec_safety_audio, ar:{label:"في سخونة أو ريحة احتراق؟", opt:{yes:"إي — في خطر", no:"لأ"}},
+                          en:{label:"Any heat or burning smell?", opt:{yes:"Yes — there's a risk", no:"No"}}},
+            ],
+            deeper:[
+              {id:"when", ar:{label:"إيمتى بيصير أكتر؟", opt:{high_load:"لمّا نشغّل أجهزة كبيرة", random:"بلا سبب واضح", always:"طول الوقت"}},
+                      en:{label:"When does it happen most?", opt:{high_load:"With heavy appliances", random:"No clear pattern", always:"All the time"}}},
+            ],
+            visitIf:[ {probe:"safety", in:["yes"]}, {probe:"what_trips", in:["breaker_trips","buzzing"]} ],
+          },
+          hookup:{
+            mediaAt:"item",
+            core:[
+              {id:"item", media:M.elec_panel_photo, ar:{label:"شو بدّك توصّل؟", opt:{water_heater:"سخّان", ac:"مكيّف", oven:"فرن / غاز كهربائي", washer:"غسالة", light_fixture:"ثريا / إضاءة", other:"شي تاني"}},
+                        en:{label:"What needs hooking up?", opt:{water_heater:"Water heater", ac:"AC", oven:"Oven", washer:"Washer", light_fixture:"Chandelier / light", other:"Something else"}}},
+              {id:"point_ready", ar:{label:"في نقطة جاهزة؟", opt:{ready:"إي في نقطة", need_point:"لأ، بدّو نقطة جديدة", unsure:"مش متأكد"}},
+                              en:{label:"Is there a point ready?", opt:{ready:"Yes, there's a point", need_point:"No, needs a new point", unsure:"Not sure"}}},
+            ],
+            deeper:[
+              {id:"supplied", ar:{label:"الجهاز موجود عندك؟", opt:{yes:"إي موجود", coming:"رح يجي", no:"لسا ما اشتريتو"}},
+                          en:{label:"Is the appliance on hand?", opt:{yes:"Yes, here", coming:"On its way", no:"Not bought yet"}}},
+            ],
+            visitIf:[ {probe:"point_ready", in:["need_point"]} ],
+          },
+          rewiring:{
+            mediaAt:"scope",
+            core:[
+              {id:"scope", media:M.elec_panel_photo, ar:{label:"قدّيش الشغل؟", opt:{one_room:"غرفة وحدة", part:"جزء من البيت", whole:"البيت كلّو", panel_upgrade:"تبديل / ترقية اللوحة"}},
+                        en:{label:"How big is the rewiring?", opt:{one_room:"One room", part:"Part of the home", whole:"Whole home", panel_upgrade:"Panel upgrade"}}},
+            ],
+            deeper:[
+              {id:"reason", ar:{label:"ليش؟", opt:{old:"تمديدات قديمة", renovation:"ضمن ترميم", problems:"مشاكل متكرّرة"}},
+                          en:{label:"Why rewire?", opt:{old:"Old wiring", renovation:"Part of a renovation", problems:"Recurring problems"}}},
+            ],
+            visitIf:["always"],
+          },
+          green:{
+            mediaAt:"kind",
+            core:[
+              {id:"kind", ar:{label:"شو النوع؟", opt:{ev:"شاحن سيارة كهربائية", solar_tie:"ربط طاقة شمسية", battery:"بطاريات / إنفرتر"}},
+                        en:{label:"Which kind?", opt:{ev:"EV charger", solar_tie:"Solar tie-in", battery:"Batteries / inverter"}}},
+            ],
+            deeper:[
+              {id:"existing", ar:{label:"في شي مركّب هلّق؟", opt:{nothing:"ولا شي", some:"في جزء", full:"نظام كامل موجود"}},
+                            en:{label:"Anything installed today?", opt:{nothing:"Nothing", some:"Partial", full:"A full system exists"}}},
+            ],
+            visitIf:["always"],
+          },
+        },
+      },
+
+      // ───────────────────────── HVAC (authored to standard) ─────────────────────────
+      hvac:{
+        q1:{ id:"issue", ar:{label:"شو القصّة بالتكييف / التدفئة؟", opt:{not_cooling:"ما عم يبرّد / يدفّي", install:"تركيب وحدة جديدة", service:"صيانة / تنظيف", noise:"صوت أو ريحة", leaking:"عم ينقّط ماي"}},
+              en:{label:"What's going on with the AC / heating?", opt:{not_cooling:"Not cooling / heating", install:"Install a new unit", service:"Service / clean", noise:"Noise or smell", leaking:"Leaking water"}}},
+        branches:{
+          not_cooling:{
+            mediaAt:"unit",
+            core:[
+              {id:"unit", media:M.hvac_unit_photo, ar:{label:"شو نوع الوحدة؟", opt:{split:"سبليت", central:"مركزي", window:"شبّاك", vrf:"VRF", ducted:"مخفي / دكت"}},
+                        en:{label:"What unit type?", opt:{split:"Split", central:"Central", window:"Window", vrf:"VRF", ducted:"Ducted"}}},
+              {id:"symptom", ar:{label:"شو العارض؟", opt:{no_cold:"ما في تبريد", weak:"التبريد ضعيف", on_off:"بيطفي لحالو", no_start:"مش راضي يشتغل"}},
+                          en:{label:"What's the symptom?", opt:{no_cold:"No cold air", weak:"Weak cooling", on_off:"Shuts off on its own", no_start:"Won't start"}}},
+            ],
+            deeper:[
+              {id:"age", ar:{label:"قدّيش عمر الوحدة؟", opt:{lt2:"أقل من سنتين", y2_5:"سنتين–5", gt5:"أكتر من 5", unsure:"مش متأكد"}},
+                      en:{label:"How old is the unit?", opt:{lt2:"Under 2 years", y2_5:"2–5", gt5:"Over 5", unsure:"Not sure"}}},
+              {id:"last_service", ar:{label:"إيمتى آخر صيانة؟", opt:{recent:"من فترة قريبة", over_year:"من أكتر من سنة", never:"ولا مرّة"}},
+                                en:{label:"Last service?", opt:{recent:"Recently", over_year:"Over a year ago", never:"Never"}}},
+            ],
+            visitIf:[ {probe:"unit", in:["central","vrf","ducted"]} ],
+          },
+          install:{
+            mediaAt:"unit",
+            core:[
+              {id:"unit", media:M.hvac_unit_photo, ar:{label:"شو بدّك تركّب؟", opt:{split:"سبليت", central:"مركزي", window:"شبّاك", vrf:"VRF", ducted:"مخفي / دكت"}},
+                        en:{label:"What do you want installed?", opt:{split:"Split", central:"Central", window:"Window", vrf:"VRF", ducted:"Ducted"}}},
+              {id:"count", ar:{label:"كم وحدة / غرفة؟", opt:{one:"وحدة", two_three:"2–3", whole:"الشقة / المبنى"}},
+                        en:{label:"How many units / rooms?", opt:{one:"One", two_three:"2–3", whole:"Apartment / building"}}},
+              {id:"supplied", ar:{label:"الوحدة موجودة عندك؟", opt:{have:"إي معي", need:"بدّي المحترف يأمّنها", unsure:"مش متأكد"}},
+                            en:{label:"Is the unit on hand?", opt:{have:"Yes, I have it", need:"Pro should supply it", unsure:"Not sure"}}},
+            ],
+            deeper:[
+              {id:"distance", ar:{label:"المسافة بين الداخلي والخارجي؟", opt:{short:"قريبة", medium:"وسط", long:"بعيدة / طوابق", unsure:"مش متأكد"}},
+                            en:{label:"Distance indoor-to-outdoor?", opt:{short:"Short", medium:"Medium", long:"Long / across floors", unsure:"Not sure"}}},
+            ],
+            visitIf:["always"],
+          },
+          service:{
+            mediaAt:"unit",
+            core:[
+              {id:"unit", media:M.hvac_unit_photo, ar:{label:"شو نوع الوحدة؟", opt:{split:"سبليت", central:"مركزي", window:"شبّاك", multiple:"كذا وحدة"}},
+                        en:{label:"What unit type?", opt:{split:"Split", central:"Central", window:"Window", multiple:"Several units"}}},
+              {id:"what", ar:{label:"شو المطلوب؟", opt:{clean:"تنظيف فلاتر / تعقيم", gas:"تعبئة غاز / فحص", full:"صيانة شاملة"}},
+                        en:{label:"What's needed?", opt:{clean:"Clean filters / sanitize", gas:"Recharge gas / check", full:"Full service"}}},
+            ],
+            deeper:[
+              {id:"count", ar:{label:"كم وحدة؟", opt:{one:"وحدة", two_three:"2–3", many:"أكتر من 3"}},
+                        en:{label:"How many units?", opt:{one:"One", two_three:"2–3", many:"More than 3"}}},
+            ],
+            visitIf:[ {probe:"unit", in:["central"]} ],
+          },
+          noise:{
+            mediaAt:"sound",
+            core:[
+              {id:"sound", media:M.hvac_noise_audio, ar:{label:"شو عم تسمع / تشمّ؟", opt:{rattle:"طقطقة / اهتزاز", squeal:"صرير عالي", smell_burn:"ريحة احتراق", smell_musty:"ريحة عفن"}},
+                        en:{label:"What do you hear / smell?", opt:{rattle:"Rattle / vibration", squeal:"High squeal", smell_burn:"Burning smell", smell_musty:"Musty smell"}}},
+              {id:"unit", media:M.hvac_unit_photo, ar:{label:"شو نوع الوحدة؟", opt:{split:"سبليت", central:"مركزي", window:"شبّاك"}},
+                        en:{label:"What unit type?", opt:{split:"Split", central:"Central", window:"Window"}}},
+            ],
+            deeper:[
+              {id:"when", ar:{label:"إيمتى بيصير؟", opt:{startup:"عند التشغيل", always:"طول الوقت"}},
+                      en:{label:"When does it happen?", opt:{startup:"At startup", always:"All the time"}}},
+            ],
+            visitIf:[ {probe:"sound", in:["smell_burn"]}, {probe:"unit", in:["central"]} ],
+          },
+          leaking:{
+            mediaAt:"where",
+            core:[
+              {id:"where", media:M.hvac_unit_photo, ar:{label:"الماي عم تنقّط من وين؟", opt:{indoor:"الوحدة الداخلية", outdoor:"الوحدة الخارجية", pipe:"أنبوب التصريف"}},
+                        en:{label:"Where's the water dripping?", opt:{indoor:"Indoor unit", outdoor:"Outdoor unit", pipe:"Drain pipe"}}},
+              {id:"unit", ar:{label:"شو نوع الوحدة؟", opt:{split:"سبليت", central:"مركزي", window:"شبّاك"}},
+                        en:{label:"What unit type?", opt:{split:"Split", central:"Central", window:"Window"}}},
+            ],
+            deeper:[],
+            visitIf:[ {probe:"unit", in:["central"]} ],
+          },
+        },
+      },
+
+      // ───────────────────────── PAINTING (authored to standard) ─────────────────────────
+      painting:{
+        q1:{ id:"job", ar:{label:"شو نوع شغل الدهان؟", opt:{repaint:"دهان غرفة/غرف من جديد", new_paint:"دهان بناء جديد", damp_fix:"معالجة رطوبة/تشقّق ثم دهان", exterior:"دهان خارجي / واجهة"}},
+              en:{label:"What kind of painting?", opt:{repaint:"Repaint room(s)", new_paint:"Paint a new build", damp_fix:"Fix damp/cracks then paint", exterior:"Exterior / façade"}}},
+        branches:{
+          repaint:{
+            mediaAt:"rooms",
+            core:[
+              {id:"rooms", media:M.paint_room_video, ar:{label:"كم غرفة / منطقة؟", opt:{one:"غرفة وحدة", two_three:"2–3", whole:"الشقة كلّها", spot:"رتوش بمكان"}},
+                        en:{label:"How many rooms / areas?", opt:{one:"One room", two_three:"2–3", whole:"Whole apartment", spot:"A touch-up"}}},
+              {id:"condition", ar:{label:"شو حالة الحيطان هلّق؟", opt:{good:"منيحة — بس بدها دهان", cracks:"في تشقّق", peeling:"الدهان متقشّر", damp:"في رطوبة"}},
+                            en:{label:"Current wall condition?", opt:{good:"Good — just needs paint", cracks:"Has cracks", peeling:"Paint peeling", damp:"There's damp"}}},
+            ],
+            deeper:[
+              {id:"ceilings", ar:{label:"السقوف كمان؟", opt:{yes:"إي السقف كمان", no:"الحيطان بس"}},
+                            en:{label:"Ceilings too?", opt:{yes:"Yes, ceilings too", no:"Walls only"}}},
+              {id:"supply", ar:{label:"الدهان / اللون مين بيأمّنو؟", opt:{i_supply:"بأمّنو أنا", pro_supply:"المحترف", undecided:"لسا ما قرّرت اللون"}},
+                          en:{label:"Who supplies the paint / colour?", opt:{i_supply:"I'll supply it", pro_supply:"The pro", undecided:"Colour undecided"}}},
+              {id:"furniture", ar:{label:"الغرفة فاضية ولا فيها أثاث؟", opt:{empty:"فاضية", furnished:"فيها أثاث لازم يتغطّى"}},
+                            en:{label:"Empty or furnished room?", opt:{empty:"Empty", furnished:"Furnished — needs covering"}}},
+            ],
+            visitIf:[ {probe:"condition", in:["damp"]} ],
+          },
+          new_paint:{
+            mediaAt:"size",
+            core:[
+              {id:"size", ar:{label:"قدّيش المساحة؟", opt:{one_room:"غرفة", apt:"شقة كاملة", floor:"طابق / مبنى"}},
+                        en:{label:"How big is the area?", opt:{one_room:"One room", apt:"Whole apartment", floor:"Floor / building"}}},
+              {id:"stage", ar:{label:"الحيطان جاهزة (مقصورة)؟", opt:{ready:"إي جاهزة", needs_prep:"بدها تحضير", unsure:"مش متأكد"}},
+                        en:{label:"Walls ready (plastered)?", opt:{ready:"Yes, ready", needs_prep:"Needs prep", unsure:"Not sure"}}},
+            ],
+            deeper:[
+              {id:"ceilings", ar:{label:"السقوف كمان؟", opt:{yes:"إي", no:"الحيطان بس"}},
+                            en:{label:"Ceilings too?", opt:{yes:"Yes", no:"Walls only"}}},
+              {id:"supply", ar:{label:"الدهان مين بيأمّنو؟", opt:{i_supply:"أنا", pro_supply:"المحترف"}},
+                          en:{label:"Who supplies the paint?", opt:{i_supply:"Me", pro_supply:"The pro"}}},
+            ],
+            visitIf:[ {probe:"size", in:["floor"]} ],
+          },
+          damp_fix:{
+            mediaAt:"where",
+            core:[
+              {id:"where", media:M.paint_damp_photo, ar:{label:"وين الرطوبة / التشقّق؟", opt:{ceiling:"بالسقف", wall:"بالحيط", bathroom:"بالحمّام", multiple:"بكذا مكان"}},
+                        en:{label:"Where's the damp / cracking?", opt:{ceiling:"On the ceiling", wall:"On a wall", bathroom:"In the bathroom", multiple:"Several spots"}}},
+              {id:"severity", ar:{label:"أديش سيّء؟", opt:{light:"خفيف", spreading:"عم ينتشر", mold:"في عفن أسود"}},
+                            en:{label:"How bad is it?", opt:{light:"Light", spreading:"Spreading", mold:"Black mold"}}},
+            ],
+            deeper:[
+              {id:"source", ar:{label:"بتعرف مصدرو؟", opt:{leak_above:"تسريب من فوق", outside:"رطوبة من برّا", unknown:"مش معروف"}},
+                          en:{label:"Do you know the source?", opt:{leak_above:"A leak above", outside:"Damp from outside", unknown:"Unknown"}}},
+            ],
+            visitIf:["always"],
+          },
+          exterior:{
+            mediaAt:"scope",
+            core:[
+              {id:"scope", media:M.paint_damp_photo, ar:{label:"شو المطلوب بالخارج؟", opt:{facade:"واجهة كاملة", part:"جزء / حيط", fence:"سور / درابزين"}},
+                        en:{label:"What's the exterior scope?", opt:{facade:"Full façade", part:"Part / a wall", fence:"Fence / railing"}}},
+              {id:"height", ar:{label:"قدّيش بيعلى؟", opt:{low:"أرضي / واطي", mid:"كم طابق", high:"مبنى عالي"}},
+                        en:{label:"How high?", opt:{low:"Ground / low", mid:"A few floors", high:"Tall building"}}},
+            ],
+            deeper:[],
+            visitIf:["always"],
+          },
+        },
+      },
+
+      // ───────────────────────── CLEANING (authored to standard) ─────────────────────────
+      cleaning:{
+        q1:{ id:"type", ar:{label:"شو نوع التنظيف؟", opt:{regular:"عادي / دوري", deep:"تنظيف عميق", post_const:"بعد أعمال بناء", move:"عند الانتقال (دخول/خروج)", windows:"شبابيك / واجهة", upholstery:"كنب / سجاد"}},
+              en:{label:"What kind of cleaning?", opt:{regular:"Regular / standard", deep:"Deep clean", post_const:"Post-construction", move:"Move-in / move-out", windows:"Windows / façade", upholstery:"Sofa / carpet"}}},
+        branches:{
+          regular:{ _alias:"_space" },
+          deep:{ _alias:"_space" },
+          post_const:{ _alias:"_space" },
+          move:{ _alias:"_space" },
+          _space:{
+            mediaAt:"size",
+            core:[
+              {id:"size", media:M.clean_space_photo, ar:{label:"قدّيش حجم المكان؟", opt:{studio:"ستوديو / صغير", apt_1_2:"شقة (غرفة–غرفتين)", apt_3:"شقة (3 غرف أو أكتر)", villa:"فيلا / منزل", office:"مكتب / محل"}},
+                        en:{label:"How big is the place?", opt:{studio:"Studio / small", apt_1_2:"Apartment (1–2 rooms)", apt_3:"Apartment (3+ rooms)", villa:"Villa / house", office:"Office / shop"}}},
+              {id:"condition", ar:{label:"شو حالة المكان؟", opt:{light:"مرتّب — تنظيف عادي", medium:"وسط", heavy:"وسخ كتير / مهمل"}},
+                            en:{label:"What condition is it in?", opt:{light:"Tidy — light clean", medium:"Moderate", heavy:"Very dirty / neglected"}}},
+            ],
+            deeper:[
+              {id:"frequency", ar:{label:"مرّة وحدة ولا متكرّر؟", opt:{one_off:"مرّة وحدة", weekly:"أسبوعي", biweekly:"كل أسبوعين", monthly:"شهري"}},
+                            en:{label:"One-off or recurring?", opt:{one_off:"One-off", weekly:"Weekly", biweekly:"Every two weeks", monthly:"Monthly"}}},
+              {id:"supplies", ar:{label:"مواد التنظيف مين بيأمّنها؟", opt:{provided:"المحترف بيجيبها", i_provide:"موجودة عندي"}},
+                            en:{label:"Who provides the supplies?", opt:{provided:"The pro brings them", i_provide:"I have them"}}},
+              {id:"bathrooms", ar:{label:"كم حمّام؟", opt:{one:"واحد", two:"اتنين", three_plus:"3 أو أكتر"}},
+                            en:{label:"How many bathrooms?", opt:{one:"One", two:"Two", three_plus:"3 or more"}}},
+            ],
+            visitIf:[],
+          },
+          windows:{
+            mediaAt:"scope",
+            core:[
+              {id:"scope", media:M.clean_space_photo, ar:{label:"شو المطلوب؟", opt:{inside:"شبابيك من جوّا", both_sides:"من جوّا وبرّا", facade:"واجهة زجاجية / مبنى"}},
+                        en:{label:"What's needed?", opt:{inside:"Windows inside", both_sides:"Inside and out", facade:"Glass façade / building"}}},
+              {id:"count", ar:{label:"كم شبّاك تقريبًا؟", opt:{few:"كم شبّاك", many:"كذا غرفة", whole:"المبنى كلّو"}},
+                        en:{label:"Roughly how many windows?", opt:{few:"A few", many:"Several rooms", whole:"The whole building"}}},
+            ],
+            deeper:[
+              {id:"height", ar:{label:"عالية / بدها رفع؟", opt:{low:"لأ، عادية", high:"إي، طوابق عالية"}},
+                          en:{label:"High / needs access gear?", opt:{low:"No, normal", high:"Yes, high floors"}}},
+            ],
+            visitIf:[ {probe:"scope", in:["facade"]}, {probe:"height", in:["high"]} ],
+          },
+          upholstery:{
+            mediaAt:"items",
+            core:[
+              {id:"items", media:M.clean_space_photo, ar:{label:"شو بدّك تنظّف؟", opt:{sofa:"كنبة / صالون", mattress:"فرشة", carpet:"سجاد", chairs:"كراسي / مقاعد"}},
+                        en:{label:"What needs cleaning?", opt:{sofa:"Sofa / living set", mattress:"Mattress", carpet:"Carpet / rug", chairs:"Chairs / seats"}}},
+              {id:"count", ar:{label:"كم قطعة؟", opt:{one:"وحدة", few:"كم قطعة", many:"كتير"}},
+                        en:{label:"How many pieces?", opt:{one:"One", few:"A few", many:"Many"}}},
+            ],
+            deeper:[
+              {id:"stains", ar:{label:"في بقع صعبة؟", opt:{yes:"إي بقع", no:"تنظيف عام"}},
+                          en:{label:"Any tough stains?", opt:{yes:"Yes, stains", no:"General clean"}}},
+            ],
+            visitIf:[],
+          },
+        },
+      },
+    };
+    const DEEP_TRADES = Object.keys(TREE);
+    function isDeep(svc){ return DEEP_TRADES.includes(svc); }
+    // resolve aliased branches (e.g. aluminum new_install→_glaze, cleaning regular→_space)
+    function resolveBranch(svc, key){
+      const b = TREE[svc].branches[key];
+      if(b && b._alias) return TREE[svc].branches[b._alias];
+      return b;
+    }
+
+    // ── baseline media OVERLAYS for the 17 non-deep services (kept light: one decisive prompt) ──
+    function defaultOverlay(svc){
+      return {after:"__first__", media:{kind:"photo",
+        ar:{ask:"صوّرلي المشكلة أو المكان — صورة وحدة بتخلّي العرض أدق بكتير من الكتابة. 📷", thumb:"صورة — المكان/المشكلة", tx:"[صورة] لقطة عامة للمكان والمشكلة، بتعطي المحترف فكرة واضحة عن الشغل."},
+        en:{ask:"Snap the issue or the area — one photo makes the quote far tighter than text. 📷", thumb:"Photo — area/issue", tx:"[Photo] A general shot of the area and the issue, giving the pro a clear sense of the work."}}};
+    }
+    const BASE_OVERLAYS = {
+      carpentry:{after:"work_type", media:{kind:"photo", ar:{ask:"صوّرلي الخشب أو المكان — بيساعد المحترف يقيس ويسعّر. 📷", thumb:"صورة — الخشب/المكان", tx:"[صورة] باب خشب قديم بيعلق، المفصّلات راخية، الإطار سليم."}, en:{ask:"Snap the woodwork or the spot — helps the pro measure and quote. 📷", thumb:"Photo — woodwork", tx:"[Photo] An old wooden door that sticks; loose hinges, frame intact."}}},
+      appliance_repair:{after:"problem", media:{kind:"photo", ar:{ask:"صوّرلي الجهاز وملصق الموديل عليه — بيساعد المحترف يجيب القطعة الصح. 📷", thumb:"صورة — الجهاز + الموديل", tx:"[صورة] غسالة أمامية، الملصق مكتوب عليه الموديل، وعم تعلّق بنص البرنامج."}, en:{ask:"Snap the appliance and its model label — helps the pro bring the right part. 📷", thumb:"Photo — appliance + model", tx:"[Photo] A front-load washer; the label shows the model; it stalls mid-cycle."}}},
+      pest_control:{after:"pest_type", media:{kind:"photo", ar:{ask:"إذا فيك صوّر مكان وجودها أو الضرر — بيوضّح حجم المشكلة. 📷", thumb:"صورة — المكان/الضرر", tx:"[صورة] أثر حشرات حوالي خزانة المطبخ ومدخل المجاري."}, en:{ask:"If you can, snap where they are or the damage — shows the scale. 📷", thumb:"Photo — the area/damage", tx:"[Photo] Pest traces around the kitchen cabinet and a drain entry."}}},
+      tiling:{after:"location", media:{kind:"photo", ar:{ask:"صوّرلي المكان والبلاط الحالي — بيساعد المحترف يقدّر الكمية والشغل. 📷", thumb:"صورة — المكان", tx:"[صورة] أرضية حمّام ~4 م²، بلاط قديم متشقّق، الترويب متآكل."}, en:{ask:"Snap the area and the current tiles — helps the pro estimate quantity and work. 📷", thumb:"Photo — the area", tx:"[Photo] A ~4 m² bathroom floor; cracked old tiles, worn grout."}}},
+      flooring:{after:"material", media:{kind:"photo", ar:{ask:"صوّرلي الأرضية الحالية — بيساعد المحترف يعرف إذا بدها تحضير. 📷", thumb:"صورة — الأرضية", tx:"[صورة] أرضية غرفة ~16 م²، باركيه قديم منتفخ بمكان."}, en:{ask:"Snap the current floor — helps the pro see if it needs prep. 📷", thumb:"Photo — the floor", tx:"[Photo] A ~16 m² room; old parquet swollen in one spot."}}},
+    };
+    function overlayFor(svc){ return BASE_OVERLAYS[svc] || defaultOverlay(svc); }
+
+    // Lebanon location hierarchy — governorate (محافظة) → district (قضاء) → area
+    const LEB = {
+      beirut:   {ar:"بيروت", en:"Beirut", districts:{
+        beirut:{ar:"بيروت", en:"Beirut", areas:[["achrafieh","الأشرفية","Achrafieh"],["hamra","الحمرا","Hamra"],["verdun","فردان","Verdun"],["mazraa","المزرعة","Mazraa"],["ras_beirut","رأس بيروت","Ras Beirut"]]},
+      }},
+      mtleb:    {ar:"جبل لبنان", en:"Mount Lebanon", districts:{
+        matn:{ar:"المتن", en:"Matn", areas:[["jdeideh","الجديدة","Jdeideh"],["antelias","أنطلياس","Antelias"],["dekwaneh","الدكوانة","Dekwaneh"],["bikfaya","بكفيا","Bikfaya"]]},
+        baabda:{ar:"بعبدا", en:"Baabda", areas:[["hazmieh","الحازمية","Hazmieh"],["chiyah","الشياح","Chiyah"],["hadath","الحدث","Hadath"]]},
+        keserwan:{ar:"كسروان", en:"Keserwan", areas:[["jounieh","جونية","Jounieh"],["zouk","ذوق مكايل","Zouk Mikael"],["kaslik","الكسليك","Kaslik"]]},
+        chouf:{ar:"الشوف", en:"Chouf", areas:[["beiteddine","بيت الدين","Beiteddine"],["deir_qamar","دير القمر","Deir el Qamar"],["damour","الدامور","Damour"]]},
+        aley:{ar:"عاليه", en:"Aley", areas:[["aley","عاليه","Aley"],["bhamdoun","بحمدون","Bhamdoun"],["souk_gharb","سوق الغرب","Souk el Gharb"]]},
+        jbeil:{ar:"جبيل", en:"Jbeil", areas:[["jbeil","جبيل","Jbeil (Byblos)"],["amchit","عمشيت","Amchit"]]},
+      }},
+      north:    {ar:"الشمال", en:"North", districts:{
+        tripoli:{ar:"طرابلس", en:"Tripoli", areas:[["tripoli","طرابلس","Tripoli"],["mina","الميناء","El Mina"]]},
+        koura:{ar:"الكورة", en:"Koura", areas:[["amioun","أميون","Amioun"],["chekka","شكا","Chekka"]]},
+        batroun:{ar:"البترون", en:"Batroun", areas:[["batroun","البترون","Batroun"]]},
+        zgharta:{ar:"زغرتا", en:"Zgharta", areas:[["zgharta","زغرتا","Zgharta"],["ehden","إهدن","Ehden"]]},
+      }},
+      akkar:    {ar:"عكار", en:"Akkar", districts:{
+        akkar:{ar:"عكار", en:"Akkar", areas:[["halba","حلبا","Halba"],["qoubaiyat","القبيات","Qoubaiyat"]]},
+      }},
+      beqaa:    {ar:"البقاع", en:"Beqaa", districts:{
+        zahle:{ar:"زحلة", en:"Zahle", areas:[["zahle","زحلة","Zahle"],["chtaura","شتورة","Chtaura"]]},
+        west_beqaa:{ar:"البقاع الغربي", en:"West Beqaa", areas:[["jeb_jannine","جب جنين","Jeb Jannine"]]},
+      }},
+      baalbek:  {ar:"بعلبك-الهرمل", en:"Baalbek-Hermel", districts:{
+        baalbek:{ar:"بعلبك", en:"Baalbek", areas:[["baalbek","بعلبك","Baalbek"]]},
+        hermel:{ar:"الهرمل", en:"Hermel", areas:[["hermel","الهرمل","Hermel"]]},
+      }},
+      south:    {ar:"الجنوب", en:"South", districts:{
+        saida:{ar:"صيدا", en:"Saida", areas:[["saida","صيدا","Saida"],["ghazieh","الغازية","Ghazieh"]]},
+        tyre:{ar:"صور", en:"Tyre", areas:[["tyre","صور","Tyre"]]},
+        jezzine:{ar:"جزين", en:"Jezzine", areas:[["jezzine","جزين","Jezzine"]]},
+      }},
+      nabatieh: {ar:"النبطية", en:"Nabatieh", districts:{
+        nabatieh:{ar:"النبطية", en:"Nabatieh", areas:[["nabatieh","النبطية","Nabatieh"],["kfar_roummane","كفر رمان","Kfar Roummane"]]},
+        marjeyoun:{ar:"مرجعيون", en:"Marjeyoun", areas:[["marjeyoun","مرجعيون","Marjeyoun"]]},
+      }},
+    };
+
+    // ── STATIC i18n dictionary (chrome + non-chat strings) ──
+    const I18N = {
+      ar:{
+        brand_mark:"د", brand:"دبّرها", signin_secondary:"عندك حساب؟ سجّل الدخول",
+        tagline:"احكِ معنا — سؤال سؤال، عالراحة.",
+        hero_title:"قلّنا شو في…<br/>ونحنا منكمّل معك.",
+        hero_sub:"منحكي سوا متل ما تراسل حدا بتعرفو — سؤال سؤال، بلا تعمير. وإذا أسهل تفرجينا، صوّر أو سجّل صوت بأي لحظة.",
+        start_chat:"ابدأ الحكي", free_note:"ببلاش · بلا حساب لتبلّش · سؤال سؤال",
+        how_it_works:"كيف بتمشي؟",
+        preview_q1:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟", preview_a1:"لبيت", preview_q2:"تمام. شو بدّك مساعدة فيه؟",
+        preview_note:"سؤال واحد بالمرّة، عالراحة. وفوق في سطر صغير بيلخّص شو حكينا — تدوس عليه إذا بدّك تراجع أو تعدّل.",
+        trust_t:"محترفين مقيَّمين", trust_d:"تقييمات حقيقية من ناس وظّفوهم قبلك.",
+        quick_media_aria:"أضف صورة أو صوت",
+        composer_ph:"اكتب جوابك… أو دوس على خيار", send_aria:"ابعت",
+        be_media_capture:"[BE] — التقاط/تفريغ الوسائط (واجهة فقط)",
+        // status line + summary sheet
+        status_empty:"طلبك — عم يتكوّن",
+        sum_title:"ملخّص طلبك", sum_hint:"دوس عأي سطر تعدّلو.",
+        sum_service:"الخدمة", sum_property:"العقار", sum_problem:"المشكلة", sum_details:"تفاصيل", sum_location:"الموقع", sum_media:"صور / صوت / فيديو",
+        sum_urgency:"الاستعجال", sum_empty_v:"—",
+        // gate
+        gate_title:"طلبك جاهز ✅", gate_sub:"اعمل حساب بثواني لتبعتو — المحترفين بيراجعوه، بيبعتولك عروض، وإنت بتختار.",
+        gate_back:"رجوع للطلب",
+        name_label:"اسمك", name_ph:"متلاً: سامر", phone_label:"رقم تلفونك", otp_note:"منبعتلك رمز تأكيد عالرسائل.",
+        gate_send:"اعمل حساب وابعت", be_otp:"[BE] — تسجيل/تأكيد عبر OTP",
+        back_to_list:"رجوع للقائمة ↩",
+        // posted (final request page) — the ONLY expectation UI
+        posted_title:"طلبك انبعت ✅", posted_status:"منشور · مفتوح للعروض",
+        next_t:"شو بيصير هلّق؟",
+        next_line_quote:"المحترفون بمنطقتك رح يشوفوا طلبك ويبعتولك عروض — بتقارن وبتختار.",
+        next_line_visit:"شغلتك بدها معاينة عالأرض ليطلع سعر دقيق — محترف رح يرتّب زيارة، وبعدها بيعطيك سعرو النهائي.",
+        edit_request:"عدّل الطلب",
+        // FRAME
+        q_sector:"أهلين! 👋 الشغلة لبيت ولا لشغل/محل؟",
+        chip_residential:"🏠 لبيت", chip_commercial:"🏢 لشغل / محل",
+        q_subtype_res:"تمام. أي نوع بيت؟", q_subtype_com:"تمام. أي نوع محل/شغل؟",
+        sub_apartment:"شقة", sub_condo:"كومباوند", sub_villa:"فيلا / منزل",
+        sub_shop:"محل", sub_restaurant:"مطعم", sub_office:"مكتب", sub_warehouse:"مستودع",
+        q_domain:"شو بدّك مساعدة فيه؟", q_servicetype:"تمام. أي نوع بالضبط؟",
+        svc_search_ph:"دوّر عن الخدمة… (متلاً: تسريب، دهان، مكيّف)", svc_noresult:"ما لقينا خدمة بهالاسم — جرّب كلمة تانية أو اختار من القائمة.",
+        q_gov:"بأي محافظة؟", q_dist:"بأي قضاء؟", q_areaname:"بأي منطقة بالضبط؟", back_step:"رجوع",
+        q_urgency:"أديش مستعجل؟",
+        urg_emergency:"طوارئ — اليوم", urg_week:"خلال الأسبوع", urg_flexible:"مرن / ما في استعجال",
+        not_sure:"مش متأكد", skip_step:"تخطّى",
+        enough_chip:"✓ هيك كفّى — تابِع", deeper_intro:"إذا بدّك تزيد دقّة، كم سؤال زيادة (وفيك توقف بأي لحظة):",
+        add_photo:"صورة", add_video:"فيديو", record_instead:"سجّل بدل ما تكتب",
+        use_my_location:"استخدم موقعي الحالي", loc_detected:"حدّدنا موقعك تقريبيًا", loc_edit:"عدّل يدويًا", back_step_one:"رجوع خطوة",
+        media_skip:"كمّل بلا ما أفرجي",
+        visit_note:"هالشغلة صعب نسعّرها عن بُعد — الأصحّ محترف يجي يعاين ويعطيك سعر دقيق. كمّلنا شوي وبنرتّبلك زيارة.",
+        chat_ready:"تمام، صار معي كل اللازم! 🙌 راجِع طلبك من السطر فوق، وابعتو لمّا تكون جاهز.",
+        cta_review:"تمام — ابعت الطلب",
+        rec_label:"عم يسجّل…", sim_tag:"محاكاة",
+        kind_photo:"صورة", kind_video:"فيديو", kind_audio:"رسالة صوتية",
+        loc_word:"الموقع",
+        jump_back:"تمام — رجعنا لهالسؤال:",
+      },
+      en:{
+        brand_mark:"D", brand:"Dabbira", signin_secondary:"Have an account? Sign in",
+        tagline:"Talk to us — one question at a time, no rush.",
+        hero_title:"Tell us what's up…<br/>and we'll take it from there.",
+        hero_sub:"We chat like you'd text someone you know — one question at a time, no forms. And if it's easier to show us, snap a photo or record a voice note anytime.",
+        start_chat:"Start chatting", free_note:"Free · No account to start · One question at a time",
+        how_it_works:"How it works",
+        preview_q1:"Hi! 👋 Is this for a home or a business?", preview_a1:"A home", preview_q2:"Got it. What do you need help with?",
+        preview_note:"One question at a time, calm. Up top there's a small line summarizing what we've said — tap it to review or edit.",
+        trust_t:"Rated pros", trust_d:"Real reviews from people who hired them before you.",
+        quick_media_aria:"Add a photo or voice note",
+        composer_ph:"Type your answer… or tap an option", send_aria:"Send",
+        be_media_capture:"[BE] — Media capture / transcription (UI only)",
+        status_empty:"Your request — building",
+        sum_title:"Your request", sum_hint:"Tap any line to edit it.",
+        sum_service:"Service", sum_property:"Property", sum_problem:"Problem", sum_details:"Details", sum_location:"Location", sum_media:"Photos / voice / video",
+        sum_urgency:"Urgency", sum_empty_v:"—",
+        gate_title:"Your request is ready ✅", gate_sub:"Make a quick account to send it — pros review it, send you offers, and you choose.",
+        gate_back:"Back to request",
+        name_label:"Your name", name_ph:"e.g. Samer", phone_label:"Your phone number", otp_note:"We'll text you a confirmation code.",
+        gate_send:"Create account & send", be_otp:"[BE] — Sign-up / verify via OTP",
+        back_to_list:"Back to list ↩",
+        posted_title:"Your request is in ✅", posted_status:"Live · Open for offers",
+        next_t:"What happens now?",
+        next_line_quote:"Pros in your area will see your request and send you offers — you compare and choose.",
+        next_line_visit:"Your job needs an on-site look for an accurate price — a pro will set up a visit, then give you their final quote.",
+        edit_request:"Edit request",
+        q_sector:"Hi! 👋 Is this for a home or a business?",
+        chip_residential:"🏠 A home", chip_commercial:"🏢 A business / shop",
+        q_subtype_res:"Got it. What kind of home?", q_subtype_com:"Got it. What kind of place?",
+        sub_apartment:"Apartment", sub_condo:"Condo", sub_villa:"Villa / House",
+        sub_shop:"Shop", sub_restaurant:"Restaurant", sub_office:"Office", sub_warehouse:"Warehouse",
+        q_domain:"What do you need help with?", q_servicetype:"Got it. Which one exactly?",
+        svc_search_ph:"Search for the service… (e.g. leak, paint, AC)", svc_noresult:"No service by that name — try another word or pick from the list.",
+        q_gov:"Which governorate?", q_dist:"Which district?", q_areaname:"Which area exactly?", back_step:"Back",
+        q_urgency:"How urgent is it?",
+        urg_emergency:"Emergency — today", urg_week:"This week", urg_flexible:"Flexible / no rush",
+        not_sure:"I'm not sure", skip_step:"Skip",
+        enough_chip:"✓ That's enough — continue", deeper_intro:"Want it tighter? A few more questions (stop anytime):",
+        add_photo:"Photo", add_video:"Video", record_instead:"Record instead of typing",
+        use_my_location:"Use my current location", loc_detected:"We pinned your approximate location", loc_edit:"Set manually", back_step_one:"Back a step",
+        media_skip:"Continue without showing",
+        visit_note:"This is hard to price remotely — best if a pro comes, inspects, and gives you an accurate price. Let's finish up and we'll set up a visit.",
+        chat_ready:"Done — I've got everything I need! 🙌 Review your request from the line above and send it when you're ready.",
+        cta_review:"Looks good — send the request",
+        rec_label:"Recording…", sim_tag:"Simulated",
+        kind_photo:"photo", kind_video:"video", kind_audio:"voice note",
+        loc_word:"Location",
+        jump_back:"Sure — back to this question:",
+      }
+    };
+    function t(key){ return (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.ar[key] || ""); }
+
+    function applyStaticI18n(){
+      const d = I18N[LANG];
+      document.querySelectorAll("[data-i18n]").forEach(node=>{ const k=node.getAttribute("data-i18n"); if(d[k]!=null) node.innerHTML=d[k]; });
+      document.querySelectorAll("[data-i18n-ph]").forEach(node=>{ const k=node.getAttribute("data-i18n-ph"); if(d[k]!=null) node.setAttribute("placeholder",d[k]); });
+      document.querySelectorAll("[data-i18n-aria]").forEach(node=>{ const k=node.getAttribute("data-i18n-aria"); if(d[k]!=null) node.setAttribute("aria-label",d[k]); });
+      document.querySelectorAll("[data-i18n-title]").forEach(node=>{ const k=node.getAttribute("data-i18n-title"); if(d[k]!=null) node.setAttribute("title",d[k]); });
+    }
+
+    // relocalize already-rendered chat bubbles + chips + the status line/summary in place
+    function relocalizeChat(){
+      document.querySelectorAll("[data-tkey]").forEach(node=>{ node.innerHTML = t(node.getAttribute("data-tkey")); });
+      document.querySelectorAll("[data-tar]").forEach(node=>{
+        node.innerHTML = (LANG==="en") ? node.getAttribute("data-ten") : node.getAttribute("data-tar");
+      });
+      renderStatus();
+      if(document.getElementById("statusbar").classList.contains("open")) renderSummary();
+    }
+
+    function setLang(lang){
+      LANG = (lang === "en") ? "en" : "ar";
+      const html = document.documentElement;
+      html.setAttribute("lang", LANG);
+      html.setAttribute("dir", LANG === "en" ? "ltr" : "rtl");
+      document.getElementById("lang-ar").classList.toggle("is-on", LANG === "ar");
+      document.getElementById("lang-en").classList.toggle("is-on", LANG === "en");
+      const arrow=document.getElementById("send-arrow");
+      if(arrow) arrow.style.transform = (LANG==="en") ? "none" : "scaleX(-1)";
+      applyStaticI18n();
+      relocalizeChat();
+      buildDevSvc();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  THE FLOW ENGINE — C1 «حكي مُركّز»
+    //  Frame → (deep TREE drill | baseline Q drill) → location cascade → urgency
+    //  → finish → register gate → posted. The ONLY persistent extra is the slim
+    //  status line + its summary sheet (NO canvas, NO forecast, NO provider
+    //  preview, NO always-on dock). Calm > features.
+    // ════════════════════════════════════════════════════════════════════════
+
+    // ── tiny DOM helpers ──
+    function el(html){ const tpl=document.createElement("template"); tpl.innerHTML=html.trim(); return tpl.content.firstChild; }
+    function esc(s){ return String(s).replace(/"/g,"&quot;"); }
+    function scrollChat(){ const log=document.getElementById("chat-log"); if(log) log.scrollTop=log.scrollHeight; }
+    function clearZone(){ const z=document.getElementById("quick-zone"); z.innerHTML=""; z.className="px-4 pb-1.5 flex flex-wrap gap-2"; z.style.flexDirection=""; }
+    function resetZoneClass(){ const z=document.getElementById("quick-zone"); z.className="px-4 pb-1.5 flex flex-wrap gap-2"; z.style.flexDirection=""; }
+
+    // shared media icons (non-directional)
+    const CAM_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-2H10L8 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+    const VID_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+    const MIC_ICON=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg>`;
+    function kindIcon(kind){ return kind==="video"?VID_ICON:kind==="audio"?MIC_ICON:CAM_ICON; }
+    function kindEmoji(kind){ return kind==="video"?"🎥 ":kind==="audio"?"🎤 ":"📷 "; }
+    function kindWord(kind){ const k=kind==="video"?"kind_video":kind==="audio"?"kind_audio":"kind_photo"; return {ar:I18N.ar[k], en:I18N.en[k]}; }
+
+    // ════════════════════ NAV ════════════════════
+    const screens={ landing:"screen-landing", build:"screen-build", signup:"screen-signup", posted:"screen-posted" };
+    function setScreen(id, on){ const n=document.getElementById(id); if(!n) return; n.style.display = on ? (id==="screen-build"?"flex":"block") : "none"; n.classList.toggle("is-active", on); }
+    function isClean(){ return /(?:^|[?&])clean(?:=|&|$)/.test(location.search); }
+    function goto(name){
+      Object.values(screens).forEach(id=>setScreen(id,false));
+      setScreen(screens[name], true);
+      document.querySelectorAll(".picker").forEach(p=>p.classList.toggle("is-sel", p.dataset.s===name));
+      const hdr=document.getElementById("pub-header"); if(hdr) hdr.style.display=(name==="landing")?"none":"flex";
+      // back-a-step button is only meaningful inside the live chat
+      updateBackBtn();
+      if(name==="signup") renderGateSnapshot();
+      window.scrollTo(0,0);
+    }
+
+    // ════════════════════ STATE ════════════════════
+    let S = {};
+    function resetState(){
+      S = { sector:null, subtype:null, domain:null, service:null,
+            branch:null,            // chosen q1 branch key (deep trades)
+            probes:{},              // {probeId: {value, type, label:{ar,en}}}  (ordered by insertion)
+            probeOrder:[],          // probe ids in answer order (for summary "details")
+            area:null, urgency:null,
+            media:[], notSure:false, visit:false, posted:false, mediaAsks:0 };
+    }
+
+    // ════════════════════ PERSISTENCE (localStorage — file://-safe) ════════════════════
+    const SAVE_KEY = "dabbira_c1_focused_v1";
+    function saveState(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({ S, step:STEP, drill:DRILL, ts:Date.now() })); }catch(e){} }
+    function loadSaved(){ try{ const raw=localStorage.getItem(SAVE_KEY); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+    function clearSaved(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+    function hasMeaningfulSave(s){ return s && s.S && (s.S.service || s.S.sector || (s.S.media&&s.S.media.length)); }
+
+    // ════════════════════ CHAT BUBBLES ════════════════════
+    function botSay(arHtml, enHtml, cb){
+      const log=document.getElementById("chat-log");
+      const typing=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" style="margin-inline-start:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(typing); scrollChat();
+      setTimeout(()=>{
+        typing.remove();
+        const cur=(LANG==="en")?enHtml:arHtml;
+        const bubble=el(`<div class="row bot"><span class="avatar">${t("brand_mark")}</span><div class="bubble-bot" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}" style="margin-inline-start:8px;">${cur}</div></div>`);
+        log.appendChild(bubble); scrollChat(); if(cb) cb();
+      }, 480);
+    }
+    function botSayKey(key, cb){ botSay(I18N.ar[key], I18N.en[key], cb); }
+    function userSay(arHtml, enHtml){
+      const log=document.getElementById("chat-log");
+      const cur=(LANG==="en")?enHtml:arHtml;
+      log.appendChild(el(`<div class="row user"><div class="bubble-user" data-tar="${esc(arHtml)}" data-ten="${esc(enHtml)}">${cur}</div></div>`)); scrollChat();
+    }
+    function userSayRaw(html){
+      document.getElementById("chat-log").appendChild(el(`<div class="row user"><div class="bubble-user">${html}</div></div>`)); scrollChat();
+    }
+    function chip(arLabel, enLabel, onClick, cls){
+      const b=el(`<button class="qchip ${cls||""}" data-tar="${esc(arLabel)}" data-ten="${esc(enLabel)}">${LANG==="en"?enLabel:arLabel}</button>`);
+      b.onclick=onClick; return b;
+    }
+
+    // ════════════════════ DRILL CURSOR ════════════════════
+    // DRILL describes where we are inside the per-service question drill.
+    //   phase: "q1" | "core" | "deeper" | "done"
+    //   idx:   index within the current phase's probe list
+    // For non-deep services, phase is always "core" walking the flat Q[svc].probes.
+    let STEP = null;             // coarse step: sector|subtype|domain|service|drill|area|urgency|ready
+    let DRILL = { phase:null, idx:0 };
+
+    // current list of probes for the active phase
+    function deepBranch(){ return resolveBranch(S.service, S.branch); }
+    function corePhaseProbes(){ return isDeep(S.service) ? deepBranch().core : Q[S.service].probes; }
+    function deeperPhaseProbes(){ return isDeep(S.service) ? (deepBranch().deeper||[]) : []; }
+
+    // ── BACK-A-STEP history (snapshot before each question; restore + re-ask) ──
+    let HIST=[];
+    function pushHist(){
+      try{
+        HIST.push({ S:structuredClone(S), step:STEP, drill:structuredClone(DRILL),
+          chat:document.getElementById("chat-log").innerHTML,
+          quickCls:document.getElementById("quick-zone").className });
+      }catch(e){}
+      updateBackBtn();
+    }
+    function updateBackBtn(){
+      const b=document.getElementById("back-btn"); if(!b) return;
+      const onBuild=document.getElementById("screen-build").style.display!=="none";
+      b.style.display = (onBuild && HIST.length>=2 && !S.posted) ? "inline-flex" : "none";
+    }
+    function goBack(){
+      if(HIST.length<2) return;
+      HIST.pop();                 // discard current question's snapshot
+      const prev=HIST.pop();      // previous question (its re-ask re-pushes it)
+      try{ S=structuredClone(prev.S); }catch(e){}
+      STEP=prev.step; try{ DRILL=structuredClone(prev.drill); }catch(e){ DRILL={phase:null,idx:0}; }
+      document.getElementById("chat-log").innerHTML=prev.chat;
+      const qz=document.getElementById("quick-zone"); qz.innerHTML=""; qz.className=prev.quickCls||"px-4 pb-1.5 flex flex-wrap gap-2"; qz.style.flexDirection="";
+      renderStatus(); saveState();
+      reAsk(prev.step, prev.drill);
+      scrollChat(); updateBackBtn();
+    }
+    function reAsk(step, drill){
+      if(step==="drill"){ DRILL=drill||DRILL; askProbe(); return; }
+      const map={ sector:askSector, subtype:askSubtype, domain:askDomain,
+        service:()=>{ const d=DOMAINS.find(x=>x.id===S.domain); d&&d.services.length>1?askServiceType(d):askDomain(); },
+        area:askGov, urgency:askUrgency, ready:finishChat };
+      (map[step]||askDomain)();
+    }
+
+    // ════════════════════ FRAME 1 — SECTOR ════════════════════
+    function askSector(){
+      STEP="sector"; pushHist(); clearZone();
+      botSayKey("q_sector", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.appendChild(chip(I18N.ar.chip_residential,I18N.en.chip_residential, ()=>chooseSector("residential")));
+        z.appendChild(chip(I18N.ar.chip_commercial,I18N.en.chip_commercial, ()=>chooseSector("commercial")));
+      });
+    }
+    function chooseSector(sec){
+      S.sector=sec; clearZone();
+      userSay(sec==="residential"?I18N.ar.chip_residential:I18N.ar.chip_commercial, sec==="residential"?I18N.en.chip_residential:I18N.en.chip_commercial);
+      renderStatus(); saveState(); askSubtype();
+    }
+    // ════════════════════ FRAME 2 — SUBTYPE ════════════════════
+    function askSubtype(){
+      STEP="subtype"; pushHist(); clearZone();
+      const isRes=S.sector==="residential";
+      const subs=isRes?["apartment","condo","villa"]:["shop","restaurant","office","warehouse"];
+      botSayKey(isRes?"q_subtype_res":"q_subtype_com", ()=>{
+        const z=document.getElementById("quick-zone");
+        subs.forEach(s=> z.appendChild(chip(I18N.ar["sub_"+s],I18N.en["sub_"+s], ()=>chooseSubtype(s))));
+      });
+    }
+    function chooseSubtype(sub){
+      S.subtype=sub; clearZone();
+      userSay(I18N.ar["sub_"+sub],I18N.en["sub_"+sub]); renderStatus(); saveState(); askDomain();
+    }
+    // ════════════════════ FRAME 3 — DOMAIN (with service search) ════════════════════
+    function askDomain(){
+      STEP="domain"; pushHist(); clearZone();
+      botSayKey("q_domain", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.className="px-4 pb-1.5 flex flex-col gap-2"; z.style.flexDirection="";
+        const search=el(`<input id="svc-search" class="svc-search" type="search" inputmode="search" placeholder="${esc(t('svc_search_ph'))}" data-i18n-ph="svc_search_ph" oninput="filterServices(this.value)" />`);
+        z.appendChild(search);
+        const grid=el(`<div id="dom-grid" class="grid grid-cols-2 gap-2"></div>`);
+        DOMAINS.forEach(d=>{
+          const b=el(`<button class="dchip" data-dom="${d.id}"><span>${d.emoji}</span><span data-tar="${esc(d.ar)}" data-ten="${esc(d.en)}">${domLabel(d)}</span></button>`);
+          b.onclick=()=>chooseDomain(d.id); grid.appendChild(b);
+        });
+        z.appendChild(grid);
+        z.appendChild(el(`<div id="svc-results" class="flex flex-wrap gap-2" style="display:none;"></div>`));
+      });
+    }
+    function filterServices(q){
+      q=(q||"").trim().toLowerCase();
+      const grid=document.getElementById("dom-grid"), results=document.getElementById("svc-results");
+      if(!grid||!results) return;
+      if(!q){ grid.style.display="grid"; results.style.display="none"; results.innerHTML=""; return; }
+      grid.style.display="none"; results.style.display="flex"; results.innerHTML="";
+      const matches=ALL_SERVICES.filter(svc=>{
+        const ar=(CAT.ar[svc]||""), en=(CAT.en[svc]||"").toLowerCase(), syn=(SVC_SYN[svc]||"").toLowerCase();
+        return ar.includes(q)||en.includes(q)||syn.includes(q);
+      });
+      if(!matches.length){ results.appendChild(el(`<span class="t-caption text-faint px-1" data-tkey="svc_noresult">${t("svc_noresult")}</span>`)); return; }
+      matches.forEach(svc=> results.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
+    }
+    function chooseDomain(domId){
+      const d=DOMAINS.find(x=>x.id===domId); S.domain=domId; resetZoneClass();
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en); renderStatus(); saveState();
+      if(d.services.length===1){ chooseService(d.services[0], true); }
+      else askServiceType(d);
+    }
+    // ════════════════════ FRAME 4 — SERVICE TYPE ════════════════════
+    function askServiceType(d){
+      STEP="service"; pushHist(); clearZone();
+      botSayKey("q_servicetype", ()=>{
+        const z=document.getElementById("quick-zone");
+        d.services.forEach(svc=> z.appendChild(chip(CAT.ar[svc],CAT.en[svc], ()=>chooseService(svc,false))));
+      });
+    }
+    function chooseService(svc, echoed){
+      S.service=svc; if(!S.domain){ const d=domainForService(svc); S.domain=d?d.id:null; } resetZoneClass(); clearZone();
+      if(!echoed) userSay(CAT.ar[svc],CAT.en[svc]);
+      renderStatus(); saveState();
+      startDrill();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  THE DRILL — deep TREE branching (q1→branch→CORE→«هيك كفّى»→DEEPER) for the
+    //  6 trades; flat baseline Q for the other 17. driveDrill() is the dispatcher.
+    // ════════════════════════════════════════════════════════════════════════
+    function startDrill(){
+      S.branch=null; S.visit=false;
+      if(isDeep(S.service)){ askBranchQ1(); }
+      else { DRILL={phase:"core", idx:0}; askProbe(); }
+    }
+
+    // ── DEEP: q1 chooses the branch ──
+    function askBranchQ1(){
+      STEP="drill"; DRILL={phase:"q1", idx:0}; pushHist(); clearZone();
+      const q1=TREE[S.service].q1, ar=q1.ar, en=q1.en;
+      botSay(ar.label, en.label, ()=>{
+        const z=document.getElementById("quick-zone");
+        Object.keys(ar.opt).forEach(k=> z.appendChild(chip(ar.opt[k], en.opt[k], ()=>chooseBranch(k))));
+        z.appendChild(notSureChip());
+      });
+    }
+    function chooseBranch(key){
+      const q1=TREE[S.service].q1;
+      S.branch=key;
+      recordProbe(q1.id, "opt", key, {ar:q1.ar.opt[key], en:q1.en.opt[key]}, q1, key);
+      userSay(q1.ar.opt[key], q1.en.opt[key]);
+      clearZone(); renderStatus(); saveState();
+      // honest visit routing can be triggered by the branch itself ("always")
+      applyVisitFlag();
+      DRILL={phase:"core", idx:0}; askProbe();
+    }
+
+    // ── record an answered probe into ordered state ──
+    function recordProbe(id, type, value, label, probe, optKey){
+      if(!S.probes[id]) S.probeOrder.push(id);
+      S.probes[id]={ value, type, label, free:!!(probe&&probe.free) };
+    }
+
+    // ── ask the current probe (works for q1-less CORE/DEEPER and flat baseline) ──
+    function askProbe(){
+      STEP="drill";
+      // phase boundaries — resolve BEFORE snapshotting history (no phantom back-steps)
+      if(DRILL.phase==="core" && DRILL.idx>=corePhaseProbes().length){
+        // finished CORE → if deep & has deeper probes, offer «هيك كفّى» + deeper; else go on
+        if(isDeep(S.service) && deeperPhaseProbes().length){ DRILL={phase:"deeper", idx:0}; askProbe(); return; }
+        afterDrill(); return;
+      }
+      if(DRILL.phase==="deeper" && DRILL.idx>=deeperPhaseProbes().length){ afterDrill(); return; }
+
+      pushHist(); clearZone();
+      const list = DRILL.phase==="deeper" ? deeperPhaseProbes() : corePhaseProbes();
+      const p=list[DRILL.idx];
+      // intro line before the first DEEPER probe (deep trades only)
+      const introThen = (DRILL.phase==="deeper" && DRILL.idx===0)
+        ? (cb)=>botSayKey("deeper_intro", cb) : (cb)=>cb();
+      introThen(()=>{
+        botSay(p.ar.label, p.en.label, ()=>{
+          const z=document.getElementById("quick-zone");
+          if(p.free){
+            z.appendChild(chip("🎤 "+I18N.ar.record_instead, "🎤 "+I18N.en.record_instead, ()=>recordAudioForProbe(p), "is-media"));
+            z.appendChild(chip("📷 "+I18N.ar.add_photo, "📷 "+I18N.en.add_photo, ()=>captureForProbe(p,"photo"), "is-media"));
+            z.appendChild(chip("🎥 "+I18N.ar.add_video, "🎥 "+I18N.en.add_video, ()=>captureForProbe(p,"video"), "is-media"));
+            z.appendChild(chip(I18N.ar.skip_step,I18N.en.skip_step, ()=>answerProbeSkip(p)));
+          } else {
+            Object.keys(p.ar.opt).forEach(k=> z.appendChild(chip(p.ar.opt[k], p.en.opt[k], ()=>answerProbeOpt(p,k))));
+          }
+          // DEEPER probes are each skippable; plus a persistent «✓ هيك كفّى — تابِع» that jumps to metadata
+          if(DRILL.phase==="deeper"){
+            if(!p.free) z.appendChild(chip(I18N.ar.skip_step,I18N.en.skip_step, ()=>answerProbeSkip(p)));
+            z.appendChild(enoughChip());
+          } else {
+            z.appendChild(notSureChip());
+          }
+          // contextual media prompt fires at the decisive question of the branch / overlay anchor
+          maybeMediaPrompt(p);
+        });
+      });
+    }
+    function notSureChip(){ return chip(NOT_SURE.ar, NOT_SURE.en, ()=>pivotToMedia(), "is-notsure"); }
+    function enoughChip(){ return chip(I18N.ar.enough_chip, I18N.en.enough_chip, ()=>{ clearZone(); afterDrill(); }, "is-enough"); }
+
+    function answerProbeOpt(p, optKey){
+      recordProbe(p.id, "opt", optKey, {ar:p.ar.opt[optKey], en:p.en.opt[optKey]}, p, optKey);
+      userSay(p.ar.opt[optKey], p.en.opt[optKey]);
+      clearZone(); renderStatus(); saveState(); applyVisitFlag(); nextProbe();
+    }
+    function answerProbeSkip(p){ S.probes[p.id]={ value:null, type:"skip", label:null, free:!!p.free }; clearZone(); renderStatus(); saveState(); nextProbe(); }
+    function answerProbeFree(p, txt){
+      recordProbe(p.id, "free", txt, {ar:txt, en:txt}, p);
+      userSayRaw(txt); clearZone(); renderStatus(); saveState(); applyVisitFlag(); nextProbe();
+    }
+    function nextProbe(){ DRILL.idx++; askProbe(); }
+
+    // ── VISIT ROUTING: apply this branch's visitIf rules against answered probes ──
+    function applyVisitFlag(){
+      if(!isDeep(S.service)) return;
+      const br=deepBranch(); if(!br||!br.visitIf) return;
+      let route=false;
+      br.visitIf.forEach(rule=>{
+        if(rule==="always"){ route=true; return; }
+        if(rule && rule.probe){ const a=S.probes[rule.probe]; if(a && a.value && rule.in && rule.in.includes(a.value)) route=true; }
+      });
+      if(route && !S.visit){
+        S.visit=true; saveState();
+        botSayKey("visit_note");
+      }
+    }
+
+    // ── CONTEXTUAL MEDIA PROMPT (deep: mediaAt + probe.media; baseline: overlayFor) ──
+    function maybeMediaPrompt(p){
+      if(S.mediaAsks>=2) return;
+      let media=null;
+      if(isDeep(S.service)){
+        const br=deepBranch();
+        if(p.media && br && br.mediaAt===p.id) media=p.media;
+      } else {
+        const ov=overlayFor(S.service);
+        const probes=Q[S.service].probes;
+        const anchor = ov.after==="__first__" ? probes[0] && probes[0].id : ov.after;
+        if(anchor===p.id) media=ov.media;
+      }
+      if(!media) return;
+      const em=kindEmoji(media.kind);
+      botSay(media.ar.ask, media.en.ask, ()=>{
+        const z=document.getElementById("quick-zone");
+        // the media offer sits ABOVE the answer chips; tapping it captures + advances,
+        // OR the user just answers the probe normally (which clears everything).
+        const skipMc=chip(I18N.ar.media_skip,I18N.en.media_skip, ()=>{ skipMc.remove(); mc.remove(); }, "is-notsure");
+        const mc=chip(em+media.ar.thumb, em+media.en.thumb, ()=>captureMedia(media), "is-media");
+        z.prepend(mc);
+        z.prepend(skipMc);
+      });
+    }
+    function captureMedia(media){
+      S.mediaAsks++; clearZone();
+      const log=document.getElementById("chat-log");
+      if(media.kind==="audio"){
+        const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:09</bdi></div></div>`);
+        log.appendChild(rec); scrollChat();
+        setTimeout(()=>{ rec.remove(); placeMediaBubble(media); }, 1100);
+      } else {
+        const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+        log.appendChild(cap); scrollChat();
+        setTimeout(()=>{ cap.remove(); placeMediaBubble(media); }, 800);
+      }
+    }
+    function placeMediaBubble(media){
+      const icon=kindIcon(media.kind);
+      const arBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${media.ar.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.ar.sim_tag}</span></span></span>`;
+      const enBody=`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span style="display:flex;flex-direction:column;gap:2px;"><span>${media.en.thumb}</span><span style="font-size:12px;opacity:.8;">${I18N.en.sim_tag}</span></span></span>`;
+      userSay(arBody, enBody);
+      botSay(media.ar.tx, media.en.tx, ()=>{
+        S.media.push({kind:media.kind, thumbAr:media.ar.thumb, thumbEn:media.en.thumb, txAr:media.ar.tx, txEn:media.en.tx});
+        renderStatus(); saveState(); clearZone(); nextProbe();
+      });
+    }
+
+    // ── per-probe media (free probes: 🎤/📷/🎥) ──
+    function captureForProbe(p, kind){
+      clearZone();
+      const w=kindWord(kind); const dur=kind==="video"?" 0:08":kind==="audio"?" 0:06":"";
+      S.media.push({kind, thumbAr:w.ar+dur, thumbEn:w.en+dur});
+      recordProbe(p.id, kind, "__"+kind+"__", {ar:kindEmoji(kind)+w.ar+dur, en:kindEmoji(kind)+w.en+dur}, p);
+      userSay(kindEmoji(kind)+w.ar+dur, kindEmoji(kind)+w.en+dur);
+      renderStatus(); saveState(); nextProbe();
+    }
+    function recordAudioForProbe(p){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const rec=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot"></span><span data-tkey="rec_label">${t("rec_label")}</span> <bdi>0:06</bdi></div></div>`);
+      log.appendChild(rec); scrollChat();
+      setTimeout(()=>{
+        rec.remove();
+        const arTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.ar.kind_audio} <bdi>0:06</bdi></span>`;
+        const enTx=`<span style="display:inline-flex;align-items:center;gap:6px;">${MIC_ICON} ${I18N.en.kind_audio} <bdi>0:06</bdi></span>`;
+        userSay(arTx, enTx);
+        recordProbe(p.id, "audio", "__audio__", {ar:"🎤 "+I18N.ar.kind_audio+" 0:06", en:"🎤 "+I18N.en.kind_audio+" 0:06"}, p);
+        S.media.push({kind:"audio", thumbAr:I18N.ar.kind_audio+" 0:06", thumbEn:I18N.en.kind_audio+" 0:06"});
+        renderStatus(); saveState(); clearZone(); nextProbe();
+      }, 1100);
+    }
+
+    // ── NOT-SURE → "show us" pivot (drops media chips, then jumps to metadata) ──
+    function pivotToMedia(){
+      S.notSure=true; clearZone();
+      userSay(NOT_SURE.ar, NOT_SURE.en);
+      botSay("ولا يهمّك — بدل ما نكمّل أسئلة، فرجينا المشكلة وخلّي المحترف يقدّرها. 📷🎥",
+             "No worries — instead of more questions, just show us the issue and let the pro assess it. 📷🎥", ()=>{
+        const z=document.getElementById("quick-zone");
+        const ovPhoto={kind:"photo", ar:{thumb:"صورة — المشكلة", tx:"[صورة] لقطة للمشكلة متل ما هي — المحترف بيحدّد منها."}, en:{thumb:"Photo — the issue", tx:"[Photo] A shot of the issue as-is — the pro will assess from it."}};
+        const ovVideo={kind:"video", ar:{thumb:"فيديو — جولة 0:08", tx:"[فيديو] جولة قصيرة بتفرجي المكان والمشكلة من كل الجهات."}, en:{thumb:"Video — walkthrough 0:08", tx:"[Video] A short walk-around showing the place and the issue from all sides."}};
+        z.appendChild(chip("📷 "+ovPhoto.ar.thumb,"📷 "+ovPhoto.en.thumb, ()=>captureUnsureMedia(ovPhoto), "is-media"));
+        z.appendChild(chip("🎥 "+ovVideo.ar.thumb,"🎥 "+ovVideo.en.thumb, ()=>captureUnsureMedia(ovVideo), "is-media"));
+        z.appendChild(chip(I18N.ar.media_skip,I18N.en.media_skip, ()=>{ clearZone(); afterDrill(); }, "is-notsure"));
+      });
+    }
+    function captureUnsureMedia(ov){
+      clearZone();
+      const log=document.getElementById("chat-log");
+      const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(cap); scrollChat();
+      setTimeout(()=>{
+        cap.remove();
+        const icon=kindIcon(ov.kind);
+        userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.ar.thumb}</span></span>`,
+                `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.en.thumb}</span></span>`);
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx, unsure:true});
+        renderStatus();
+        botSay(ov.ar.tx, ov.en.tx, ()=>{ saveState(); clearZone(); afterDrill(); });
+      }, 900);
+    }
+
+    // ════════════════════ METADATA (after the drill) — LEAN: location + urgency ════════════════════
+    function afterDrill(){
+      DRILL={phase:"done", idx:0};
+      if(!S.area){ askGov(); return; }
+      if(!S.urgency){ askUrgency(); return; }
+      finishChat();
+    }
+    // LOCATION CASCADE: governorate (محافظة) → district (قضاء) → area + device-location
+    function backChip(onBack){ return chip("↩ "+I18N.ar.back_step, "↩ "+I18N.en.back_step, onBack, "is-notsure"); }
+    function askGov(){
+      STEP="area"; pushHist(); clearZone();
+      botSayKey("q_gov", ()=>{
+        const z=document.getElementById("quick-zone");
+        z.appendChild(chip("📍 "+I18N.ar.use_my_location, "📍 "+I18N.en.use_my_location, ()=>useDeviceLocation(), "is-media"));
+        Object.keys(LEB).forEach(g=>{ const gv=LEB[g];
+          z.appendChild(chip(gv.ar, gv.en, ()=>{ userSay(gv.ar,gv.en); clearZone(); askDist(g); })); });
+      });
+    }
+    function useDeviceLocation(){
+      clearZone();
+      userSay("📍 "+I18N.ar.use_my_location, "📍 "+I18N.en.use_my_location);
+      const log=document.getElementById("chat-log");
+      const loc=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="rec-dot" style="background:#6fb6ff;"></span><span data-tar="عم نحدّد موقعك…" data-ten="Locating you…">${LANG==="en"?"Locating you…":"عم نحدّد موقعك…"}</span></div></div>`);
+      log.appendChild(loc); scrollChat();
+      setTimeout(()=>{
+        loc.remove();
+        const g="beirut", d="beirut", a=["achrafieh","الأشرفية","Achrafieh"];
+        S.area={ gov:g, dist:d, area:a[0], govAr:LEB[g].ar, govEn:LEB[g].en, distAr:LEB[g].districts[d].ar, distEn:LEB[g].districts[d].en, areaAr:a[1], areaEn:a[2], auto:true };
+        botSay(`${I18N.ar.loc_detected}: ${a[1]} — ${LEB[g].ar}`, `${I18N.en.loc_detected}: ${a[2]} — ${LEB[g].en}`, ()=>{
+          const z=document.getElementById("quick-zone");
+          z.appendChild(chip(I18N.ar.loc_edit, I18N.en.loc_edit, ()=>{ clearZone(); askGov(); }, "is-notsure"));
+          z.appendChild(chip("✓ "+(LANG==="en"?"Continue":"تابِع"), "✓ Continue", ()=>{ clearZone(); renderStatus(); saveState(); afterDrill(); }));
+        });
+        renderStatus(); saveState();
+      }, 1000);
+    }
+    function askDist(g){
+      STEP="area"; clearZone();
+      const gv=LEB[g];
+      botSayKey("q_dist", ()=>{
+        const z=document.getElementById("quick-zone");
+        Object.keys(gv.districts).forEach(d=>{ const dt=gv.districts[d];
+          z.appendChild(chip(dt.ar, dt.en, ()=>{ userSay(dt.ar,dt.en); clearZone(); askAreaName(g,d); })); });
+        z.appendChild(backChip(()=>{ clearZone(); askGov(); }));
+      });
+    }
+    function askAreaName(g,d){
+      STEP="area"; clearZone();
+      const gv=LEB[g], dt=gv.districts[d];
+      botSayKey("q_areaname", ()=>{
+        const z=document.getElementById("quick-zone");
+        dt.areas.forEach(a=>{ const [key,ar,en]=a;
+          z.appendChild(chip(ar, en, ()=>{
+            S.area={ gov:g, dist:d, area:key, govAr:gv.ar, govEn:gv.en, distAr:dt.ar, distEn:dt.en, areaAr:ar, areaEn:en };
+            userSay(ar,en); clearZone(); renderStatus(); saveState(); afterDrill();
+          })); });
+        z.appendChild(backChip(()=>{ clearZone(); askDist(g); }));
+      });
+    }
+    function askUrgency(){
+      STEP="urgency"; pushHist(); clearZone();
+      botSayKey("q_urgency", ()=>{
+        const z=document.getElementById("quick-zone");
+        ["urg_emergency","urg_week","urg_flexible"].forEach(k=>
+          z.appendChild(chip(I18N.ar[k],I18N.en[k], ()=>{ S.urgency=k; userSay(I18N.ar[k],I18N.en[k]); clearZone(); renderStatus(); saveState(); afterDrill(); })));
+      });
+    }
+
+    function finishChat(){
+      STEP="ready"; pushHist(); clearZone();
+      botSayKey("chat_ready", ()=>{
+        const log=document.getElementById("chat-log");
+        const btn=el(`<div class="row bot" style="margin-block-start:6px;"><span class="avatar" style="visibility:hidden;">${t("brand_mark")}</span><button class="cta-primary is-ready" data-tkey="cta_review" style="margin-inline-start:8px;width:auto;" onclick="goto('signup')">${t("cta_review")}</button></div>`);
+        log.appendChild(btn); scrollChat();
+        renderStatus(); saveState();
+      });
+    }
+
+    // ════════════════════ free-text composer + quick media ════════════════════
+    function sendFree(){
+      const inp=document.getElementById("chat-input"); const v=(inp.value||"").trim();
+      if(!v) return; inp.value="";
+      const clean=v.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      if(STEP==="drill"){
+        const list = DRILL.phase==="deeper" ? deeperPhaseProbes() : corePhaseProbes();
+        const p=list[DRILL.idx];
+        if(p && p.free){ answerProbeFree(p, clean); return; }
+      }
+      userSayRaw(clean);
+    }
+    // small inline photo/voice affordance (NO persistent dock) — lands a media bubble
+    function quickMedia(){
+      if(document.getElementById("screen-build").style.display==="none"){ startChat(); return; }
+      const ov={kind:"photo", ar:{thumb:"صورة — من الكاميرا", tx:"[صورة] لقطة للمكان أو المشكلة متل ما هي."}, en:{thumb:"Photo — from camera", tx:"[Photo] A shot of the place or the issue as-is."}};
+      const log=document.getElementById("chat-log");
+      const cap=el(`<div class="row user"><div class="bubble-user" style="display:inline-flex;align-items:center;gap:8px;"><span class="typing"><span></span><span></span><span></span></span></div></div>`);
+      log.appendChild(cap); scrollChat();
+      setTimeout(()=>{
+        cap.remove();
+        const icon=kindIcon(ov.kind);
+        userSay(`<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.ar.thumb}</span></span>`,
+                `<span style="display:inline-flex;align-items:center;gap:8px;"><span class="media-thumb">${icon}</span><span>${ov.en.thumb}</span></span>`);
+        S.media.push({kind:ov.kind, thumbAr:ov.ar.thumb, thumbEn:ov.en.thumb, txAr:ov.ar.tx, txEn:ov.en.tx});
+        renderStatus(); saveState();
+      }, 800);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  THE SLIM STATUS LINE + SUMMARY SHEET (the only persistent extra)
+    //  renderStatus(): compact captured-so-far string; toggles #statusbar visibility.
+    //  renderSummary(): editable rows in #summary-sheet (tap a row → jump to that question).
+    //  NO forecast, NO provider preview, NO meter — status + summary only.
+    // ════════════════════════════════════════════════════════════════════════
+    function lbl(o){ return o ? (LANG==="en"?o.en:o.ar) : ""; }
+    function serviceLabel(){ return S.service ? (LANG==="en"?CAT.en[S.service]:CAT.ar[S.service]) : ""; }
+    function branchLabel(){ if(!isDeep(S.service)||!S.branch) return ""; const q1=TREE[S.service].q1; return LANG==="en"?q1.en.opt[S.branch]:q1.ar.opt[S.branch]; }
+    function areaLabel(){ return S.area ? (LANG==="en"?S.area.areaEn:S.area.areaAr) : ""; }
+    function urgencyLabel(){ return S.urgency ? (LANG==="en"?I18N.en[S.urgency]:I18N.ar[S.urgency]) : ""; }
+
+    // bits shown in the slim line, in capture order (e.g. «سباكة · تسريب · الأشرفية»)
+    function statusBits(){
+      const bits=[];
+      if(serviceLabel()) bits.push(serviceLabel());
+      if(branchLabel()) bits.push(branchLabel());
+      if(areaLabel()) bits.push(areaLabel());
+      if(!bits.length && S.media.length) bits.push((LANG==="en"?I18N.en.kind_photo:I18N.ar.kind_photo));
+      return bits;
+    }
+    function renderStatus(){
+      const bar=document.getElementById("statusbar"), txt=document.getElementById("status-text");
+      if(!bar||!txt) return;
+      const bits=statusBits();
+      if(!bits.length){
+        txt.innerHTML=`<span class="empty" data-tkey="status_empty">${t("status_empty")}</span>`;
+        bar.style.display=""; // keep visible inside chat as a hint
+        return;
+      }
+      txt.innerHTML = bits.map(b=>`<span>${b}</span>`).join('<span class="sep">·</span>');
+      bar.style.display="";
+    }
+    function toggleSummary(){
+      const bar=document.getElementById("statusbar"); if(!bar) return;
+      const open=bar.classList.toggle("open");
+      document.getElementById("status-line").setAttribute("aria-expanded", open?"true":"false");
+      if(open) renderSummary();
+    }
+    function closeSummary(){ const bar=document.getElementById("statusbar"); if(bar){ bar.classList.remove("open"); document.getElementById("status-line").setAttribute("aria-expanded","false"); } }
+
+    // build the captured-fields list for the summary / gate snapshot / posted summary.
+    // each row: {key (i18n), value (string|null), jump (fn|null), media (bool)}
+    function capturedRows(){
+      const rows=[];
+      // property (sector + subtype)
+      let prop="";
+      if(S.sector){ prop = LANG==="en"?I18N.en[S.sector==="residential"?"chip_residential":"chip_commercial"]:I18N.ar[S.sector==="residential"?"chip_residential":"chip_commercial"]; prop=prop.replace(/^🏠 |^🏢 /,""); }
+      if(S.subtype){ prop += (prop?" — ":"") + (LANG==="en"?I18N.en["sub_"+S.subtype]:I18N.ar["sub_"+S.subtype]); }
+      rows.push({ k:"sum_property", v:prop||null, ico:"🏠", jump:()=>jumpTo("sector") });
+      // service (+ branch)
+      let svc=serviceLabel(); if(branchLabel()) svc += (svc?" — ":"")+branchLabel();
+      rows.push({ k:"sum_service", v:svc||null, ico:"🛠️", jump:()=>jumpTo("domain") });
+      // details (answered probes, excluding the q1 branch which is shown with service)
+      const det=[]; S.probeOrder.forEach(id=>{
+        if(isDeep(S.service) && TREE[S.service].q1.id===id) return; // branch already shown
+        const a=S.probes[id]; if(a && a.label) det.push(lbl(a.label));
+      });
+      rows.push({ k:"sum_details", v:det.length?det.join("، "):null, ico:"📝", jump:()=>jumpToFirstProbe() });
+      // media
+      rows.push({ k:"sum_media", v:S.media.length?String(S.media.length):null, ico:"📷", media:true, jump:null });
+      // location
+      let loc=""; if(S.area){ loc = (LANG==="en"?S.area.areaEn:S.area.areaAr)+" — "+(LANG==="en"?S.area.distEn:S.area.distAr)+" — "+(LANG==="en"?S.area.govEn:S.area.govAr); }
+      rows.push({ k:"sum_location", v:loc||null, ico:"📍", jump:()=>jumpTo("area") });
+      // urgency
+      rows.push({ k:"sum_urgency", v:urgencyLabel()||null, ico:"⏱️", jump:()=>jumpTo("urgency") });
+      return rows;
+    }
+
+    function mediaTiles(){
+      if(!S.media.length) return "";
+      const tiles=S.media.map(m=>{
+        const w=(LANG==="en"?m.thumbEn:m.thumbAr)||(LANG==="en"?I18N.en[("kind_"+m.kind)]:I18N.ar[("kind_"+m.kind)]);
+        return `<span class="sum-mtile">${kindIcon(m.kind)} <span>${w}</span></span>`;
+      }).join("");
+      return `<div class="sum-media">${tiles}</div>`;
+    }
+
+    function summaryRowsHtml(opts){
+      opts=opts||{};
+      const rows=capturedRows();
+      let html="";
+      rows.forEach(r=>{
+        const empty = !r.v;
+        const valHtml = r.media
+          ? (empty ? `<span class="sum-v empty" data-tkey="sum_empty_v">${t("sum_empty_v")}</span>` : mediaTiles())
+          : `<span class="sum-v ${empty?'empty':''}" ${empty?'data-tkey="sum_empty_v"':''}>${empty?t("sum_empty_v"):r.v}</span>`;
+        const tag = (opts.editable && r.jump) ? "button" : "div";
+        const editIco = (opts.editable && r.jump) ? `<svg class="sum-edit" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>` : "";
+        html += `<${tag} class="sum-row ${empty?'is-empty':''}" ${opts.editable&&r.jump?'data-rowjump="1"':''}>
+          <span class="sum-ico">${r.ico}</span>
+          <span style="flex:1;min-width:0;">
+            <span class="sum-k" data-tkey="${r.k}">${t(r.k)}</span><br/>
+            ${valHtml}
+          </span>${editIco}
+        </${tag}>`;
+      });
+      return {html, rows};
+    }
+
+    function renderSummary(){
+      const sheet=document.getElementById("summary-sheet"); if(!sheet) return;
+      const {html, rows}=summaryRowsHtml({editable:true});
+      sheet.innerHTML = `<p class="t-caption text-soft" style="margin-block:6px 8px;" data-tkey="sum_hint">${t("sum_hint")}</p>${html}`;
+      // wire row jumps (tap a row → jump to that question)
+      const btns=sheet.querySelectorAll('[data-rowjump]');
+      let i=0; rows.forEach(r=>{ if(r.jump){ const b=btns[i++]; if(b) b.onclick=r.jump; } });
+    }
+    function renderGateSnapshot(){
+      const snap=document.getElementById("gate-snapshot"); if(!snap) return;
+      const {html}=summaryRowsHtml({editable:false});
+      snap.innerHTML = html;
+    }
+
+    // ════════════════════ EDIT-JUMP (talk-or-tap from summary) ════════════════════
+    function jumpTo(target){
+      if(S.posted){ reopenFromPosted(); return; }
+      closeSummary(); goto("build");
+      document.getElementById("assistant").style.display="flex";
+      botSayKey("jump_back");
+      const map={ sector:askSector, subtype:askSubtype, domain:askDomain, area:askGov, urgency:askUrgency };
+      if(target==="domain"||target==="service"){ askDomain(); return; }
+      (map[target]||askDomain)();
+    }
+    function jumpToFirstProbe(){
+      if(!S.service){ jumpTo("domain"); return; }
+      closeSummary(); goto("build");
+      document.getElementById("assistant").style.display="flex";
+      botSayKey("jump_back");
+      if(isDeep(S.service)){ askBranchQ1(); } else { DRILL={phase:"core", idx:0}; askProbe(); }
+    }
+
+    // ════════════════════ REGISTER → POSTED ════════════════════
+    function postRequest(){
+      S.posted=true; saveState();
+      renderPosted();
+      goto("posted");
+    }
+    function renderPosted(){
+      // status
+      const ps=document.getElementById("posted-status");
+      if(ps){ ps.setAttribute("data-tkey","posted_status"); ps.innerHTML=t("posted_status"); }
+      // summary (read-only)
+      const sum=document.getElementById("posted-summary");
+      if(sum){ const {html}=summaryRowsHtml({editable:false}); sum.innerHTML=html; }
+      // the SINGLE end-of-flow expectation line — visit-routed jobs get the visit line
+      const nl=document.getElementById("next-line");
+      if(nl){ const key=S.visit?"next_line_visit":"next_line_quote"; nl.setAttribute("data-tkey",key); nl.innerHTML=t(key); }
+      // clean mode → back-to-dash link
+      if(isClean()){ const b=document.getElementById("back-to-dash-posted"); if(b) b.style.display="block"; }
+    }
+    function reopenFromPosted(){
+      S.posted=false; saveState();
+      closeSummary();
+      document.getElementById("assistant").style.display="flex";
+      goto("build");
+      botSayKey("jump_back");
+      // route to an edit-friendly state: re-ask the drill (or domain if none)
+      if(S.service){ if(isDeep(S.service)){ askBranchQ1(); } else { DRILL={phase:"core", idx:0}; askProbe(); } }
+      else askDomain();
+    }
+
+    // ════════════════════ DEV: jump to any service (verifies all 23 reachable) ════════════════════
+    function buildDevSvc(){
+      const sel=document.getElementById("dev-svc"); if(!sel) return;
+      const cur=sel.value; sel.innerHTML="";
+      const blank=document.createElement("option"); blank.value=""; blank.textContent="— service —"; sel.appendChild(blank);
+      DOMAINS.forEach(d=>{
+        const og=document.createElement("optgroup"); og.label=domLabel(d);
+        d.services.forEach(svc=>{ const o=document.createElement("option"); o.value=svc; o.textContent=catLabel(svc); og.appendChild(o); });
+        sel.appendChild(og);
+      });
+      sel.value=cur;
+    }
+    function devJumpService(svc){
+      if(!svc) return;
+      resetState(); HIST=[]; clearSaved();
+      const d=domainForService(svc);
+      S.sector="residential"; S.subtype="apartment"; S.domain=d.id; S.service=svc;
+      document.getElementById("assistant").style.display="flex";
+      document.getElementById("chat-log").innerHTML=""; clearZone(); goto("build"); renderStatus();
+      userSay(I18N.ar.chip_residential,I18N.en.chip_residential);
+      userSay(I18N.ar.sub_apartment,I18N.en.sub_apartment);
+      userSay(d.emoji+" "+d.ar, d.emoji+" "+d.en);
+      userSay(CAT.ar[svc],CAT.en[svc]);
+      startDrill();
+    }
+    function devPostPreview(){
+      // seed a representative state then post (for moderator to inspect the posted page)
+      resetState(); HIST=[];
+      S.sector="residential"; S.subtype="apartment"; S.domain="plumb"; S.service="plumbing"; S.branch="leak";
+      S.probeOrder=["issue","where_from","active"];
+      S.probes={ issue:{value:"leak",type:"opt",label:{ar:"تسريب / تنقيط",en:"Leak / dripping"}},
+                 where_from:{value:"under_sink",type:"opt",label:{ar:"تحت المغسلة",en:"Under the sink"}},
+                 active:{value:"drips",type:"opt",label:{ar:"عم ينقّط",en:"Dripping"}} };
+      S.media=[{kind:"photo",thumbAr:"صورة — مكان التسريب",thumbEn:"Photo — the leak spot",txAr:"[صورة] الوصلة تحت المغسلة، السيفون مبلّل.",txEn:"[Photo] The under-sink fitting; the trap is wet."}];
+      S.area={gov:"beirut",dist:"beirut",area:"achrafieh",govAr:"بيروت",govEn:"Beirut",distAr:"بيروت",distEn:"Beirut",areaAr:"الأشرفية",areaEn:"Achrafieh"};
+      S.urgency="urg_emergency"; S.visit=false;
+      postRequest();
+    }
+
+    // ════════════════════ INIT ════════════════════
+    resetState();
+    buildDevSvc();
+    setLang("ar");
+    renderStatus();
+    goto("landing");
+
+    // landing CTA "ابدأ الحكي" → resume-aware: restore a saved build, else fresh start.
+    function startChat(){
+      const saved=loadSaved();
+      if(hasMeaningfulSave(saved)){
+        try{ S = saved.S || S; STEP = saved.step || STEP; DRILL = saved.drill || {phase:null,idx:0}; }catch(e){}
+        document.getElementById("chat-log").innerHTML=""; clearZone();
+        document.getElementById("assistant").style.display="flex";
+        HIST=[];
+        goto("build"); renderStatus();
+        if(S.posted){ renderPosted(); goto("posted"); return; }
+        rehydrate();
+        return;
+      }
+      freshStart();
+    }
+    function freshStart(){
+      resetState(); HIST=[]; clearSaved();
+      DRILL={phase:null,idx:0}; STEP=null;
+      document.getElementById("chat-log").innerHTML=""; clearZone();
+      document.getElementById("assistant").style.display="flex";
+      closeSummary();
+      goto("build"); renderStatus(); askSector();
+    }
+    function startOver(){ freshStart(); }
+    function rehydrate(){
+      // re-ask whatever step we were on so the chat is usable again
+      if(!S.service){ askSector(); return; }
+      if(STEP==="drill"){
+        if(isDeep(S.service) && !S.branch){ askBranchQ1(); return; }
+        askProbe(); return;
+      }
+      if(STEP==="area"){ askGov(); return; }
+      if(STEP==="urgency"){ askUrgency(); return; }
+      if(STEP==="ready"){ finishChat(); return; }
+      // default: continue the drill
+      if(isDeep(S.service) && !S.branch){ askBranchQ1(); }
+      else { DRILL={phase:"core", idx:0}; askProbe(); }
+    }
+
+    // ── CLEAN MODE (moderator demo) ─────────────────────────────────────
+    (function(){
+      if(!isClean()) return;
+      var banner=document.getElementById("artifact-banner"); if(banner) banner.style.display="none";
+      var nav=document.querySelector("nav"); if(nav) nav.style.display="none";
+      /* back-to-dash link is revealed on post() in clean mode */
+    })();
+  </script>
+
+</body>
+</html>
